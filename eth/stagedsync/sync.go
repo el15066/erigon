@@ -220,15 +220,17 @@ func (s *Sync) Run(db kv.RwDB, tx kv.RwTx, firstCycle bool) error {
 		}
 
 		if stage.Disabled || stage.Forward == nil {
-			log.Debug(fmt.Sprintf("%s disabled. %s", stage.ID, stage.DisabledDescription))
+			log.Info(fmt.Sprintf("Stage %-25s disabled. %s", stage.ID, stage.DisabledDescription))
 
 			s.NextStage()
 			continue
 		}
 
+		log.Info(fmt.Sprintf("Stage %-25s (%s)", stage.ID, stage.Description))
 		if err := s.runStage(stage, db, tx, firstCycle); err != nil {
 			return err
 		}
+		log.Info(fmt.Sprintf("Stage %-25s Done", stage.ID))
 
 		s.NextStage()
 	}

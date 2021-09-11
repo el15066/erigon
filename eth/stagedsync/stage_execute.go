@@ -247,6 +247,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	if toBlock > 0 {
 		to = min(prevStageProgress, toBlock)
 	}
+	to = min(to, 7_500_000-1+50_000) // -skip
 	if to <= s.BlockNumber {
 		return nil
 	}
@@ -267,7 +268,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	var gas uint64
 
 	var stoppedErr error
-Loop:
+
 	for blockNum := stageProgress + 1; blockNum <= to; blockNum++ {
 		if stoppedErr = common.Stopped(quit); stoppedErr != nil {
 			break
@@ -297,11 +298,14 @@ Loop:
 		if err = executeBlock(block, tx, batch, cfg, *cfg.vmConfig, writeChangeSets, writeReceipts, writeCallTraces, contractHasTEVM, initialCycle); err != nil {
 			log.Error(fmt.Sprintf("[%s] Execution failed", logPrefix), "block", blockNum, "hash", block.Hash().String(), "error", err)
 			u.UnwindTo(blockNum-1, block.Hash())
-			break Loop
+			break
 		}
 		stageProgress = blockNum
 
 		updateProgress := batch.BatchSize() >= int(cfg.batchSize)
+
+		updateProgress = false // -readonly
+
 		if updateProgress {
 			if err = batch.Commit(); err != nil {
 				return err
@@ -337,6 +341,7 @@ Loop:
 		}
 	}
 
+	return fmt.Errorf("early stop")
 	if err = s.Update(batch, stageProgress); err != nil {
 		return err
 	}

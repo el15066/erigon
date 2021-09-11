@@ -302,6 +302,9 @@ func (m *mutation) doCommit(tx kv.RwTx) error {
 }
 
 func (m *mutation) Commit() error {
+
+	return nil // -readonly
+
 	if m.db == nil {
 		return nil
 	}

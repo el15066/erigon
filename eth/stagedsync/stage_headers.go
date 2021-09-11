@@ -105,6 +105,7 @@ func HeadersForward(
 	if initialCycle && cfg.noP2PDiscovery {
 		return nil
 	}
+	return nil // -skip
 
 	log.Info(fmt.Sprintf("[%s] Waiting for headers...", logPrefix), "from", headerProgress)
 

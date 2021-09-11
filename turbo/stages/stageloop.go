@@ -76,6 +76,8 @@ func StageLoop(
 			case <-c:
 			}
 		}
+		log.Info("Stageloop done")
+		break // -skip
 	}
 }
 
