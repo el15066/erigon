@@ -28,6 +28,8 @@ import (
 	"github.com/ledgerwatch/erigon/params"
 	"github.com/ledgerwatch/erigon/turbo/shards"
 	"github.com/ledgerwatch/log/v3"
+
+	"github.com/ledgerwatch/erigon/bench"
 )
 
 const (
@@ -221,6 +223,30 @@ func newStateReaderWriter(
 	return stateReader, stateWriter, nil
 }
 
+func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan int, cfg ExecuteBlockCfg, from uint64, to uint64) {
+	var err   error
+	var block *types.Block
+	var tx    kv.Tx
+	tx, err = cfg.db.BeginRo(context.Background())
+	if err == nil {
+		defer tx.Rollback()
+		Loop: for blockNum := from; blockNum <= to; blockNum++ {
+			if block, err = readBlock(blockNum, tx); err != nil || block == nil {
+				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
+				break
+			}
+			select {
+				case blockChan <- block:
+				case <-quitChan:
+					break Loop
+			}
+		}
+	}
+	close(blockChan)
+	<-quitChan
+	errChan <- err
+}
+
 func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint64, ctx context.Context, cfg ExecuteBlockCfg, initialCycle bool) (err error) {
 	quit := ctx.Done()
 	useExternalTx := tx != nil
@@ -267,21 +293,23 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	logTime := time.Now()
 	var gas uint64
 
-	var stoppedErr error
+	blockChan := make(chan *types.Block, 100)
+	errChan   := make(chan error)
+	quitChan  := make(chan int)
 
-	for blockNum := stageProgress + 1; blockNum <= to; blockNum++ {
+	blockNum := stageProgress
+	go fetchBlocks(blockChan, errChan, quitChan, cfg, blockNum+1, to)
+
+	var stoppedErr error
+	bench.Tick(0)
+	for block := range blockChan {
+		blockNum++
+		bench.Tick(1)
 		if stoppedErr = common.Stopped(quit); stoppedErr != nil {
 			break
 		}
+
 		var err error
-		var block *types.Block
-		if block, err = readBlock(blockNum, tx); err != nil {
-			return err
-		}
-		if block == nil {
-			log.Error(fmt.Sprintf("[%s] Empty block", logPrefix), "blocknum", blockNum)
-			break
-		}
 
 		lastLogTx += uint64(block.Transactions().Len())
 
@@ -291,6 +319,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			contractHasTEVM = ethdb.GetHasTEVM(tx)
 		}
 
+		bench.Tick(3)
 		// Incremental move of next stages depend on fully written ChangeSets, Receipts, CallTraceSet
 		writeChangeSets := nextStagesExpectData || blockNum > cfg.prune.History.PruneTo(to)
 		writeReceipts := nextStagesExpectData || blockNum > cfg.prune.Receipts.PruneTo(to)
@@ -300,6 +329,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			u.UnwindTo(blockNum-1, block.Hash())
 			break
 		}
+		bench.Tick(4)
 		stageProgress = blockNum
 
 		updateProgress := batch.BatchSize() >= int(cfg.batchSize)
@@ -331,6 +361,8 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 
 		gas = gas + block.GasUsed()
 
+		bench.Tick(5)
+
 		select {
 		default:
 		case <-logEvery.C:
@@ -339,7 +371,18 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			tx.CollectMetrics()
 			syncMetrics[stages.Execution].Set(blockNum)
 		}
+		bench.Tick(0)
 	}
+
+	close(quitChan)
+	err2 := <-errChan
+	if err == nil { err = err2 }
+
+	fmt.Println("1-0", bench.DiffAuto(1, 0))
+	fmt.Println("2-1", bench.DiffAuto(2, 1))
+	fmt.Println("3-2", bench.DiffAuto(3, 2))
+	fmt.Println("4-3", bench.DiffAuto(4, 3))
+	fmt.Println("5-4", bench.DiffAuto(5, 4))
 
 	return fmt.Errorf("early stop")
 	if err = s.Update(batch, stageProgress); err != nil {
