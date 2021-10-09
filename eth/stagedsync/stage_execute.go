@@ -271,6 +271,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 }
 
 func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint64, ctx context.Context, cfg ExecuteBlockCfg, initialCycle bool) (err error) {
+	bench.Reset()
 	quit := ctx.Done()
 	useExternalTx := tx != nil
 	if !useExternalTx {

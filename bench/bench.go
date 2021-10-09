@@ -9,6 +9,14 @@ var all_ticks      [1000]int64
 var all_ticks_prev [1000]int64
 var all_counts     [1000]int64
 
+func Reset() {
+	for i := range all_ticks {
+		all_ticks[i]      = 0
+		all_ticks_prev[i] = 0
+		all_counts[i]     = 0
+	}
+}
+
 func Tick(index int) {
 	all_ticks_prev[index] = all_ticks[index]
 	all_ticks[index]     += time.Now().UnixNano()
