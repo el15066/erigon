@@ -128,3 +128,25 @@ no prefetch        |  215.9  |  1.00x
 block (depth=100)  |  209.5  |  1.03x
 block+account      |  183.7  |  1.18x
 block+account+code |  182.2  |  1.18x
+
+### Excecution times, 10000 blocks (starting from 7.5M), hot FS cache
+
+Tickmarks |          ns |         count | total ms | Description
+----------|-------------|---------------|----------|------------
+  1-  0   |        3909 |         10000 |       39 | **block read** (with prefetch)
+  2-  1   |         233 |         10000 |        2 | is stopped?
+  3-  2   |         219 |         10000 |        2 | transactions length
+  4-  3   |    14280324 |         10000 |   142803 | **excecuteBlock**
+  5-  4   |         142 |         10000 |        1 | add gas
+ 11- 10   |          87 |      38654000 |     3397 | stateObject cached?
+ 13- 12   |        4277 |       1824923 |     7806 | **read account** (with prefetch)
+ 15- 14   |         713 |       1701345 |     1213 | add stateObject
+ 21- 20   |          69 |       2258116 |      156 | code cached?
+ 23- 22   |        2936 |        613418 |     1801 | **read code** (with prefetch)
+ 31- 30   |          77 |      18058060 |     1406 | storage dirty?
+ 33- 32   |          90 |      14554890 |     1322 | storage cached?
+ 35- 34   |        2695 |       4345470 |    11714 | **read storage**
+ 37- 36   |         107 |       4345470 |      466 | output to int256
+ 38- 37   |         381 |       4345470 |     1659 | save to cache
+
+maximum potential speedup: 1.51x (142.8 seconds)
