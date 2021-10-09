@@ -17,6 +17,7 @@
 package state
 
 import (
+	"fmt"
 	"bytes"
 	"encoding/binary"
 
@@ -46,6 +47,9 @@ type PlainState struct {
 	blockNr                      uint64
 	storage                      map[common.Address]*llrb.LLRB
 }
+
+func (r *PlainState) SetBlockID(n int) { fmt.Println("plain_readonly.go SetBlockID", n) }
+func (r *PlainState) SetTxID(   n int) { fmt.Println("plain_readonly.go SetTxID   ", n) }
 
 func NewPlainState(tx kv.Tx, blockNr uint64) *PlainState {
 

@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"fmt"
 	"bytes"
 
 	"github.com/ledgerwatch/erigon-lib/kv"
@@ -17,6 +18,9 @@ type StateReader struct {
 	blockNr                      uint64
 	tx                           kv.Tx
 }
+
+func (r *StateReader) SetBlockID(n int) { fmt.Println("reader.go SetBlockID", n) }
+func (r *StateReader) SetTxID(   n int) { fmt.Println("reader.go SetTxID   ", n) }
 
 func NewStateReader(tx kv.Tx, blockNr uint64) *StateReader {
 	c1, _ := tx.Cursor(kv.AccountsHistory)

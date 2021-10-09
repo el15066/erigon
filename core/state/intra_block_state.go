@@ -802,6 +802,7 @@ func (sdb *IntraBlockState) Prepare(thash, bhash common.Hash, ti int) {
 	sdb.thash = thash
 	sdb.bhash = bhash
 	sdb.txIndex = ti
+	sdb.stateReader.SetTxID(ti)
 	sdb.accessList = newAccessList()
 }
 

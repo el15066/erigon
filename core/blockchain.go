@@ -101,6 +101,7 @@ func ExecuteBlockEphemerally(
 ) (types.Receipts, error) {
 	defer blockExecutionTimer.UpdateDuration(time.Now())
 	block.Uncles()
+	stateReader.SetBlockID(int(block.Number().Int64()))
 	ibs := state.New(stateReader)
 	header := block.Header()
 	var receipts types.Receipts

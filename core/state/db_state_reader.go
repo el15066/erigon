@@ -1,6 +1,7 @@
 package state
 
 import (
+	"fmt"
 	"bytes"
 	"encoding/binary"
 
@@ -19,6 +20,9 @@ type DbStateReader struct {
 	codeCache     *fastcache.Cache
 	codeSizeCache *fastcache.Cache
 }
+
+func (r *DbStateReader) SetBlockID(n int) { fmt.Println("db_state_reader.go SetBlockID", n) }
+func (r *DbStateReader) SetTxID(   n int) { fmt.Println("db_state_reader.go SetTxID   ", n) }
 
 func NewDbStateReader(db kv.Getter) *DbStateReader {
 	return &DbStateReader{
