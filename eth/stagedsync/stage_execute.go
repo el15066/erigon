@@ -226,14 +226,37 @@ func newStateReaderWriter(
 func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan int, cfg ExecuteBlockCfg, from uint64, to uint64) {
 	var err   error
 	var block *types.Block
-	var tx    kv.Tx
-	tx, err = cfg.db.BeginRo(context.Background())
+	var db    kv.Tx
+	db, err = cfg.db.BeginRo(context.Background())
 	if err == nil {
-		defer tx.Rollback()
+		defer db.Rollback()
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
-			if block, err = readBlock(blockNum, tx); err != nil || block == nil {
+			if block, err = readBlock(blockNum, db); err != nil || block == nil {
 				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
 				break
+			}
+			for i, tx := range block.Transactions() {
+				// prefetch 'from' account
+				// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
+				// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
+				from_addr, ok := tx.GetSender()
+				if ok {
+					db.GetOne(kv.PlainState, from_addr.Bytes())
+				} else {
+					log.Error("Sender not in tx", "block_number", block.Number(), "tx_index", i)
+				}
+				// prefetch 'to' account, and its code if it's a contract
+				to_addr := tx.GetTo()
+				if to_addr != nil {
+					enc, _err := db.GetOne(kv.PlainState, to_addr.Bytes())
+					if _err == nil {
+						var a accounts.Account
+						_err = a.DecodeForStorage(enc)
+						if _err == nil && !a.IsEmptyCodeHash() {
+							db.GetOne(kv.Code, a.CodeHash.Bytes())
+						}
+					}
+				} // else is contract creation
 			}
 			select {
 				case blockChan <- block:
@@ -273,7 +296,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	if toBlock > 0 {
 		to = min(prevStageProgress, toBlock)
 	}
-	to = min(to, 7_500_000-1+50_000) // -skip
+	to = min(to, 7_500_000-1+10_000) // -skip
 	if to <= s.BlockNumber {
 		return nil
 	}
@@ -333,9 +356,8 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		bench.Tick(4)
 		stageProgress = blockNum
 
-		updateProgress := batch.BatchSize() >= int(cfg.batchSize)
-
-		updateProgress = false // -readonly
+		// updateProgress := batch.BatchSize() >= int(cfg.batchSize)
+		updateProgress := false // -readonly
 
 		if updateProgress {
 			if err = batch.Commit(); err != nil {
