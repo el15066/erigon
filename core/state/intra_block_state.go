@@ -30,6 +30,8 @@ import (
 	"github.com/ledgerwatch/erigon/params"
 	"github.com/ledgerwatch/erigon/turbo/trie"
 	"github.com/ledgerwatch/log/v3"
+
+	"github.com/ledgerwatch/erigon/bench"
 )
 
 type revision struct {
@@ -537,15 +539,21 @@ func (sdb *IntraBlockState) Suicide(addr common.Address) bool {
 // Retrieve a state object given my the address. Returns nil if not found.
 func (sdb *IntraBlockState) getStateObject(addr common.Address) (stateObject *stateObject) {
 	// Prefer 'live' objects.
+	bench.Tick(10)
 	if obj := sdb.stateObjects[addr]; obj != nil {
+		bench.Tick(11)
 		return obj
 	}
 
 	// Load the object from the database.
 	if _, ok := sdb.nilAccounts[addr]; ok {
+		bench.Tick(11)
 		return nil
 	}
+	bench.Tick(11)
+	bench.Tick(12)
 	account, err := sdb.stateReader.ReadAccountData(addr)
+	bench.Tick(13)
 	if err != nil {
 		sdb.setErrorUnsafe(err)
 		return nil
@@ -555,9 +563,11 @@ func (sdb *IntraBlockState) getStateObject(addr common.Address) (stateObject *st
 		return nil
 	}
 
+	bench.Tick(14)
 	// Insert into the live set.
 	obj := newObject(sdb, addr, account, account)
 	sdb.setStateObject(obj)
+	bench.Tick(15)
 	return obj
 }
 

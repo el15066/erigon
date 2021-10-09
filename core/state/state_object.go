@@ -28,6 +28,8 @@ import (
 	"github.com/ledgerwatch/erigon/crypto"
 	"github.com/ledgerwatch/erigon/rlp"
 	"github.com/ledgerwatch/erigon/turbo/trie"
+
+	"github.com/ledgerwatch/erigon/bench"
 )
 
 var emptyCodeHash = crypto.Keccak256(nil)
@@ -156,43 +158,55 @@ func (so *stateObject) touch() {
 
 // GetState returns a value from account storage.
 func (so *stateObject) GetState(key *common.Hash, out *uint256.Int) {
+	bench.Tick(30)
 	value, dirty := so.dirtyStorage[*key]
 	if dirty {
 		*out = value
+		bench.Tick(31)
 		return
 	}
+	bench.Tick(31)
 	// Otherwise return the entry's original value
 	so.GetCommittedState(key, out)
 }
 
 // GetCommittedState retrieves a value from the committed account storage trie.
 func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
+	bench.Tick(32)
 	// If we have the original value cached, return that
 	{
 		value, cached := so.originStorage[*key]
 		if cached {
 			*out = value
+			bench.Tick(33)
 			return
 		}
 	}
 	if so.created {
 		out.Clear()
+		bench.Tick(33)
 		return
 	}
+	bench.Tick(33)
+	bench.Tick(34)
 	// Load from DB in case it is missing.
 	enc, err := so.db.stateReader.ReadAccountStorage(so.address, so.data.GetIncarnation(), key)
+	bench.Tick(35)
 	if err != nil {
 		so.setError(err)
 		out.Clear()
 		return
 	}
+	bench.Tick(36)
 	if enc != nil {
 		out.SetBytes(enc)
 	} else {
 		out.Clear()
 	}
+	bench.Tick(37)
 	so.originStorage[*key] = *out
 	so.blockOriginStorage[*key] = *out
+	bench.Tick(38)
 }
 
 // SetState updates a value in account storage.
@@ -320,13 +334,19 @@ func (so *stateObject) Address() common.Address {
 
 // Code returns the contract code associated with this object, if any.
 func (so *stateObject) Code() []byte {
+	bench.Tick(20)
 	if so.code != nil {
+		bench.Tick(21)
 		return so.code
 	}
 	if bytes.Equal(so.CodeHash(), emptyCodeHash) {
+		bench.Tick(21)
 		return nil
 	}
+	bench.Tick(21)
+	bench.Tick(22)
 	code, err := so.db.stateReader.ReadAccountCode(so.Address(), so.data.Incarnation, common.BytesToHash(so.CodeHash()))
+	bench.Tick(23)
 	if err != nil {
 		so.setError(fmt.Errorf("can't load code hash %x: %v", so.CodeHash(), err))
 	}

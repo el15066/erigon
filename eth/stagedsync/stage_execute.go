@@ -308,6 +308,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		if stoppedErr = common.Stopped(quit); stoppedErr != nil {
 			break
 		}
+		bench.Tick(2)
 
 		var err error
 
@@ -378,11 +379,22 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	err2 := <-errChan
 	if err == nil { err = err2 }
 
-	fmt.Println("1-0", bench.DiffAuto(1, 0))
-	fmt.Println("2-1", bench.DiffAuto(2, 1))
-	fmt.Println("3-2", bench.DiffAuto(3, 2))
-	fmt.Println("4-3", bench.DiffAuto(4, 3))
-	fmt.Println("5-4", bench.DiffAuto(5, 4))
+	// HERE
+	fmt.Println("  1-  0", bench.DiffStrAuto(  1,  0))
+	fmt.Println("  2-  1", bench.DiffStrAuto(  2,  1))
+	fmt.Println("  3-  2", bench.DiffStrAuto(  3,  2))
+	fmt.Println("  4-  3", bench.DiffStrAuto(  4,  3))
+	fmt.Println("  5-  4", bench.DiffStrAuto(  5,  4))
+	fmt.Println(" 11- 10", bench.DiffStrAuto( 11, 10))
+	fmt.Println(" 13- 12", bench.DiffStrAuto( 13, 12))
+	fmt.Println(" 15- 14", bench.DiffStrAuto( 15, 14))
+	fmt.Println(" 21- 20", bench.DiffStrAuto( 21, 20))
+	fmt.Println(" 23- 22", bench.DiffStrAuto( 23, 22))
+	fmt.Println(" 31- 30", bench.DiffStrAuto( 31, 30))
+	fmt.Println(" 33- 32", bench.DiffStrAuto( 33, 32))
+	fmt.Println(" 35- 34", bench.DiffStrAuto( 35, 34))
+	fmt.Println(" 37- 36", bench.DiffStrAuto( 37, 36))
+	fmt.Println(" 38- 37", bench.DiffStrAuto( 38, 37))
 
 	return fmt.Errorf("early stop")
 	if err = s.Update(batch, stageProgress); err != nil {
