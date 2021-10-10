@@ -1,7 +1,9 @@
 package state
 
 import (
-	// "fmt"
+	"fmt"
+	"os"
+	"bufio"
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
@@ -16,6 +18,9 @@ import (
 // var ENC = base64.StdEncoding.EncodeToString
 var ENC = hex.EncodeToString
 
+var tracefile *bufio.Writer
+var notrace = false
+
 var _ StateReader = (*PlainStateReader)(nil)
 
 // PlainStateReader reads data from so called "plain state".
@@ -28,6 +33,15 @@ type PlainStateReader struct {
 }
 
 func NewPlainStateReader(db kv.Getter) *PlainStateReader {
+	if tracefile == nil && notrace == false {
+		_f, _err := os.OpenFile("logz/reads.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
+		if _err == nil {
+			tracefile = bufio.NewWriterSize(_f, 128*1024)
+		} else {
+			notrace = true
+			fmt.Println("ERROR: READS NOT RECORDED", _err)
+		}
+	}
 	return &PlainStateReader{
 		db: db,
 		blockID: -1,
@@ -41,7 +55,9 @@ func (r *PlainStateReader) SetTxID(   n int) { r.txID    = n }
 func (r *PlainStateReader) ReadAccountData(address common.Address) (*accounts.Account, error) {
 
 	// HERE
-	//fmt.Println("A", r.blockID, r.txID, ENC(address.Bytes()))
+	if tracefile != nil {
+		tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", r.blockID, r.txID, ENC(address.Bytes())))
+	}
 
 	enc, err := r.db.GetOne(kv.PlainState, address.Bytes())
 	if err != nil {
@@ -61,7 +77,9 @@ func (r *PlainStateReader) ReadAccountStorage(address common.Address, incarnatio
 	compositeKey := dbutils.PlainGenerateCompositeStorageKey(address.Bytes(), incarnation, key.Bytes())
 
 	// HERE
-	//fmt.Println("S", r.blockID, r.txID, ENC(compositeKey))
+	if tracefile != nil {
+		tracefile.WriteString(fmt.Sprintf("S %8d %3d %s\n", r.blockID, r.txID, ENC(compositeKey)))
+	}
 
 	enc, err := r.db.GetOne(kv.PlainState, compositeKey)
 	if err != nil {
@@ -79,7 +97,9 @@ func (r *PlainStateReader) ReadAccountCode(address common.Address, incarnation u
 	}
 
 	// HERE
-	//fmt.Println("C", r.blockID, r.txID, ENC(codeHash.Bytes()))
+	if tracefile != nil {
+		tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", r.blockID, r.txID, ENC(codeHash.Bytes())))
+	}
 
 	code, err := r.db.GetOne(kv.Code, codeHash.Bytes())
 	if len(code) == 0 {
@@ -96,7 +116,9 @@ func (r *PlainStateReader) ReadAccountCodeSize(address common.Address, incarnati
 func (r *PlainStateReader) ReadAccountIncarnation(address common.Address) (uint64, error) {
 
 	// HERE
-	//fmt.Println("I", r.blockID, r.txID, ENC(address.Bytes()))
+	if tracefile != nil {
+		tracefile.WriteString(fmt.Sprintf("I %8d %3d %s\n", r.blockID, r.txID, ENC(address.Bytes())))
+	}
 
 	b, err := r.db.GetOne(kv.IncarnationMap, address.Bytes())
 	if err != nil {

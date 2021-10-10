@@ -3,6 +3,9 @@ package stagedsync
 import (
 	"context"
 	"encoding/binary"
+	"encoding/hex"
+	"os"
+	"bufio"
 	"fmt"
 	"runtime"
 	"sort"
@@ -224,6 +227,16 @@ func newStateReaderWriter(
 }
 
 func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan int, cfg ExecuteBlockCfg, from uint64, to uint64) {
+	var ENC = hex.EncodeToString
+	var tracefile *bufio.Writer
+	if true {
+		_f, _err := os.OpenFile("logz/prefetches.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
+		if _err == nil {
+			tracefile = bufio.NewWriterSize(_f, 128*1024)
+		} else {
+			fmt.Println("ERROR: PREFETCHES NOT RECORDED", _err)
+		}
+	}
 	var err   error
 	var block *types.Block
 	var db    kv.Tx
@@ -242,18 +255,27 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 				from_addr, ok := tx.GetSender()
 				if ok {
 					db.GetOne(kv.PlainState, from_addr.Bytes())
+					if tracefile != nil {
+						tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(from_addr.Bytes())))
+					}
 				} else {
-					log.Error("Sender not in tx", "block_number", block.Number(), "tx_index", i)
+					log.Error("Sender not in tx", "block_number", blockNum, "tx_index", i)
 				}
 				// prefetch 'to' account, and its code if it's a contract
 				to_addr := tx.GetTo()
-				if to_addr != nil {
+				if to_addr != nil { // && !bytes.Equal(to_addr, from_addr) {
 					enc, _err := db.GetOne(kv.PlainState, to_addr.Bytes())
+					if tracefile != nil {
+						tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(to_addr.Bytes())))
+					}
 					if _err == nil {
 						var a accounts.Account
 						_err = a.DecodeForStorage(enc)
 						if _err == nil && !a.IsEmptyCodeHash() {
 							db.GetOne(kv.Code, a.CodeHash.Bytes())
+							if tracefile != nil {
+								tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(a.CodeHash.Bytes())))
+							}
 						}
 					}
 				} // else is contract creation
@@ -264,6 +286,9 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 					break Loop
 			}
 		}
+	}
+	if tracefile != nil {
+		tracefile.Flush()
 	}
 	close(blockChan)
 	<-quitChan
