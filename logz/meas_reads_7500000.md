@@ -150,3 +150,45 @@ Tickmarks |          ns |         count | total ms | Description
  38- 37   |         381 |       4345470 |     1659 | save to cache
 
 maximum potential speedup: 1.51x (142.8 seconds)
+
+### Excecution times, 10000 blocks (starting from 7.5M), prefetch blocks,accounts,code + storage from list file
+
+Tickmarks |          ns |         count | total ms | Description
+----------|-------------|---------------|----------|------------
+  1-  0   |      227862 |         10000 |     2278 | **block read** (with prefetch)
+  2-  1   |         236 |         10000 |        2 | is stopped?
+  3-  2   |         209 |         10000 |        2 | transactions length
+  4-  3   |    14161623 |         10000 |   141616 | **excecuteBlock**
+  5-  4   |         143 |         10000 |        1 | add gas
+ 11- 10   |          85 |      38654000 |     3301 | stateObject cached?
+ 13- 12   |        5844 |       1824923 |    10666 | **read account** (with prefetch)
+ 15- 14   |         629 |       1701345 |     1070 | add stateObject
+ 21- 20   |          62 |       2258116 |      140 | code cached?
+ 23- 22   |        2812 |        613418 |     1724 | **read code** (with prefetch)
+ 31- 30   |          76 |      18058060 |     1383 | storage dirty?
+ 33- 32   |          89 |      14554890 |     1300 | storage cached?
+ 35- 34   |        2551 |       4345470 |    11085 | **read storage** (with known prefetch)
+ 37- 36   |         100 |       4345470 |      437 | output to int256
+ 38- 37   |         349 |       4345470 |     1519 | save to cache
+
+as expected, it is similar to the hot FS cache
+
+### 10K blocks depth=10 prefetch blocks,accounts,code,storage_file
+
+Tickmarks |          ns |         count | total ms | Description
+----------|-------------|---------------|----------|------------
+  1-  0   |      339796 |         10000 |     3397 | **block read** (with prefetch)
+  2-  1   |         219 |         10000 |        2 | is stopped?
+  3-  2   |         209 |         10000 |        2 | transactions length
+  4-  3   |    14283508 |         10000 |   142835 | **excecuteBlock**
+  5-  4   |         158 |         10000 |        1 | add gas
+ 11- 10   |          85 |      38654000 |     3317 | stateObject cached?
+ 13- 12   |        6296 |       1824923 |    11490 | **read account** (with prefetch)
+ 15- 14   |         633 |       1701345 |     1077 | add stateObject
+ 21- 20   |          62 |       2258116 |      141 | code cached?
+ 23- 22   |        2810 |        613418 |     1724 | **read code** (with prefetch)
+ 31- 30   |          76 |      18058060 |     1373 | storage dirty?
+ 33- 32   |          88 |      14554890 |     1294 | storage cached?
+ 35- 34   |        2546 |       4345470 |    11066 | **read storage** (with known prefetch)
+ 37- 36   |         101 |       4345470 |      439 | output to int256
+ 38- 37   |         349 |       4345470 |     1520 | save to cache

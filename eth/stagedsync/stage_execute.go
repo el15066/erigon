@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"os"
 	"bufio"
+	"io"
 	"fmt"
 	"runtime"
 	"sort"
@@ -229,7 +230,7 @@ func newStateReaderWriter(
 func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan int, cfg ExecuteBlockCfg, from uint64, to uint64) {
 	var ENC = hex.EncodeToString
 	var tracefile *bufio.Writer
-	if true {
+	if false {
 		_f, _err := os.OpenFile("logz/prefetches.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
 		if _err == nil {
 			defer _f.Close()
@@ -237,6 +238,19 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 			defer tracefile.Flush()
 		} else {
 			log.Warn("Prefetches not recorded", "error", _err)
+		}
+	}
+	var storage_prefetch_b = uint64(7500000)
+	var storage_prefetch_i = -1
+	var storage_prefetch_file *bufio.Reader
+	if true {
+		_f, _err := os.OpenFile("logz/reads_s.bin", os.O_RDONLY, 0664)
+		if _err == nil {
+			defer _f.Close()
+			storage_prefetch_file = bufio.NewReaderSize(_f, 128*1024)
+			storage_prefetch_i = 0
+		} else {
+			log.Warn("Storage prefetch file", "error", _err)
 		}
 	}
 	var err   error
@@ -281,11 +295,71 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 						}
 					}
 				} // else is contract creation
+				//
+				// GET storage prefetch locations
+				// read 2 bytes
+				// if 0 -> update tx index
+				// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
+				// fetch all those addresses
+				// loop
+				// why loop? -> 1 tx can call many contracts
+				for i == storage_prefetch_i {
+					_count  := make([]byte, 2)
+					_, _err := io.ReadFull(storage_prefetch_file, _count)
+					if _err != nil {
+						log.Warn("Read from storage prefetch file", "error", _err)
+						storage_prefetch_i    = -1
+						storage_prefetch_file = nil
+						break
+					}
+					count := int(binary.BigEndian.Uint16(_count))
+					//
+					// fmt.Println(i, "count", count)
+					if count != 0 {
+						compositeKey := make([]byte, 60)
+						io.ReadFull(storage_prefetch_file, compositeKey[:28])
+						for j := 0; j < count; j++ {
+							io.ReadFull(storage_prefetch_file, compositeKey[28:])
+							db.GetOne(kv.PlainState, compositeKey)
+							// fmt.Println(i, ENC(compositeKey))
+						}
+					} else {
+						_diff := make([]byte, 2)
+						io.ReadFull(storage_prefetch_file, _diff)
+						diff  := int(binary.BigEndian.Uint16(_diff))
+						// fmt.Println(i, "diff", diff)
+						if diff != 0 {
+							storage_prefetch_i += diff
+						} else {
+							storage_prefetch_i = -1
+						}
+						break
+					}
+				}
 			}
 			select {
 				case blockChan <- block:
 				case <-quitChan:
 					break Loop
+			}
+			if storage_prefetch_file != nil {
+				if storage_prefetch_i == -1 {
+					if blockNum == storage_prefetch_b {
+						_bdiff := make([]byte, 2)
+						io.ReadFull(storage_prefetch_file, _bdiff)
+						bdiff  := uint64(binary.BigEndian.Uint16(_bdiff))
+						// fmt.Println("bdiff", storage_prefetch_b, "+", bdiff)
+						storage_prefetch_b += bdiff
+					}
+					if blockNum + 1 == storage_prefetch_b {
+						storage_prefetch_i = 0
+						// fmt.Println("~~~~~ SWITCH ~~~~~", storage_prefetch_b)
+					}
+				} else {
+					log.Warn("Malformed storage prefetch file", "storage_prefetch_b", storage_prefetch_b, "storage_prefetch_i", storage_prefetch_i)
+					storage_prefetch_i    = -1
+					storage_prefetch_file = nil
+				}
 			}
 		}
 	}
