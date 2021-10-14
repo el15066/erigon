@@ -232,9 +232,11 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 	if true {
 		_f, _err := os.OpenFile("logz/prefetches.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
 		if _err == nil {
+			defer _f.Close()
 			tracefile = bufio.NewWriterSize(_f, 128*1024)
+			defer tracefile.Flush()
 		} else {
-			fmt.Println("ERROR: PREFETCHES NOT RECORDED", _err)
+			log.Warn("Prefetches not recorded", "error", _err)
 		}
 	}
 	var err   error
@@ -286,9 +288,6 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 					break Loop
 			}
 		}
-	}
-	if tracefile != nil {
-		tracefile.Flush()
 	}
 	close(blockChan)
 	<-quitChan

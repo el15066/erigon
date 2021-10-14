@@ -39,7 +39,7 @@ func NewPlainStateReader(db kv.Getter) *PlainStateReader {
 			tracefile = bufio.NewWriterSize(_f, 128*1024)
 		} else {
 			notrace = true
-			fmt.Println("ERROR: READS NOT RECORDED", _err)
+			fmt.Println("WARN: READS NOT RECORDED", _err)
 		}
 	}
 	return &PlainStateReader{
