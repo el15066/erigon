@@ -38,7 +38,7 @@ Tickmarks |          ns |         count | total ms | Description
  37- 36   |         105 |       4345470 |      459 | output to int256
  38- 37   |         366 |       4345470 |     1593 | save to cache
 
-### Excecution times, 10000 blocks (starting from 7.5M), prefetch blocks (depth=0)
+### Excecution times, 10000 blocks (starting from 7.5M), prefetch blocks (depth=1)
 
 Tickmarks |          ns |         count | total ms | Description
 ----------|-------------|---------------|----------|------------
@@ -59,7 +59,7 @@ Tickmarks |          ns |         count | total ms | Description
  38- 37   |         361 |       4345470 |     1569 | save to cache
 
 
-### Excecution times, 10000 blocks (starting from 7.5M), prefetch blocks (from now on depth=100)
+### Excecution times, 10000 blocks (starting from 7.5M), prefetch blocks (from now on depth=101)
 
 Tickmarks |          ns |         count | total ms | Description
 ----------|-------------|---------------|----------|------------
@@ -125,7 +125,7 @@ Test               | Seconds | Speedup
 -------------------|---------|--------
 no prefetch        |  215.9  |  1.00x
 1 block only       |  209.8  |  1.03x
-block (depth=100)  |  209.5  |  1.03x
+block (depth=101)  |  209.5  |  1.03x
 block+account      |  183.7  |  1.18x
 block+account+code |  182.2  |  1.18x
 
