@@ -70,3 +70,7 @@ docker-compose.dev.yml
 
 libmdbx/build/*
 tests/testdata/*
+
+*.bin
+logz/reads.txt
+logz/prefetches.txt
