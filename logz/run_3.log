@@ -1,0 +1,58 @@
+[INFO] [10-14|21:19:09.377] Build info                               git_branch=from_2021_08_05 git_tag=v2021.08.05-13-g55e823f38 git_commit=55e823f38e7dc135f2ed876fe0073e425097c30f
+[INFO] [10-14|21:19:09.377] Starting Erigon on Ethereum mainnet... 
+[INFO] [10-14|21:19:09.382] Maximum peer count                       ETH=100 total=100
+[INFO] [10-14|21:19:09.383] Set global gas cap                       cap=50000000
+[INFO] [10-14|21:19:09.431] Opening Database                         label=chaindata path=/media/route/sx8200/erigon/data/chaindata
+[INFO] [10-14|21:19:09.434] database closed                          label=chaindata
+[INFO] [10-14|21:19:09.435] Opening Database                         label=chaindata path=/media/route/sx8200/erigon/data/chaindata
+[INFO] [10-14|21:19:09.437] Initialised chain configuration          config="{ChainID: 1 Homestead: 1150000 DAO: 1920000 DAOSupport: true EIP150: 2463000 EIP155: 2675000 EIP158: 2675000 Byzantium: 4370000 Constantinople: 7280000 Petersburg: 7280000 Istanbul: 9069000, Muir Glacier: 9200000, Berlin: 12244000, London: 12965000, Engine: ethash}"
+[INFO] [10-14|21:19:09.437] Disk storage enabled for ethash DAGs     dir=/media/route/sx8200/erigon/ethash count=2
+[INFO] [10-14|21:19:09.438] Initialising Ethereum protocol           network=1
+[INFO] [10-14|21:19:09.438] Effective                                prune="--prune="
+[INFO] [10-14|21:19:09.438] Starting private RPC server              on=127.0.0.1:9090
+[INFO] [10-14|21:19:10.950] Stage Headers                   (Download headers) 
+[INFO] [10-14|21:19:10.950] Stage Headers                   Done 
+[INFO] [10-14|21:19:10.950] Stage BlockHashes               (Write block hashes) 
+[INFO] [10-14|21:19:10.950] Stage BlockHashes               Done 
+[INFO] [10-14|21:19:10.950] Stage CreateHeadersSnapshot     disabled. Enable by --snapshot.layout 
+[INFO] [10-14|21:19:10.950] Stage Bodies                    (Download block bodies) 
+[INFO] [10-14|21:19:10.951] Stage Bodies                    Done 
+[INFO] [10-14|21:19:10.951] Stage CreateBodiesSnapshot      disabled. Enable by --snapshot.layout 
+[INFO] [10-14|21:19:10.951] Stage Senders                   (Recover senders from tx signatures) 
+[INFO] [10-14|21:19:10.951] Stage Senders                   Done 
+[INFO] [10-14|21:19:10.951] Stage Execution                 (Execute blocks w/o hash checks) 
+[INFO] [10-14|21:19:10.951] [7/18 Execution] Blocks execution        from=7499999 to=7509999
+[INFO] [10-14|21:19:10.993] Started P2P networking                   version=65 self=enode://cf90152aad373d1608af933850566e82f8ad78089ffe361b9f94664a081ba07596b6dbf4b38dfdde9f4a7470414f76c803b66ad56e4920db7bb09fa445d3c458@127.0.0.1:30304 name=erigon/v2021.08.5-alpha-55e823f3/linux-amd64/go1.16.3
+[INFO] [10-14|21:19:10.996] Started P2P networking                   version=66 self=enode://cf90152aad373d1608af933850566e82f8ad78089ffe361b9f94664a081ba07596b6dbf4b38dfdde9f4a7470414f76c803b66ad56e4920db7bb09fa445d3c458@127.0.0.1:30303 name=erigon/v2021.08.5-alpha-55e823f3/linux-amd64/go1.16.3
+WARN: READS NOT RECORDED open logz/reads.txt: file exists
+[INFO] [10-14|21:19:13.919] Mapped network port                      proto=tcp extport=30304 intport=30304 interface="UPNP IGDv1-IP1"
+[INFO] [10-14|21:19:14.769] Mapped network port                      proto=tcp extport=30303 intport=30303 interface="UPNP IGDv1-IP1"
+[INFO] [10-14|21:19:15.002] Mapped network port                      proto=udp extport=30303 intport=30303 interface="UPNP IGDv1-IP1"
+[INFO] [10-14|21:19:15.235] Mapped network port                      proto=udp extport=30304 intport=30304 interface="UPNP IGDv1-IP1"
+[INFO] [10-14|21:19:40.954] [7/18 Execution] Executed blocks         number=7502017 blk/s=67.259 tx/s=8252.217 Mgas/s=455.136 batch="23.30 MiB" alloc="229.09 MiB" sys="343.59 MiB"
+[INFO] [10-14|21:20:10.962] [7/18 Execution] Executed blocks         number=7504228 blk/s=73.681 tx/s=6819.740 Mgas/s=483.892 batch="47.37 MiB" alloc="309.67 MiB" sys="478.51 MiB"
+[INFO] [10-14|21:20:40.963] [7/18 Execution] Executed blocks         number=7506297 blk/s=68.963 tx/s=6478.887 Mgas/s=420.769 batch="63.50 MiB" alloc="368.52 MiB" sys="547.01 MiB"
+[INFO] [10-14|21:21:09.439] [p2p] GoodPeers                          eth66=3 eth65=3
+[INFO] [10-14|21:21:10.955] [7/18 Execution] Executed blocks         number=7508376 blk/s=69.319 tx/s=7785.314 Mgas/s=455.023 batch="79.37 MiB" alloc="513.90 MiB" sys="615.81 MiB"
+[WARN] [10-14|21:21:33.615] Read from storage prefetch file          error=EOF
+  1-  0         246747          10000     2467473
+  2-  1            295          10000        2952
+  3-  2            206          10000        2060
+  4-  3       14037949          10000   140379492
+  5-  4            130          10000        1302
+ 11- 10             85       38654000     3302818
+ 13- 12           5870        1824923    10713277
+ 15- 14            624        1701345     1062523
+ 21- 20             63        2258116      142757
+ 23- 22           2742         613418     1682472
+ 31- 30             75       18058060     1369592
+ 33- 32             88       14554890     1290723
+ 35- 34           2490        4345470    10822525
+ 37- 36            100        4345470      436847
+ 38- 37            343        4345470     1493275
+[INFO] [10-14|21:21:33.808] Got interrupt, shutting down... 
+[INFO] [10-14|21:21:33.851] Successfully update p2p node database    path=/media/route/sx8200/erigon/data/nodes/eth66 updated=0 deleted=217
+[INFO] [10-14|21:21:33.851] database closed                          label=sentry
+[INFO] [10-14|21:21:34.286] Successfully update p2p node database    path=/media/route/sx8200/erigon/data/nodes/eth65 updated=0 deleted=220
+[INFO] [10-14|21:21:34.287] database closed                          label=sentry
+[INFO] [10-14|21:21:34.695] database closed                          label=chaindata
