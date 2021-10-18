@@ -31,6 +31,7 @@ import (
 	"github.com/ledgerwatch/erigon/ethdb/prune"
 	"github.com/ledgerwatch/erigon/params"
 	"github.com/ledgerwatch/erigon/turbo/shards"
+	"github.com/ledgerwatch/erigon/cmd/utils"
 	"github.com/ledgerwatch/log/v3"
 
 	"github.com/ledgerwatch/erigon/bench"
@@ -516,6 +517,10 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	fmt.Println(" 35- 34", bench.DiffStrAuto( 35, 34))
 	fmt.Println(" 37- 36", bench.DiffStrAuto( 37, 36))
 	fmt.Println(" 38- 37", bench.DiffStrAuto( 38, 37))
+
+	utils.NotifySIGINT()
+	<-quit
+	return common.ErrStopped
 
 	return fmt.Errorf("early stop")
 	if err = s.Update(batch, stageProgress); err != nil {
