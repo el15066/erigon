@@ -2,6 +2,7 @@
 # Execution time over prefetch channel depth
 
 ![runs.png](runs.png)
+![runs_rel.png](runs_rel.png)
 
 ## **block read** (with prefetch)
 marks:  1-  0
