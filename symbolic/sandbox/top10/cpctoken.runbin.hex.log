@@ -1,0 +1,70 @@
+mythril.mythril.mythril_config [INFO]: Infura key not provided, so onchain access is disabled. Use --infura-id <INFURA_ID> or set it in the environment variable INFURA_ID or in the ~/.mythril/config.ini file 
+mythril.support.signatures [INFO]: Using signature database at /home/route/.mythril/signatures.db
+mythril.laser.ethereum.svm [INFO]: LASER EVM initialized with dynamic loader: <mythril.support.loader.DynLoader object at 0x7f96107918b0>
+mythril.laser.ethereum.strategy.extensions.bounded_loops [INFO]: Loaded search strategy extension: Loop bounds (limit = 5)
+mythril.laser.plugin.loader [INFO]: Loading laser plugin: coverage
+mythril.laser.plugin.loader [INFO]: Loading laser plugin: mutation-pruner
+mythril.laser.plugin.loader [INFO]: Loading laser plugin: call-depth-limit
+mythril.laser.plugin.loader [INFO]: Loading laser plugin: instruction-profiler
+mythril.laser.plugin.loader [INFO]: Instrumenting symbolic vm with plugin: coverage
+mythril.laser.plugin.loader [INFO]: Instrumenting symbolic vm with plugin: mutation-pruner
+mythril.laser.plugin.loader [INFO]: Instrumenting symbolic vm with plugin: call-depth-limit
+mythril.laser.plugin.loader [INFO]: Instrumenting symbolic vm with plugin: instruction-profiler
+mythril.laser.ethereum.svm [INFO]: Starting message call transaction to 0
+mythril.laser.ethereum.svm [INFO]: Starting message call transaction, iteration: 0, 1 initial states
+mythril.laser.plugin.plugins.coverage.coverage_plugin [INFO]: Number of new instructions covered in tx 0: 1677
+mythril.laser.ethereum.svm [INFO]: Finished symbolic execution
+mythril.laser.plugin.plugins.coverage.coverage_plugin [INFO]: Achieved 99.94% coverage for code: 6080604052600436106100a4576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806306fdde03146100b6578063095ea7b31461014657806318160ddd146101ab57806323b872dd146101d6578063313ce5671461025b57806370a082311461028c5780638da5cb5b146102e357806395d89b411461033a578063a9059cbb146103ca578063dd62ed3e1461042f575b3480156100b057600080fd5b50600080fd5b3480156100c257600080fd5b506100cb6104a6565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561010b5780820151818401526020810190506100f0565b50505050905090810190601f1680156101385780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561015257600080fd5b50610191600480360381019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610544565b604051808215151515815260200191505060405180910390f35b3480156101b757600080fd5b506101c0610683565b6040518082815260200191505060405180910390f35b3480156101e257600080fd5b50610241600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610689565b604051808215151515815260200191505060405180910390f35b34801561026757600080fd5b50610270610982565b604051808260ff1660ff16815260200191505060405180910390f35b34801561029857600080fd5b506102cd600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610995565b6040518082815260200191505060405180910390f35b3480156102ef57600080fd5b506102f86109dd565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b34801561034657600080fd5b5061034f610a03565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561038f578082015181840152602081019050610374565b50505050905090810190601f1680156103bc5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b3480156103d657600080fd5b50610415600480360381019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610aa1565b604051808215151515815260200191505060405180910390f35b34801561043b57600080fd5b50610490600480360381019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610c91565b6040518082815260200191505060405180910390f35b60028054600181600116156101000203166002900480601f01602080910402602001604051908101604052809291908181526020018280546001816001161561010002031660029004801561053c5780601f106105115761010080835404028352916020019161053c565b820191906000526020600020905b81548152906001019060200180831161051f57829003601f168201915b505050505081565b6000816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020541015151561059357600080fd5b81600660003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925846040518082815260200191505060405180910390a36001905092915050565b60055481565b6000816000808673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054101515156106d857600080fd5b6000808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054826000808673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054011015151561076557600080fd5b600660008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205482111515156107f057600080fd5b816000808673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008282540392505081905550816000808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000828254019250508190555081600660008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825403925050819055508273ffffffffffffffffffffffffffffffffffffffff168473ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a3600190509392505050565b600460009054906101000a900460ff1681565b60008060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020549050919050565b600160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60038054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015610a995780601f10610a6e57610100808354040283529160200191610a99565b820191906000526020600020905b815481529060010190602001808311610a7c57829003601f168201915b505050505081565b60008082111515610ab157600080fd5b816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205410151515610afe57600080fd5b6000808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054826000808673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205401111515610b8a57600080fd5b816000803373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008282540392505081905550816000808573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a36001905092915050565b6000600660008473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020549050929150505600a165627a7a723058205b6b0af05bf9189fa3fe3a9d23c22d81a89c20ff852623dc624bc276a7395ce50029
+mythril.laser.plugin.plugins.instruction_profiler [INFO]: Total: 7.412808179855347 s
+[ADD         ]   2.1539 %,  nr    270,  total   0.1597 s,  avg   0.0006 s,  min   0.0005 s,  max   0.0022 s
+[AND         ]   0.6939 %,  nr     98,  total   0.0514 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0007 s
+[CALLDATALOAD]   1.7524 %,  nr     11,  total   0.1299 s,  avg   0.0118 s,  min   0.0113 s,  max   0.0134 s
+[CALLDATASIZE]   0.0402 %,  nr      6,  total   0.0030 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0006 s
+[CALLER      ]   0.0521 %,  nr      8,  total   0.0039 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0006 s
+[CALLVALUE   ]   0.0800 %,  nr     12,  total   0.0059 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0006 s
+[DIV         ]   0.1138 %,  nr     11,  total   0.0084 s,  avg   0.0008 s,  min   0.0007 s,  max   0.0012 s
+[DUP1        ]   1.7415 %,  nr    258,  total   0.1291 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0014 s
+[DUP2        ]   1.9782 %,  nr    302,  total   0.1466 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0015 s
+[DUP3        ]   0.7934 %,  nr    120,  total   0.0588 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0007 s
+[DUP4        ]   0.7361 %,  nr    110,  total   0.0546 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0013 s
+[DUP5        ]   0.3188 %,  nr     39,  total   0.0236 s,  avg   0.0006 s,  min   0.0005 s,  max   0.0018 s
+[DUP6        ]   0.0260 %,  nr      4,  total   0.0019 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0005 s
+[DUP7        ]   0.0321 %,  nr      5,  total   0.0024 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0005 s
+[EQ          ]   0.0824 %,  nr     10,  total   0.0061 s,  avg   0.0006 s,  min   0.0006 s,  max   0.0006 s
+[EXP         ]   0.1483 %,  nr     10,  total   0.0110 s,  avg   0.0011 s,  min   0.0008 s,  max   0.0015 s
+[GT          ]   0.1163 %,  nr     13,  total   0.0086 s,  avg   0.0007 s,  min   0.0006 s,  max   0.0009 s
+[ISZERO      ]   1.1470 %,  nr    105,  total   0.0850 s,  avg   0.0008 s,  min   0.0006 s,  max   0.0029 s
+[JUMP        ]   0.9168 %,  nr     66,  total   0.0680 s,  avg   0.0010 s,  min   0.0009 s,  max   0.0020 s
+[JUMPDEST    ]   1.1050 %,  nr    163,  total   0.0819 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0021 s
+[JUMPI       ]   2.5240 %,  nr    100,  total   0.1871 s,  avg   0.0019 s,  min   0.0015 s,  max   0.0032 s
+[LOG3        ]   0.0210 %,  nr      3,  total   0.0016 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0006 s
+[LT          ]   0.5161 %,  nr     51,  total   0.0383 s,  avg   0.0008 s,  min   0.0006 s,  max   0.0023 s
+[MLOAD       ]  39.1465 %,  nr    124,  total   2.9019 s,  avg   0.0234 s,  min   0.0122 s,  max   0.0297 s
+[MSTORE      ]  23.2815 %,  nr    138,  total   1.7258 s,  avg   0.0125 s,  min   0.0084 s,  max   0.0264 s
+[MUL         ]   0.0626 %,  nr      8,  total   0.0046 s,  avg   0.0006 s,  min   0.0005 s,  max   0.0007 s
+[NOT         ]   0.0550 %,  nr      8,  total   0.0041 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0006 s
+[POP         ]   2.1975 %,  nr    336,  total   0.1629 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0019 s
+[PUSH1       ]   2.7890 %,  nr    400,  total   0.2067 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0013 s
+[PUSH2       ]   1.1964 %,  nr    170,  total   0.0887 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0016 s
+[PUSH20      ]   0.3780 %,  nr     56,  total   0.0280 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0006 s
+[PUSH29      ]   0.0067 %,  nr      1,  total   0.0005 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0005 s
+[PUSH32      ]   0.0206 %,  nr      3,  total   0.0015 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0005 s
+[PUSH4       ]   0.0754 %,  nr     11,  total   0.0056 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0007 s
+[SHA3        ]   8.2854 %,  nr     22,  total   0.6142 s,  avg   0.0279 s,  min   0.0146 s,  max   0.0321 s
+[SLOAD       ]   0.2714 %,  nr     34,  total   0.0201 s,  avg   0.0006 s,  min   0.0005 s,  max   0.0009 s
+[SSTORE      ]   0.0478 %,  nr      6,  total   0.0035 s,  avg   0.0006 s,  min   0.0005 s,  max   0.0007 s
+[SUB         ]   0.7304 %,  nr     89,  total   0.0541 s,  avg   0.0006 s,  min   0.0005 s,  max   0.0010 s
+[SWAP1       ]   3.4738 %,  nr    241,  total   0.2575 s,  avg   0.0011 s,  min   0.0004 s,  max   0.0965 s
+[SWAP2       ]   0.6271 %,  nr     96,  total   0.0465 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0009 s
+[SWAP3       ]   0.2588 %,  nr     39,  total   0.0192 s,  avg   0.0005 s,  min   0.0004 s,  max   0.0009 s
+[SWAP4       ]   0.0066 %,  nr      1,  total   0.0005 s,  avg   0.0005 s,  min   0.0005 s,  max   0.0005 s
+
+mythril.analysis.security [INFO]: Starting analysis
+mythril.mythril.mythril_analyzer [INFO]: Solver statistics: 
+Query count: 373 
+Solver time: 14.507464170455933
+Contract MAIN: 
+
+8 functions are deemed safe in this contract: allowance(address,address), available_assert_time(uint16,uint64), approve(address,uint256), balanceOf(address), many_msg_babbage(bytes1), totalSupply(), ideal_warn_timed(uint256,uint128), gasprice_bit_ether(int128)
+
+

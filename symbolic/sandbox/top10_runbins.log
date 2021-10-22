@@ -1,0 +1,39 @@
+# cd top10; for f in *.runbin.hex; do echo $f; date; myth -v 4 safe-functions -f $f --bin-runtime &>$f.log; done; date
+
+0x105631c6.runbin.hex
+Fri 22 Oct 2021 10:02:17 PM EEST
+Terminated
+
+biigo2.runbin.hex
+Fri 22 Oct 2021 10:07:50 PM EEST
+Terminated
+
+cpctoken.runbin.hex (25s)
+Fri 22 Oct 2021 10:13:01 PM EEST
+
+cryptokitties_core.runbin.hex
+Fri 22 Oct 2021 10:13:26 PM EEST
+Terminated
+
+dice2win.runbin.hex
+Fri 22 Oct 2021 10:18:19 PM EEST
+Terminated
+
+fck_com_dice.runbin.hex
+Fri 22 Oct 2021 10:25:48 PM EEST
+Terminated
+
+idex.runbin.hex
+Fri 22 Oct 2021 10:30:59 PM EEST
+Terminated
+
+mavrodi.runbin.hex (38s)
+Fri 22 Oct 2021 10:36:27 PM EEST
+
+sumtoken.runbin.hex (3m 42s)
+Fri 22 Oct 2021 10:37:05 PM EEST
+
+yb.runbin.hex (1m 33s)
+Fri 22 Oct 2021 10:40:47 PM EEST
+
+Fri 22 Oct 2021 10:42:20 PM EEST

@@ -1,0 +1,29 @@
+Message: RETURN
+Last exception: RETURN
+Last instruction at contract cb37f4304de8d1ca2df2474c6e3a00ab3e720462 offset 3b6
+    343  nction decreaseApproval(address _spender, uint _subtractedValue) public returns (bool) {
+        344      uint oldValue = allowed[msg.sender][_spender];
+        345      if (_subtractedValue > oldValue) {
+        346        allowed[msg.sender][_spender] = 0;
+        347      } else {
+        348        allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
+        349      }
+        350      emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+        351      return true;
+        352    }
+        353  
+        354  
+
+3 accounts.
+* owner::
+Address: 0x10000 
+Balance: 9999901519 (*)
+Storage: STORAGE_10000
+
+* attacker::
+Address: 0x20000 
+Balance: 9999972336 (*)
+Storage: STORAGE_20000
+
+* contract0::
+Address: 0xcb37f4304de8d1ca2df2474c6e3a00ab3e720462 

@@ -1,0 +1,28 @@
+Message: RETURN
+Last exception: RETURN
+Last instruction at contract cb37f4304de8d1ca2df2474c6e3a00ab3e720462 offset 584
+    238  nction transfer(address _to, uint256 _value) public returns (bool) {
+        239      require(_to != address(0));
+        240      require(_value <= balances[msg.sender]);
+        241  
+        242      balances[msg.sender] = balances[msg.sender].sub(_value);
+        243      balances[_to] = balances[_to].add(_value);
+        244      emit Transfer(msg.sender, _to, _value);
+        245      return true;
+        246    }
+        247  
+        248  
+
+3 accounts.
+* owner::
+Address: 0x10000 
+Balance: 9999901519 (*)
+Storage: STORAGE_10000
+
+* attacker::
+Address: 0x20000 
+Balance: 9999970557 (*)
+Storage: STORAGE_20000
+
+* contract0::
+Address: 0xcb37f4304de8d1ca2df2474c6e3a00ab3e720462 
