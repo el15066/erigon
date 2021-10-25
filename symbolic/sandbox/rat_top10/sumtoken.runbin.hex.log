@@ -1,0 +1,1722 @@
+WARNING:rattle.recover:Found CALLDATALOAD(0) user that isn't an EQ %712 = PHI(%241, %11)
+WARNING:rattle.recover:Found CALLDATALOAD(0) user that isn't an EQ %710 = PHI(#16c, %11)
+<SSAFunction name:_dispatch hash:0x0 offset:0x0 num_blocks:1 blocks:<SSABasicBlock offset:0x0 num_insns:5 in: [] insns:[
+	<0x4: MSTORE(#40, #80)>
+	<0x7: %3 = CALLDATASIZE()>
+	<0x8: %4 = LT(%3, #4)>
+	<0xc: JUMPI(#b9, %4)>
+	<0xc: ICALL(_fallthrough)>
+] fallthrough:None jumps:[0xb9]>>
+
+<SSAFunction name:balanceOf(address) hash:0x70a08231 offset:0x214 num_blocks:4 blocks:<SSABasicBlock offset:0x214 num_insns:3 in: [] insns:[
+	<0x215: %170 = CALLVALUE()>
+	<0x217: %171 = ISZERO(%170)>
+	<0x21b: JUMPI(#220, %171)>
+] fallthrough:0x21c jumps:[0x220]>
+<SSABasicBlock offset:0x21c num_insns:1 in: [0x214] insns:[
+	<0x21f: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x220 num_insns:2 in: [0x214] insns:[
+	<0x22f: %181 = CALLDATALOAD(#4)    // ADDRESS>
+	<0x234: JUMP(#50c)>
+] fallthrough:None jumps:[0x50c]>
+<SSABasicBlock offset:0x50c num_insns:5 in: [0x220] insns:[
+	<0x511: MSTORE(#20, #4)>
+	<0x516: MSTORE(#0, %181)>
+	<0x51a: %416 = SHA3(#0, #40)>
+	<0x51b: %417 = SLOAD(%416)>
+	<0x51d: JUMP(#195)>
+] fallthrough:None jumps:[0x195]>>
+
+<SSAFunction name:transferFrom(address,address,uint256) hash:0x23b872dd offset:0x1a7 num_blocks:6 blocks:<SSABasicBlock offset:0x1a7 num_insns:3 in: [] insns:[
+	<0x1a8: %129 = CALLVALUE()>
+	<0x1aa: %130 = ISZERO(%129)>
+	<0x1ae: JUMPI(#1b3, %130)>
+] fallthrough:0x1af jumps:[0x1b3]>
+<SSABasicBlock offset:0x1af num_insns:1 in: [0x1a7] insns:[
+	<0x1b2: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x1b3 num_insns:4 in: [0x1a7] insns:[
+	<0x1c2: %140 = CALLDATALOAD(#4)    // ADDRESS>
+	<0x1c8: %143 = CALLDATALOAD(#24)    // ADDRESS>
+	<0x1cc: %146 = CALLDATALOAD(#44)>
+	<0x1d0: JUMP(#41c)>
+] fallthrough:None jumps:[0x41c]>
+<SSABasicBlock offset:0x41c num_insns:11 in: [0x1b3] insns:[
+	<0x42b: MSTORE(#0, %140)>
+	<0x432: MSTORE(#20, #5)>
+	<0x437: %354 = SHA3(#0, #40)>
+	<0x438: %355 = CALLER()>
+	<0x43a: MSTORE(#0, %355)>
+	<0x43d: MSTORE(#20, %354)>
+	<0x43f: %356 = SHA3(#0, #40)>
+	<0x440: %357 = SLOAD(%356)>
+	<0x442: %358 = GT(%146, %357)>
+	<0x443: %359 = ISZERO(%358)>
+	<0x447: JUMPI(#44c, %359)>
+] fallthrough:0x448 jumps:[0x44c]>
+<SSABasicBlock offset:0x448 num_insns:1 in: [0x41c] insns:[
+	<0x44b: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x44c num_insns:11 in: [0x41c] insns:[
+	<0x45b: MSTORE(#0, %140)>
+	<0x462: MSTORE(#20, #5)>
+	<0x467: %372 = SHA3(#0, #40)>
+	<0x468: %373 = CALLER()>
+	<0x46a: MSTORE(#0, %373)>
+	<0x46d: MSTORE(#20, %372)>
+	<0x46f: %374 = SHA3(#0, #40)>
+	<0x471: %375 = SLOAD(%374)>
+	<0x474: %376 = SUB(%375, %146)>
+	<0x476: SSTORE(%374, %376)>
+	<0x480: JUMP(#795)>
+] fallthrough:None jumps:[0x795]>>
+
+<SSAFunction name:burn(uint256) hash:0x42966c68 offset:0x1fc num_blocks:6 blocks:<SSABasicBlock offset:0x1fc num_insns:3 in: [] insns:[
+	<0x1fd: %162 = CALLVALUE()>
+	<0x1ff: %163 = ISZERO(%162)>
+	<0x203: JUMPI(#208, %163)>
+] fallthrough:0x204 jumps:[0x208]>
+<SSABasicBlock offset:0x204 num_insns:1 in: [0x1fc] insns:[
+	<0x207: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x208 num_insns:2 in: [0x1fc] insns:[
+	<0x20f: %168 = CALLDATALOAD(#4)>
+	<0x213: JUMP(#494)>
+] fallthrough:None jumps:[0x494]>
+<SSABasicBlock offset:0x494 num_insns:8 in: [0x208] insns:[
+	<0x495: %384 = CALLER()>
+	<0x49a: MSTORE(#0, %384)>
+	<0x49f: MSTORE(#20, #4)>
+	<0x4a3: %389 = SHA3(#0, #40)>
+	<0x4a4: %390 = SLOAD(%389)>
+	<0x4a6: %391 = GT(%168, %390)>
+	<0x4a7: %392 = ISZERO(%391)>
+	<0x4ab: JUMPI(#4b0, %392)>
+] fallthrough:0x4ac jumps:[0x4b0]>
+<SSABasicBlock offset:0x4ac num_insns:1 in: [0x494] insns:[
+	<0x4af: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x4b0 num_insns:17 in: [0x494] insns:[
+	<0x4b1: %395 = CALLER()>
+	<0x4b6: MSTORE(#0, %395)>
+	<0x4bd: MSTORE(#20, #4)>
+	<0x4c3: %400 = SHA3(#0, #40)>
+	<0x4c5: %401 = SLOAD(%400)>
+	<0x4c8: %402 = SUB(%401, %168)>
+	<0x4ca: SSTORE(%400, %402)>
+	<0x4ce: %404 = SLOAD(#3)>
+	<0x4d1: %405 = SUB(%404, %168)>
+	<0x4d3: SSTORE(#3, %405)>
+	<0x4d5: %406 = MLOAD(#40)>
+	<0x4d8: MSTORE(%406, %168)>
+	<0x4da: %407 = MLOAD(#40)>
+	<0x4ff: %409 = SUB(%406, %407)>
+	<0x502: %410 = ADD(#20, %409)>
+	<0x504: LOG2(%407, %410, #cc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca5, %395)>
+	<0x50b: JUMP(#16c)>
+] fallthrough:None jumps:[0x16c]>>
+
+<SSAFunction name:totalSupply() hash:0x18160ddd offset:0x180 num_blocks:3 blocks:<SSABasicBlock offset:0x180 num_insns:3 in: [] insns:[
+	<0x181: %117 = CALLVALUE()>
+	<0x183: %118 = ISZERO(%117)>
+	<0x187: JUMPI(#18c, %118)>
+] fallthrough:0x188 jumps:[0x416]>
+<SSABasicBlock offset:0x188 num_insns:1 in: [0x180] insns:[
+	<0x18b: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x416 num_insns:2 in: [0x180] insns:[
+	<0x419: %343 = SLOAD(#3)>
+	<0x41b: JUMP(#195)>
+] fallthrough:None jumps:[0x195]>>
+
+<SSAFunction name:decimals() hash:0x313ce567 offset:0x1d1 num_blocks:4 blocks:<SSABasicBlock offset:0x1d1 num_insns:3 in: [] insns:[
+	<0x1d2: %148 = CALLVALUE()>
+	<0x1d4: %149 = ISZERO(%148)>
+	<0x1d8: JUMPI(#1dd, %149)>
+] fallthrough:0x1d9 jumps:[0x48b]>
+<SSABasicBlock offset:0x1d9 num_insns:1 in: [0x1d1] insns:[
+	<0x1dc: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x1e6 num_insns:7 in: [0x48b] insns:[
+	<0x1ea: %155 = MLOAD(#40)>
+	<0x1ef: %157 = AND(%383, #ff)>
+	<0x1f1: MSTORE(%155, %157)>
+	<0x1f2: %158 = MLOAD(#40)>
+	<0x1f6: %159 = SUB(%155, %158)>
+	<0x1f9: %161 = ADD(#20, %159)>
+	<0x1fb: RETURN(%158, %161)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x48b num_insns:3 in: [0x1d1] insns:[
+	<0x48e: %381 = SLOAD(#2)>
+	<0x491: %383 = AND(#ff, %381)>
+	<0x493: JUMP(#1e6)>
+] fallthrough:None jumps:[0x1e6]>>
+
+<SSAFunction name:approve(address,uint256) hash:0x95ea7b3 offset:0x148 num_blocks:3 blocks:<SSABasicBlock offset:0x148 num_insns:3 in: [] insns:[
+	<0x149: %93 = CALLVALUE()>
+	<0x14b: %94 = ISZERO(%93)>
+	<0x14f: JUMPI(#154, %94)>
+] fallthrough:0x150 jumps:[0x154]>
+<SSABasicBlock offset:0x150 num_insns:1 in: [0x148] insns:[
+	<0x153: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x154 num_insns:3 in: [0x148] insns:[
+	<0x163: %104 = CALLDATALOAD(#4)    // ADDRESS>
+	<0x167: %107 = CALLDATALOAD(#24)>
+	<0x16b: JUMP(#3b0)>
+] fallthrough:None jumps:[0x3b0]>>
+
+<SSAFunction name:allowance(address,address);remove_good(uint256[],bytes8,bool) hash:0xdd62ed3e offset:0x2fb num_blocks:5 blocks:<SSABasicBlock offset:0x195 num_insns:7 in: [0x778,0x50c,0x416] insns:[
+	<0x195: %699 = PHI(%343, %417, %606)>
+	<0x199: %124 = MLOAD(#40)>
+	<0x19c: MSTORE(%124, %699)>
+	<0x19d: %125 = MLOAD(#40)>
+	<0x1a1: %126 = SUB(%124, %125)>
+	<0x1a4: %128 = ADD(#20, %126)>
+	<0x1a6: RETURN(%125, %128)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x2fb num_insns:3 in: [] insns:[
+	<0x2fc: %255 = CALLVALUE()>
+	<0x2fe: %256 = ISZERO(%255)>
+	<0x302: JUMPI(#307, %256)>
+] fallthrough:0x303 jumps:[0x307]>
+<SSABasicBlock offset:0x303 num_insns:1 in: [0x2fb] insns:[
+	<0x306: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x307 num_insns:3 in: [0x2fb] insns:[
+	<0x316: %266 = CALLDATALOAD(#4)    // ADDRESS>
+	<0x31c: %269 = CALLDATALOAD(#24)    // ADDRESS>
+	<0x321: JUMP(#778)>
+] fallthrough:None jumps:[0x778]>
+<SSABasicBlock offset:0x778 num_insns:8 in: [0x307] insns:[
+	<0x77f: MSTORE(#20, #5)>
+	<0x784: MSTORE(#0, %266)>
+	<0x789: %604 = SHA3(#0, #40)>
+	<0x78c: MSTORE(#20, %604)>
+	<0x78f: MSTORE(#0, %269)>
+	<0x791: %605 = SHA3(#0, #40)>
+	<0x792: %606 = SLOAD(%605)>
+	<0x794: JUMP(#195)>
+] fallthrough:None jumps:[0x195]>>
+
+<SSAFunction name:approveAndCall(address,uint256,bytes) hash:0xcae9ca51 offset:0x292 num_blocks:15 blocks:<SSABasicBlock offset:0x292 num_insns:3 in: [] insns:[
+	<0x293: %222 = CALLVALUE()>
+	<0x295: %223 = ISZERO(%222)>
+	<0x299: JUMPI(#29e, %223)>
+] fallthrough:0x29a jumps:[0x29e]>
+<SSABasicBlock offset:0x29a num_insns:1 in: [0x292] insns:[
+	<0x29d: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x29e num_insns:17 in: [0x292] insns:[
+	<0x2a3: %227 = MLOAD(#40)>
+	<0x2aa: %231 = CALLDATALOAD(#44)>
+	<0x2ad: %232 = ADD(%231, #4)>
+	<0x2ae: %233 = CALLDATALOAD(%232)>
+	<0x2b2: %235 = ADD(%233, #1f)>
+	<0x2b5: %236 = DIV(%235, #20)>
+	<0x2b7: %237 = MUL(#20, %236)>
+	<0x2b9: %238 = ADD(%227, %237)>
+	<0x2bb: %239 = ADD(#20, %238)>
+	<0x2be: MSTORE(#40, %239)>
+	<0x2c1: MSTORE(%227, %233)>
+	<0x2c7: %241 = CALLDATALOAD(#4)    // ADDRESS>
+	<0x2d5: %249 = CALLDATALOAD(#24)>
+	<0x2de: %252 = ADD(#24, %231)>
+	<0x2e4: %253 = ADD(%227, #20)>
+	<0x2ea: CALLDATACOPY(%253, %252, %233)>
+	<0x2fa: JUMP(#65f)>
+] fallthrough:None jumps:[0x3b0]>
+<SSABasicBlock offset:0x3b0 num_insns:20 in: [0x154,0x29e] insns:[
+	<0x3b0: %707 = PHI(%241, %104)>
+	<0x3b0: %708 = PHI(%107, %249)>
+	<0x3b0: %709 = PHI(#16c, #66c)>
+	<0x3b0: %712 = PHI(%241, %11)>
+	<0x3b1: %323 = CALLER()>
+	<0x3b6: MSTORE(#0, %323)>
+	<0x3bd: MSTORE(#20, #5)>
+	<0x3c2: %328 = SHA3(#0, #40)>
+	<0x3cc: %334 = AND(%707, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x3cf: MSTORE(#0, %334)>
+	<0x3d2: MSTORE(#20, %328)>
+	<0x3d5: %335 = SHA3(#0, #40)>
+	<0x3d8: SSTORE(%335, %708)>
+	<0x3da: %336 = MLOAD(#40)>
+	<0x3dd: MSTORE(%336, %708)>
+	<0x3df: %337 = MLOAD(#40)>
+	<0x40a: %339 = SUB(%336, %337)>
+	<0x40b: %340 = ADD(%339, #20)>
+	<0x40d: LOG3(%337, %340, #8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925, %323, %334)>
+	<0x415: JUMP(%709)>
+] fallthrough:None jumps:[0x66c,0x16c]>
+<SSABasicBlock offset:0x66c num_insns:2 in: [0x3b0] insns:[
+	<0x66d: %522 = ISZERO(#1)>
+	<0x671: JUMPI(#770, %522)>
+] fallthrough:0x672 jumps:[0x770]>
+<SSABasicBlock offset:0x672 num_insns:19 in: [0x66c] insns:[
+	<0x674: %525 = MLOAD(#40)>
+	<0x697: MSTORE(%525, #8f4ffcb100000000000000000000000000000000000000000000000000000000)>
+	<0x698: %527 = CALLER()>
+	<0x69c: %529 = ADD(%525, #4)>
+	<0x69f: MSTORE(%529, %527)>
+	<0x6a3: %531 = ADD(%525, #24)>
+	<0x6a6: MSTORE(%531, %249)>
+	<0x6a7: %532 = ADDRESS()>
+	<0x6ab: %534 = ADD(%525, #44)>
+	<0x6ae: MSTORE(%534, %532)>
+	<0x6b4: %537 = ADD(%525, #64)>
+	<0x6b7: MSTORE(%537, #80)>
+	<0x6b9: %538 = MLOAD(%227)>
+	<0x6bd: %540 = ADD(%525, #84)>
+	<0x6be: MSTORE(%540, %538)>
+	<0x6c0: %541 = MLOAD(%227)>
+	<0x6ca: %547 = AND(%712, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x6e0: %550 = ADD(%525, #a4)>
+	<0x6e5: %552 = ADD(%227, #20)>
+] fallthrough:0x6ec jumps:None>
+<SSABasicBlock offset:0x6ec num_insns:4 in: [0x672,0x6f5] insns:[
+	<0x6ec: %713 = PHI(#0, %561)>
+	<0x6ef: %554 = LT(%713, %541)>
+	<0x6f0: %555 = ISZERO(%554)>
+	<0x6f4: JUMPI(#704, %555)>
+] fallthrough:0x6f5 jumps:[0x704]>
+<SSABasicBlock offset:0x6f5 num_insns:6 in: [0x6ec] insns:[
+	<0x6f7: %557 = ADD(%713, %552)>
+	<0x6f8: %558 = MLOAD(%557)>
+	<0x6fb: %559 = ADD(%713, %550)>
+	<0x6fc: MSTORE(%559, %558)>
+	<0x6ff: %561 = ADD(#20, %713)>
+	<0x703: JUMP(#6ec)>
+] fallthrough:None jumps:[0x6ec]>
+<SSABasicBlock offset:0x704 num_insns:4 in: [0x6ec] insns:[
+	<0x70d: %563 = ADD(%541, %550)>
+	<0x711: %565 = AND(#1f, %541)>
+	<0x713: %566 = ISZERO(%565)>
+	<0x717: JUMPI(#731, %566)>
+] fallthrough:0x718 jumps:[0x731]>
+<SSABasicBlock offset:0x718 num_insns:9 in: [0x704] insns:[
+	<0x71a: %568 = SUB(%563, %565)>
+	<0x71c: %569 = MLOAD(%568)>
+	<0x722: %572 = SUB(#20, %565)>
+	<0x726: %574 = EXP(#100, %572)>
+	<0x727: %575 = SUB(%574, #1)>
+	<0x728: %576 = NOT(%575)>
+	<0x729: %577 = AND(%576, %569)>
+	<0x72b: MSTORE(%568, %577)>
+	<0x72e: %579 = ADD(#20, %568)>
+] fallthrough:0x731 jumps:None>
+<SSABasicBlock offset:0x731 num_insns:7 in: [0x718,0x704] insns:[
+	<0x731: %714 = PHI(%563, %579)>
+	<0x73e: %582 = MLOAD(#40)>
+	<0x741: %583 = SUB(%714, %582)>
+	<0x747: %585 = EXTCODESIZE(%547)>
+	<0x748: %586 = ISZERO(%585)>
+	<0x74a: %587 = ISZERO(%586)>
+	<0x74e: JUMPI(#753, %587)>
+] fallthrough:0x74f jumps:[0x753]>
+<SSABasicBlock offset:0x74f num_insns:1 in: [0x731] insns:[
+	<0x752: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x753 num_insns:5 in: [0x731] insns:[
+	<0x755: %590 = GAS()>
+	<0x756: %591 = CALL(%590, %547, #0, %582, %583, %582, #0)>
+	<0x757: %592 = ISZERO(%591)>
+	<0x759: %593 = ISZERO(%592)>
+	<0x75d: JUMPI(#767, %593)>
+] fallthrough:0x75e jumps:[0x770]>
+<SSABasicBlock offset:0x75e num_insns:4 in: [0x753] insns:[
+	<0x75e: %595 = RETURNDATASIZE()>
+	<0x762: RETURNDATACOPY(#0, #0, %595)>
+	<0x763: %597 = RETURNDATASIZE()>
+	<0x766: REVERT(#0, %597)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x770 num_insns:2 in: [0x753,0x66c] insns:[
+	<0x770: %697 = PHI(#1, #0)>
+	<0x777: JUMP(#16c)>
+] fallthrough:None jumps:[0x16c]>>
+
+<SSAFunction name:transfer(address,uint256) hash:0xa9059cbb offset:0x26e num_blocks:15 blocks:<SSABasicBlock offset:0x26e num_insns:3 in: [] insns:[
+	<0x26f: %206 = CALLVALUE()>
+	<0x271: %207 = ISZERO(%206)>
+	<0x275: JUMPI(#27a, %207)>
+] fallthrough:0x276 jumps:[0x27a]>
+<SSABasicBlock offset:0x276 num_insns:1 in: [0x26e] insns:[
+	<0x279: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x27a num_insns:3 in: [0x26e] insns:[
+	<0x289: %217 = CALLDATALOAD(#4)    // ADDRESS>
+	<0x28d: %220 = CALLDATALOAD(#24)>
+	<0x291: JUMP(#649)>
+] fallthrough:None jumps:[0x649]>
+<SSABasicBlock offset:0x481 num_insns:1 in: [0x897] insns:[
+	<0x48a: JUMP(%710)>
+] fallthrough:None jumps:[0x16c]>
+<SSABasicBlock offset:0x649 num_insns:2 in: [0x27a] insns:[
+	<0x64f: %516 = CALLER()>
+	<0x655: JUMP(#795)>
+] fallthrough:None jumps:[0x795]>
+<SSABasicBlock offset:0x656 num_insns:1 in: [0x897] insns:[
+	<0x65e: JUMP(%711)>
+] fallthrough:None jumps:[0x16c]>
+<SSABasicBlock offset:0x795 num_insns:10 in: [0x649,0x44c] insns:[
+	<0x795: %710 = PHI(#16c, %11)>
+	<0x795: %711 = PHI(#16c, %140)>
+	<0x795: %715 = PHI(%217, %143)>
+	<0x795: %716 = PHI(%140, %516)>
+	<0x795: %717 = PHI(%146, %220)>
+	<0x795: %718 = PHI(#656, #481)>
+	<0x7a1: %613 = AND(%715, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x7a2: %614 = ISZERO(%613)>
+	<0x7a3: %615 = ISZERO(%614)>
+	<0x7a7: JUMPI(#7ac, %615)>
+] fallthrough:0x7a8 jumps:[0x7ac]>
+<SSABasicBlock offset:0x7a8 num_insns:1 in: [0x795] insns:[
+	<0x7ab: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x7ac num_insns:8 in: [0x795] insns:[
+	<0x7b6: %623 = AND(%716, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x7bb: MSTORE(#0, %623)>
+	<0x7c0: MSTORE(#20, #4)>
+	<0x7c4: %628 = SHA3(#0, #40)>
+	<0x7c5: %629 = SLOAD(%628)>
+	<0x7c7: %630 = GT(%717, %629)>
+	<0x7c8: %631 = ISZERO(%630)>
+	<0x7cc: JUMPI(#7d1, %631)>
+] fallthrough:0x7cd jumps:[0x7d1]>
+<SSABasicBlock offset:0x7cd num_insns:1 in: [0x7ac] insns:[
+	<0x7d0: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x7d1 num_insns:9 in: [0x7ac] insns:[
+	<0x7db: %639 = AND(%715, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x7e0: MSTORE(#0, %639)>
+	<0x7e5: MSTORE(#20, #4)>
+	<0x7e9: %644 = SHA3(#0, #40)>
+	<0x7ea: %645 = SLOAD(%644)>
+	<0x7ed: %646 = ADD(%645, %717)>
+	<0x7ee: %647 = LT(%646, %645)>
+	<0x7ef: %648 = ISZERO(%647)>
+	<0x7f3: JUMPI(#7f8, %648)>
+] fallthrough:0x7f4 jumps:[0x7f8]>
+<SSABasicBlock offset:0x7f4 num_insns:1 in: [0x7d1] insns:[
+	<0x7f7: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x7f8 num_insns:34 in: [0x7d1] insns:[
+	<0x804: %656 = AND(%715, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x809: MSTORE(#0, %656)>
+	<0x810: MSTORE(#20, #4)>
+	<0x815: %661 = SHA3(#0, #40)>
+	<0x817: %662 = SLOAD(%661)>
+	<0x81a: %663 = AND(%716, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x81d: MSTORE(#0, %663)>
+	<0x820: %664 = SHA3(#0, #40)>
+	<0x822: %665 = SLOAD(%664)>
+	<0x825: %666 = SUB(%665, %717)>
+	<0x828: SSTORE(%664, %666)>
+	<0x82c: MSTORE(#0, %656)>
+	<0x82e: %667 = SLOAD(%661)>
+	<0x830: %668 = ADD(%717, %667)>
+	<0x833: SSTORE(%661, %668)>
+	<0x835: %669 = MLOAD(#40)>
+	<0x838: MSTORE(%669, %717)>
+	<0x83a: %670 = MLOAD(#40)>
+	<0x83e: %671 = ADD(%662, %665)>
+	<0x866: %673 = SUB(%669, %670)>
+	<0x869: %674 = ADD(#20, %673)>
+	<0x86b: LOG3(%670, %674, #ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef, %663, %656)>
+	<0x876: %680 = AND(%715, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x87b: MSTORE(#0, %680)>
+	<0x880: MSTORE(#20, #4)>
+	<0x885: %685 = SHA3(#0, #40)>
+	<0x886: %686 = SLOAD(%685)>
+	<0x889: %687 = AND(%716, #ffffffffffffffffffffffffffffffffffffffff)>
+	<0x88b: MSTORE(#0, %687)>
+	<0x88d: %688 = SHA3(#0, #40)>
+	<0x88e: %689 = SLOAD(%688)>
+	<0x88f: %690 = ADD(%689, %686)>
+	<0x891: %691 = EQ(%671, %690)>
+	<0x895: JUMPI(#897, %691)>
+] fallthrough:0x896 jumps:[0x897]>
+<SSABasicBlock offset:0x896 num_insns:1 in: [0x7f8] insns:[
+	<0x896: INVALID()>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x897 num_insns:1 in: [0x7f8] insns:[
+	<0x89c: JUMP(%718)>
+] fallthrough:None jumps:[0x481,0x656]>>
+
+<SSAFunction name:symbol() hash:0x95d89b41 offset:0x259 num_blocks:5 blocks:<SSABasicBlock offset:0x259 num_insns:3 in: [] insns:[
+	<0x25a: %200 = CALLVALUE()>
+	<0x25c: %201 = ISZERO(%200)>
+	<0x260: JUMPI(#265, %201)>
+] fallthrough:0x261 jumps:[0x5ef]>
+<SSABasicBlock offset:0x261 num_insns:1 in: [0x259] insns:[
+	<0x264: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x5ef num_insns:18 in: [0x259] insns:[
+	<0x5f3: %481 = SLOAD(#1)>
+	<0x5f7: %483 = MLOAD(#40)>
+	<0x5fe: %486 = AND(#1, %481)>
+	<0x5ff: %487 = ISZERO(%486)>
+	<0x603: %489 = MUL(#100, %487)>
+	<0x607: %492 = ADD(#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, %489)>
+	<0x60a: %493 = AND(%481, %492)>
+	<0x60e: %494 = DIV(%493, #2)>
+	<0x612: %496 = ADD(%494, #1f)>
+	<0x615: %497 = DIV(%496, #20)>
+	<0x617: %498 = MUL(#20, %497)>
+	<0x619: %499 = ADD(%483, %498)>
+	<0x61b: %500 = ADD(#20, %499)>
+	<0x61e: MSTORE(#40, %500)>
+	<0x621: MSTORE(%483, %494)>
+	<0x625: %501 = ADD(%483, #20)>
+	<0x629: %502 = ISZERO(%494)>
+	<0x62d: JUMPI(#3a8, %502)>
+] fallthrough:0x62e jumps:[0x3a8]>
+<SSABasicBlock offset:0x62e num_insns:2 in: [0x5ef] insns:[
+	<0x631: %505 = LT(#1f, %494)>
+	<0x635: JUMPI(#37d, %505)>
+] fallthrough:0x636 jumps:[0x37d]>
+<SSABasicBlock offset:0x636 num_insns:5 in: [0x62e] insns:[
+	<0x63b: %508 = SLOAD(#1)>
+	<0x63c: %509 = DIV(%508, #100)>
+	<0x63d: %510 = MUL(%509, #100)>
+	<0x63f: MSTORE(%501, %510)>
+	<0x648: JUMP(#3a8)>
+] fallthrough:None jumps:[0x3a8]>>
+
+<SSAFunction name:burnFrom(address,uint256) hash:0x79cc6790 offset:0x235 num_blocks:9 blocks:<SSABasicBlock offset:0x16c num_insns:9 in: [0x573,0x481,0x4b0,0x770,0x656,0x3b0] insns:[
+	<0x16c: %698 = PHI(%697, #1)>
+	<0x170: %110 = MLOAD(#40)>
+	<0x172: %111 = ISZERO(%698)>
+	<0x173: %112 = ISZERO(%111)>
+	<0x175: MSTORE(%110, %112)>
+	<0x176: %113 = MLOAD(#40)>
+	<0x17a: %114 = SUB(%110, %113)>
+	<0x17d: %116 = ADD(#20, %114)>
+	<0x17f: RETURN(%113, %116)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x235 num_insns:3 in: [] insns:[
+	<0x236: %184 = CALLVALUE()>
+	<0x238: %185 = ISZERO(%184)>
+	<0x23c: JUMPI(#241, %185)>
+] fallthrough:0x23d jumps:[0x241]>
+<SSABasicBlock offset:0x23d num_insns:1 in: [0x235] insns:[
+	<0x240: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x241 num_insns:3 in: [0x235] insns:[
+	<0x250: %195 = CALLDATALOAD(#4)    // ADDRESS>
+	<0x254: %198 = CALLDATALOAD(#24)>
+	<0x258: JUMP(#51e)>
+] fallthrough:None jumps:[0x51e]>
+<SSABasicBlock offset:0x51e num_insns:7 in: [0x241] insns:[
+	<0x52d: MSTORE(#0, %195)>
+	<0x532: MSTORE(#20, #4)>
+	<0x536: %428 = SHA3(#0, #40)>
+	<0x537: %429 = SLOAD(%428)>
+	<0x539: %430 = GT(%198, %429)>
+	<0x53a: %431 = ISZERO(%430)>
+	<0x53e: JUMPI(#543, %431)>
+] fallthrough:0x53f jumps:[0x543]>
+<SSABasicBlock offset:0x53f num_insns:1 in: [0x51e] insns:[
+	<0x542: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x543 num_insns:11 in: [0x51e] insns:[
+	<0x552: MSTORE(#0, %195)>
+	<0x559: MSTORE(#20, #5)>
+	<0x55e: %444 = SHA3(#0, #40)>
+	<0x55f: %445 = CALLER()>
+	<0x561: MSTORE(#0, %445)>
+	<0x564: MSTORE(#20, %444)>
+	<0x566: %446 = SHA3(#0, #40)>
+	<0x567: %447 = SLOAD(%446)>
+	<0x569: %448 = GT(%198, %447)>
+	<0x56a: %449 = ISZERO(%448)>
+	<0x56e: JUMPI(#573, %449)>
+] fallthrough:0x56f jumps:[0x573]>
+<SSABasicBlock offset:0x56f num_insns:1 in: [0x543] insns:[
+	<0x572: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x573 num_insns:25 in: [0x543] insns:[
+	<0x582: MSTORE(#0, %195)>
+	<0x589: MSTORE(#20, #4)>
+	<0x58e: %462 = SHA3(#0, #40)>
+	<0x590: %463 = SLOAD(%462)>
+	<0x593: %464 = SUB(%463, %198)>
+	<0x595: SSTORE(%462, %464)>
+	<0x599: MSTORE(#20, #5)>
+	<0x59c: %466 = SHA3(#0, #40)>
+	<0x59d: %467 = CALLER()>
+	<0x59f: MSTORE(#0, %467)>
+	<0x5a1: MSTORE(#20, %466)>
+	<0x5a5: %468 = SHA3(#0, #40)>
+	<0x5a7: %469 = SLOAD(%468)>
+	<0x5aa: %470 = SUB(%469, %198)>
+	<0x5ac: SSTORE(%468, %470)>
+	<0x5b0: %472 = SLOAD(#3)>
+	<0x5b3: %473 = SUB(%472, %198)>
+	<0x5b5: SSTORE(#3, %473)>
+	<0x5b7: %474 = MLOAD(#40)>
+	<0x5ba: MSTORE(%474, %198)>
+	<0x5bc: %475 = MLOAD(#40)>
+	<0x5e1: %477 = SUB(%474, %475)>
+	<0x5e4: %478 = ADD(#20, %477)>
+	<0x5e6: LOG2(%475, %478, #cc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca5, %195)>
+	<0x5ee: JUMP(#16c)>
+] fallthrough:None jumps:[0x16c]>>
+
+<SSAFunction name:_fallthrough hash:0x0 offset:0xd num_blocks:27 blocks:<SSABasicBlock offset:0xd num_insns:5 in: [] insns:[
+	<0x32: %9 = CALLDATALOAD(#0)>
+	<0x33: %10 = DIV(%9, #100000000000000000000000000000000000000000000000000000000)>
+	<0x34: %11 = AND(%10, #ffffffff)>
+	<0x3b: %13 = EQ(%11, #6fdde03)>
+	<0x3f: JUMPI(#be, %13)>
+] fallthrough:0x40 jumps:[0xbe]>
+<SSABasicBlock offset:0x40 num_insns:2 in: [0xd] insns:[
+	<0x46: %16 = EQ(#95ea7b3, %11)>
+	<0x0: ICONDCALL(approve(address,uint256), %16)>
+] fallthrough:0x4b jumps:None>
+<SSABasicBlock offset:0x4b num_insns:2 in: [0x40] insns:[
+	<0x51: %19 = EQ(#18160ddd, %11)>
+	<0x0: ICONDCALL(totalSupply(), %19)>
+] fallthrough:0x56 jumps:None>
+<SSABasicBlock offset:0x56 num_insns:2 in: [0x4b] insns:[
+	<0x5c: %22 = EQ(#23b872dd, %11)>
+	<0x0: ICONDCALL(transferFrom(address,address,uint256), %22)>
+] fallthrough:0x61 jumps:None>
+<SSABasicBlock offset:0x61 num_insns:2 in: [0x56] insns:[
+	<0x67: %25 = EQ(#313ce567, %11)>
+	<0x0: ICONDCALL(decimals(), %25)>
+] fallthrough:0x6c jumps:None>
+<SSABasicBlock offset:0x6c num_insns:2 in: [0x61] insns:[
+	<0x72: %28 = EQ(#42966c68, %11)>
+	<0x0: ICONDCALL(burn(uint256), %28)>
+] fallthrough:0x77 jumps:None>
+<SSABasicBlock offset:0x77 num_insns:2 in: [0x6c] insns:[
+	<0x7d: %31 = EQ(#70a08231, %11)>
+	<0x0: ICONDCALL(balanceOf(address), %31)>
+] fallthrough:0x82 jumps:None>
+<SSABasicBlock offset:0x82 num_insns:2 in: [0x77] insns:[
+	<0x88: %34 = EQ(#79cc6790, %11)>
+	<0x0: ICONDCALL(burnFrom(address,uint256), %34)>
+] fallthrough:0x8d jumps:None>
+<SSABasicBlock offset:0x8d num_insns:2 in: [0x82] insns:[
+	<0x93: %37 = EQ(#95d89b41, %11)>
+	<0x0: ICONDCALL(symbol(), %37)>
+] fallthrough:0x98 jumps:None>
+<SSABasicBlock offset:0x98 num_insns:2 in: [0x8d] insns:[
+	<0x9e: %40 = EQ(#a9059cbb, %11)>
+	<0x0: ICONDCALL(transfer(address,uint256), %40)>
+] fallthrough:0xa3 jumps:None>
+<SSABasicBlock offset:0xa3 num_insns:2 in: [0x98] insns:[
+	<0xa9: %43 = EQ(#cae9ca51, %11)>
+	<0x0: ICONDCALL(approveAndCall(address,uint256,bytes), %43)>
+] fallthrough:0xae jumps:None>
+<SSABasicBlock offset:0xae num_insns:2 in: [0xa3] insns:[
+	<0xb4: %46 = EQ(#dd62ed3e, %11)>
+	<0x0: ICONDCALL(allowance(address,address);remove_good(uint256[],bytes8,bool), %46)>
+] fallthrough:0xb9 jumps:None>
+<SSABasicBlock offset:0xb9 num_insns:1 in: [0x0,0xae] insns:[
+	<0xbd: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0xbe num_insns:3 in: [0xd] insns:[
+	<0xbf: %49 = CALLVALUE()>
+	<0xc1: %50 = ISZERO(%49)>
+	<0xc5: JUMPI(#ca, %50)>
+] fallthrough:0xc6 jumps:[0x322]>
+<SSABasicBlock offset:0xc6 num_insns:1 in: [0xbe] insns:[
+	<0xc9: REVERT(#0, #0)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0xd3 num_insns:8 in: [0x3a8] insns:[
+	<0xd7: %56 = MLOAD(#40)>
+	<0xdc: MSTORE(%56, #20)>
+	<0xde: %58 = MLOAD(%694)>
+	<0xe1: %59 = ADD(%56, #20)>
+	<0xe2: MSTORE(%59, %58)>
+	<0xe4: %60 = MLOAD(%694)>
+	<0xeb: %61 = ADD(%56, #40)>
+	<0xee: %62 = ADD(%694, #20)>
+] fallthrough:0xf5 jumps:None>
+<SSABasicBlock offset:0xf5 num_insns:4 in: [0xfe,0xd3] insns:[
+	<0xf5: %695 = PHI(%71, #0)>
+	<0xf8: %64 = LT(%695, %60)>
+	<0xf9: %65 = ISZERO(%64)>
+	<0xfd: JUMPI(#10d, %65)>
+] fallthrough:0xfe jumps:[0x10d]>
+<SSABasicBlock offset:0xfe num_insns:6 in: [0xf5] insns:[
+	<0x100: %67 = ADD(%695, %62)>
+	<0x101: %68 = MLOAD(%67)>
+	<0x104: %69 = ADD(%695, %61)>
+	<0x105: MSTORE(%69, %68)>
+	<0x108: %71 = ADD(#20, %695)>
+	<0x10c: JUMP(#f5)>
+] fallthrough:None jumps:[0xf5]>
+<SSABasicBlock offset:0x10d num_insns:4 in: [0xf5] insns:[
+	<0x116: %73 = ADD(%60, %61)>
+	<0x11a: %75 = AND(#1f, %60)>
+	<0x11c: %76 = ISZERO(%75)>
+	<0x120: JUMPI(#13a, %76)>
+] fallthrough:0x121 jumps:[0x13a]>
+<SSABasicBlock offset:0x121 num_insns:9 in: [0x10d] insns:[
+	<0x123: %78 = SUB(%73, %75)>
+	<0x125: %79 = MLOAD(%78)>
+	<0x12b: %82 = SUB(#20, %75)>
+	<0x12f: %84 = EXP(#100, %82)>
+	<0x130: %85 = SUB(%84, #1)>
+	<0x131: %86 = NOT(%85)>
+	<0x132: %87 = AND(%86, %79)>
+	<0x134: MSTORE(%78, %87)>
+	<0x137: %89 = ADD(#20, %78)>
+] fallthrough:0x13a jumps:None>
+<SSABasicBlock offset:0x13a num_insns:4 in: [0x121,0x10d] insns:[
+	<0x13a: %696 = PHI(%73, %89)>
+	<0x142: %91 = MLOAD(#40)>
+	<0x145: %92 = SUB(%696, %91)>
+	<0x147: RETURN(%91, %92)>
+] fallthrough:None jumps:None>
+<SSABasicBlock offset:0x322 num_insns:18 in: [0xbe] insns:[
+	<0x326: %273 = SLOAD(#0)>
+	<0x32a: %275 = MLOAD(#40)>
+	<0x332: %279 = AND(%273, #1)>
+	<0x333: %280 = ISZERO(%279)>
+	<0x337: %282 = MUL(#100, %280)>
+	<0x33b: %285 = ADD(#ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, %282)>
+	<0x33e: %286 = AND(%273, %285)>
+	<0x342: %287 = DIV(%286, #2)>
+	<0x346: %289 = ADD(%287, #1f)>
+	<0x349: %290 = DIV(%289, #20)>
+	<0x34b: %291 = MUL(#20, %290)>
+	<0x34d: %292 = ADD(%275, %291)>
+	<0x34f: %293 = ADD(#20, %292)>
+	<0x352: MSTORE(#40, %293)>
+	<0x355: MSTORE(%275, %287)>
+	<0x359: %294 = ADD(%275, #20)>
+	<0x35d: %295 = ISZERO(%287)>
+	<0x361: JUMPI(#3a8, %295)>
+] fallthrough:0x362 jumps:[0x3a8]>
+<SSABasicBlock offset:0x362 num_insns:2 in: [0x322] insns:[
+	<0x365: %298 = LT(#1f, %287)>
+	<0x369: JUMPI(#37d, %298)>
+] fallthrough:0x36a jumps:[0x37d]>
+<SSABasicBlock offset:0x36a num_insns:5 in: [0x362] insns:[
+	<0x36f: %301 = SLOAD(#0)>
+	<0x370: %302 = DIV(%301, #100)>
+	<0x371: %303 = MUL(%302, #100)>
+	<0x373: MSTORE(%294, %303)>
+	<0x37c: JUMP(#3a8)>
+] fallthrough:None jumps:[0x3a8]>
+<SSABasicBlock offset:0x37d num_insns:8 in: [0x362,0x62e] insns:[
+	<0x37d: %693 = PHI(%275, %483)>
+	<0x37d: %700 = PHI(%501, %294)>
+	<0x37d: %701 = PHI(%287, %494)>
+	<0x37d: %702 = PHI(#1, #0)>
+	<0x37d: %705 = PHI(#d3)>
+	<0x37f: %307 = ADD(%700, %701)>
+	<0x384: MSTORE(#0, %702)>
+	<0x389: %311 = SHA3(#0, #20)>
+] fallthrough:0x38b jumps:None>
+<SSABasicBlock offset:0x38b num_insns:8 in: [0x37d,0x38b] insns:[
+	<0x38b: %703 = PHI(%311, %314)>
+	<0x38b: %704 = PHI(%316, %700)>
+	<0x38d: %312 = SLOAD(%703)>
+	<0x38f: MSTORE(%704, %312)>
+	<0x393: %314 = ADD(#1, %703)>
+	<0x397: %316 = ADD(#20, %704)>
+	<0x39a: %317 = GT(%307, %316)>
+	<0x39e: JUMPI(#38b, %317)>
+] fallthrough:0x3a8 jumps:[0x38b]>
+<SSABasicBlock offset:0x3a8 num_insns:3 in: [0x5ef,0x36a,0x38b,0x322,0x636] insns:[
+	<0x3a8: %694 = PHI(%275, %693, %483)>
+	<0x3a8: %706 = PHI(#d3, %705)>
+	<0x3af: JUMP(%706)>
+] fallthrough:None jumps:[0xd3]>>
+
+
+Identified Functions:
+	_dispatch argument offsets:[]
+	balanceOf(address) argument offsets:[(4, 36)]
+	transferFrom(address,address,uint256) argument offsets:[(4, 36), (36, 68), (68, 100)]
+	burn(uint256) argument offsets:[(4, 36)]
+	totalSupply() argument offsets:[]
+	decimals() argument offsets:[]
+	approve(address,uint256) argument offsets:[(4, 36), (36, 68)]
+	allowance(address,address);remove_good(uint256[],bytes8,bool) argument offsets:[(4, 36), (36, 68)]
+	approveAndCall(address,uint256,bytes) argument offsets:[(4, 36), (36, 100), (68, 4)]
+	transfer(address,uint256) argument offsets:[(4, 36), (36, 68)]
+	symbol() argument offsets:[]
+	burnFrom(address,uint256) argument offsets:[(4, 36), (36, 68)]
+	_fallthrough argument offsets:[(0, 32)]
+
+Storage Locations: [0, 1, 2, 3]
+Memory Locations: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64]
+Analyzing Memory Location: 33
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 34
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 35
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 36
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 37
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 38
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 39
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 40
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 41
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 42
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 43
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 44
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 45
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 46
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 47
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 48
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 49
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 50
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 51
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 52
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 53
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 54
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 55
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 56
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 57
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 58
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 59
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 60
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 61
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 62
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 63
+
+	0x51a: %416 = SHA3(#0, #40)
+	0x437: %354 = SHA3(#0, #40)
+	0x43f: %356 = SHA3(#0, #40)
+	0x467: %372 = SHA3(#0, #40)
+	0x46f: %374 = SHA3(#0, #40)
+	0x4a3: %389 = SHA3(#0, #40)
+	0x4c3: %400 = SHA3(#0, #40)
+	0x789: %604 = SHA3(#0, #40)
+	0x791: %605 = SHA3(#0, #40)
+	0x3c2: %328 = SHA3(#0, #40)
+	0x3d5: %335 = SHA3(#0, #40)
+	0x7c4: %628 = SHA3(#0, #40)
+	0x7e9: %644 = SHA3(#0, #40)
+	0x815: %661 = SHA3(#0, #40)
+	0x820: %664 = SHA3(#0, #40)
+	0x885: %685 = SHA3(#0, #40)
+	0x88d: %688 = SHA3(#0, #40)
+	0x536: %428 = SHA3(#0, #40)
+	0x55e: %444 = SHA3(#0, #40)
+	0x566: %446 = SHA3(#0, #40)
+	0x58e: %462 = SHA3(#0, #40)
+	0x59c: %466 = SHA3(#0, #40)
+	0x5a5: %468 = SHA3(#0, #40)
+
+
+
+Analyzing Memory Location: 64
+
+	0x4: MSTORE(#40, #80)
+	0x4d5: %406 = MLOAD(#40)
+	0x4da: %407 = MLOAD(#40)
+	0x1ea: %155 = MLOAD(#40)
+	0x1f2: %158 = MLOAD(#40)
+	0x199: %124 = MLOAD(#40)
+	0x19d: %125 = MLOAD(#40)
+	0x2a3: %227 = MLOAD(#40)
+	0x2be: MSTORE(#40, %239)
+	0x3da: %336 = MLOAD(#40)
+	0x3df: %337 = MLOAD(#40)
+	0x674: %525 = MLOAD(#40)
+	0x73e: %582 = MLOAD(#40)
+	0x835: %669 = MLOAD(#40)
+	0x83a: %670 = MLOAD(#40)
+	0x5f7: %483 = MLOAD(#40)
+	0x61e: MSTORE(#40, %500)
+	0x170: %110 = MLOAD(#40)
+	0x176: %113 = MLOAD(#40)
+	0x5b7: %474 = MLOAD(#40)
+	0x5bc: %475 = MLOAD(#40)
+	0xd7: %56 = MLOAD(#40)
+	0x142: %91 = MLOAD(#40)
+	0x32a: %275 = MLOAD(#40)
+	0x352: MSTORE(#40, %293)
+
+
+
+Function _dispatch storage:
+Function balanceOf(address) storage:
+Function transferFrom(address,address,uint256) storage:
+Function burn(uint256) storage:
+	Analyzing Storage Location: 3
+		0x4ce: %404 = SLOAD(#3)
+		0x4d3: SSTORE(#3, %405)
+		0x419: %343 = SLOAD(#3)
+		0x5b0: %472 = SLOAD(#3)
+		0x5b5: SSTORE(#3, %473)
+
+
+Function totalSupply() storage:
+	Analyzing Storage Location: 3
+		0x4ce: %404 = SLOAD(#3)
+		0x4d3: SSTORE(#3, %405)
+		0x419: %343 = SLOAD(#3)
+		0x5b0: %472 = SLOAD(#3)
+		0x5b5: SSTORE(#3, %473)
+
+
+Function decimals() storage:
+	Analyzing Storage Location: 2
+		0x48e: %381 = SLOAD(#2)
+
+
+Function approve(address,uint256) storage:
+Function allowance(address,address);remove_good(uint256[],bytes8,bool) storage:
+Function approveAndCall(address,uint256,bytes) storage:
+Function transfer(address,uint256) storage:
+Function symbol() storage:
+	Analyzing Storage Location: 1
+		0x5f3: %481 = SLOAD(#1)
+		0x63b: %508 = SLOAD(#1)
+
+
+Function burnFrom(address,uint256) storage:
+	Analyzing Storage Location: 3
+		0x4ce: %404 = SLOAD(#3)
+		0x4d3: SSTORE(#3, %405)
+		0x419: %343 = SLOAD(#3)
+		0x5b0: %472 = SLOAD(#3)
+		0x5b5: SSTORE(#3, %473)
+
+
+Function _fallthrough storage:
+	Analyzing Storage Location: 0
+		0x326: %273 = SLOAD(#0)
+		0x36f: %301 = SLOAD(#0)
+
+
+[+] Contract can not send ether.
+[+] Contract calls:
+	%591 = CALL(%590, %547, #0, %582, %583, %582, #0)
+		Gas: %590			%590 = GAS()
+		To: %547 			%547 = AND(%712, #ffffffffffffffffffffffffffffffffffffffff)
+		Value: #0
+		In Data Offset: %582		%582 = MLOAD(#40)
+		In Data Size: %583		%583 = SUB(%714, %582)
+		Out Data Offset: %582		%582 = MLOAD(#40)
+		Out Data Size: #0
+
+[+] Wrote _dispatch to output/_dispatch.png
+[+] Wrote balanceOf(address) to output/balanceOf(address).png
+[+] Wrote transferFrom(address,address,uint256) to output/transferFrom(address,address,uint256).png
+[+] Wrote burn(uint256) to output/burn(uint256).png
+[+] Wrote totalSupply() to output/totalSupply().png
+[+] Wrote decimals() to output/decimals().png
+[+] Wrote approve(address,uint256) to output/approve(address,uint256).png
+[+] Wrote allowance(address,address);remove_good(uint256[],bytes8,bool) to output/allowance(address,address);remove_good(uint256[],bytes8,bool).png
+[+] Wrote approveAndCall(address,uint256,bytes) to output/approveAndCall(address,uint256,bytes).png
+[+] Wrote transfer(address,uint256) to output/transfer(address,uint256).png
+[+] Wrote symbol() to output/symbol().png
+[+] Wrote burnFrom(address,uint256) to output/burnFrom(address,uint256).png
+[+] Wrote _fallthrough to output/_fallthrough.png

@@ -1,0 +1,39 @@
+# cd top10; for f in *.runbin.hex; do echo $f; date; python3 ~/el15066/rattle/rattle-cli.py --optimize --input $f &>../rat_top10/$f.log; mv output ../rat_top10/${f}_ouput; done; date
+
+0x105631c6.runbin.hex
+Mon 25 Oct 2021 04:36:27 PM EEST
+mv: cannot stat 'output': No such file or directory
+
+biigo2.runbin.hex
+Mon 25 Oct 2021 04:36:30 PM EEST
+mv: cannot stat 'output': No such file or directory
+
+cpctoken.runbin.hex
+Mon 25 Oct 2021 04:36:33 PM EEST
+
+cryptokitties_core.runbin.hex
+Mon 25 Oct 2021 04:36:34 PM EEST
+Segmentation fault (core dumped)
+mv: cannot stat 'output': No such file or directory
+
+dice2win.runbin.hex
+Mon 25 Oct 2021 04:36:36 PM EEST
+mv: cannot stat 'output': No such file or directory
+
+fck_com_dice.runbin.hex
+Mon 25 Oct 2021 04:36:37 PM EEST
+mv: cannot stat 'output': No such file or directory
+
+idex.runbin.hex
+Mon 25 Oct 2021 04:36:37 PM EEST
+
+mavrodi.runbin.hex
+Mon 25 Oct 2021 04:36:50 PM EEST
+
+sumtoken.runbin.hex
+Mon 25 Oct 2021 04:36:51 PM EEST
+
+yb.runbin.hex
+Mon 25 Oct 2021 04:36:53 PM EEST
+
+Mon 25 Oct 2021 04:36:55 PM EEST

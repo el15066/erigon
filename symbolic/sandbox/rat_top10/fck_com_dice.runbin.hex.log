@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/route/el15066/rattle/rattle-cli.py", line 202, in <module>
+    main()
+  File "/home/route/el15066/rattle/rattle-cli.py", line 49, in main
+    ssa = rattle.Recover(args.input.read(), edges=edges, optimize=args.optimize,
+  File "/home/route/el15066/rattle/rattle/recover.py", line 751, in __init__
+    self.internal = InternalRecover(filedata, edges, optimize, split_functions)
+  File "/home/route/el15066/rattle/rattle/recover.py", line 30, in __init__
+    self.recover(dispatch)
+  File "/home/route/el15066/rattle/rattle/recover.py", line 93, in recover
+    self.identify_blocks(function)
+  File "/home/route/el15066/rattle/rattle/recover.py", line 202, in identify_blocks
+    block.set_fallthrough_target(terminator.offset + terminator.insn.size)
+  File "/home/route/el15066/rattle/rattle/ssa.py", line 505, in set_fallthrough_target
+    target_block: SSABasicBlock = self.function.blockmap[other]
+KeyError: 8679
