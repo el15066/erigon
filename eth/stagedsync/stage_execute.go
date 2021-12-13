@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"os"
 	"bufio"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/holiman/uint256"
 	"github.com/c2h5oh/datasize"
 	"github.com/ledgerwatch/erigon-lib/kv"
 	"github.com/ledgerwatch/erigon/common"
@@ -228,6 +230,20 @@ func newStateReaderWriter(
 	return stateReader, stateWriter, nil
 }
 
+type tx_dump struct {
+    Block      uint64
+	Index      int
+    Coinbase   string
+    Timestamp  uint64
+    Difficulty uint64
+    Gaslimit   uint64
+    Chainid    uint64
+    Address    string
+    Origin     string
+    Callvalue  *uint256.Int
+    Calldata   string
+}
+
 func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan int, cfg ExecuteBlockCfg, from uint64, to uint64) {
 	var ENC = hex.EncodeToString
 	var tracefile *bufio.Writer
@@ -239,6 +255,17 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 			defer tracefile.Flush()
 		} else {
 			log.Warn("Prefetches not recorded", "error", _err)
+		}
+	}
+	var dumpfile *bufio.Writer
+	if true {
+		_f, _err := os.OpenFile("logz/tx_dump.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
+		if _err == nil {
+			defer _f.Close()
+			dumpfile = bufio.NewWriterSize(_f, 128*1024)
+			defer dumpfile.Flush()
+		} else {
+			log.Warn("Transactions not dumped", "error", _err)
 		}
 	}
 	var storage_prefetch_b = uint64(7500000)
@@ -292,6 +319,29 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 							db.GetOne(kv.Code, a.CodeHash.Bytes())
 							if tracefile != nil {
 								tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(a.CodeHash.Bytes())))
+							}
+							if dumpfile != nil {
+								t, _ := json.Marshal(&tx_dump{
+									Block:      blockNum,
+									Index:      i,
+									// Blockhash: not here (array of 256 most recent)
+									Coinbase:   ENC(block.Coinbase().Bytes()),
+									Timestamp:  block.Time(),
+									Difficulty: block.Difficulty().Uint64(),
+									Gaslimit:   block.GasLimit(),
+									Chainid:    cfg.chainConfig.ChainID.Uint64(),
+									// Selfbalance: is dynamic
+									Address:    ENC(to_addr.Bytes()),
+									// Balance: is dynamic
+									Origin:     ENC(from_addr.Bytes()),
+									// Caller: same as origin for now
+									Callvalue:  tx.GetValue(),
+									Calldata:   ENC(tx.GetData()),
+									// Gasprice: n/a after LONDON
+									// Extcode: not here
+									// Returndata: n/a
+								})
+								dumpfile.Write(append(t, byte('\n')))
 							}
 						}
 					}
