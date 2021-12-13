@@ -73,6 +73,7 @@ libmdbx/build/*
 *.bin
 logz/reads.txt
 logz/prefetches.txt
+logz/tx_dump.txt
 
 tests/
 *.sublime-project
