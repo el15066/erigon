@@ -69,8 +69,11 @@ docker-compose.dev.yml
 /ethdb/*.fail
 
 libmdbx/build/*
-tests/testdata/*
 
 *.bin
 logz/reads.txt
 logz/prefetches.txt
+
+tests/
+*.sublime-project
+*.sublime-workspace
