@@ -1,0 +1,13 @@
+
+--- Contract ff56cc6b1e6ded347aa0b7676c85ab0b3d08b0fa
+  Hit   rate: 100.0%
+  Extra rate:   573%
+
+--- Contract a15c7ebe1f07caf6bff097d8a589fb8ac49ae5b3
+  Hit   rate: 100.0%
+  Extra rate:   330%
+
+--- Totals ---
+  Hit   rate: 100.0%
+  Extra rate:   350%
+

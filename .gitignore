@@ -74,6 +74,8 @@ libmdbx/build/*
 logz/reads.txt
 logz/prefetches.txt
 logz/tx_dump.txt
+logz/reads_addresses_by_tx.txt
+symbolic/sandbox/rat_exec/log.txt
 
 tests/
 *.sublime-project
