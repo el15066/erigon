@@ -1,13 +1,131 @@
 
---- Contract ff56cc6b1e6ded347aa0b7676c85ab0b3d08b0fa
-  Hit   rate: 100.0%
-  Extra rate:   573%
+--- Contract 518aaaf9af1ebaefa206574e16f61f6af9c36235
+  Coverage: 100.0 %  missed:       0
+  Overhead:     0 %  added:        0
+  Count:       1822
+
+--- Contract 2a0c0dbecc7e4d658f48e01e3fa353f44050c208
+  Coverage:  17.3 %  missed:   84605
+  Overhead:     0 %  added:        1
+  Count:     102258
+
+--- Contract 8e766f57f7d16ca50b4a0b90b88f6468a09b0439
+  Coverage: 100.0 %  missed:       0
+  Overhead:     0 %  added:        8
+  Count:       8938
+
+--- Contract 08ceed1e8db59acbb687a5752f0a7db815cfda5e
+  Coverage: 100.0 %  missed:       0
+  Overhead:     0 %  added:      162
+  Count:      34423
+
+--- Contract 0000000000085d4780b73119b644ae5ecd22b376
+  Coverage:   0.0 %  missed:   19538
+  Overhead:     7 %  added:     1425
+  Count:      19538
+
+--- Contract ceec7aaa57e3a77c73a9954b9b7d5b32ab688318
+  Coverage:  33.3 %  missed:    4142
+  Overhead:     0 %  added:        0
+  Count:       6213
+
+--- Contract 24b6638549f0d857bd76abcb4a3ab20ec65833c7
+  Coverage:  23.7 %  missed:   49272
+  Overhead:     0 %  added:      112
+  Count:      64566
+
+--- Contract 03cb0021808442ad5efb61197966aef72a1def96
+  Coverage: 100.0 %  missed:       0
+  Overhead:     3 %  added:      269
+  Count:       9811
+
+--- Contract 097b3b7cb01945ba7e76804ddc2fdda2cce6ef43
+  Coverage: 100.0 %  missed:       0
+  Overhead:     0 %  added:        0
+  Count:       2241
+
+--- Contract 798abda6cc246d0edba912092a2a3dbd3d11191b
+  Coverage: 100.0 %  missed:       0
+  Overhead:     0 %  added:        0
+  Count:       5199
+
+--- Contract 0d8775f648430679a709e98d2b0cb6250d2887ef
+  Coverage: 100.0 %  missed:       0
+  Overhead:     1 %  added:       24
+  Count:       3746
+
+--- Contract 95428ac02714244929215638f8f99e9a5a43c8ed
+  Coverage:   0.4 %  missed:   93352
+  Overhead:     0 %  added:        0
+  Count:      93714
+
+--- Contract 89d24a6b4ccb1b6faa2625fe562bdd9a23260359
+  Coverage: 100.0 %  missed:       0
+  Overhead:     0 %  added:        0
+  Count:       1524
 
 --- Contract a15c7ebe1f07caf6bff097d8a589fb8ac49ae5b3
-  Hit   rate: 100.0%
-  Extra rate:   330%
+  Coverage: 100.0 %  missed:       0
+  Overhead:     0 %  added:       16
+  Count:      52946
+
+--- Contract b8c77482e45f1f44de1745f52c74426c631bdd52
+  Coverage: 100.0 %  missed:       0
+  Overhead:    50 %  added:     7043
+  Count:      14048
+
+--- Contract 8d12a197cb00d4747a1fe03395095ce2a5cc6819
+  Coverage:  22.5 %  missed:   10580
+  Overhead:    18 %  added:     2517
+  Count:      13650
+
+--- Contract d1ceeeeee83f8bcf3bedad437202b6154e9f5405
+  Coverage:   0.0 %  missed:   14183
+  Overhead:     0 %  added:        0
+  Count:      14183
+
+--- Contract d4f5bf184bebfd53ac276ec6e091d051d0ed459e
+  Coverage:   0.0 %  missed:    4140
+  Overhead:     0 %  added:        0
+  Count:       4140
+
+--- Contract 39755357759ce0d7f32dc8dc45414cca409ae24e
+  Coverage:  18.5 %  missed:   30673
+  Overhead:     1 %  added:      218
+  Count:      37614
+
+--- Contract ae9b8e05c22bae74d1e8db82c4af122b18050bd4
+  Coverage:   0.0 %  missed:  181472
+  Overhead:     0 %  added:        0
+  Count:     181472
+
+--- Contract 21ab6c9fac80c59d401b37cb43f81ea9dde7fe34
+  Coverage: 100.0 %  missed:       0
+  Overhead:     0 %  added:        0
+  Count:       6154
+
+--- Contract 62a364f7cba3be8fc9dcfdde12cabec8244af381
+  Coverage:   0.0 %  missed:    4896
+  Overhead:     0 %  added:        0
+  Count:       4896
+
+--- Contract 06012c8cf97bead5deae237070f9587f8e7a266d
+  Coverage:  39.9 %  missed:   19419
+  Overhead:     0 %  added:       64
+  Count:      32317
+
+--- Contract 1522900b6dafac587d499a862861c0869be6e428
+  Coverage:   0.0 %  missed:    5866
+  Overhead:     0 %  added:        0
+  Count:       5866
+
+--- Contract 573aaaa81154cd24e96f0cb97fd86110b8f6767f
+  Coverage:   0.0 %  missed:   10121
+  Overhead:     0 %  added:       24
+  Count:      10124
 
 --- Totals ---
-  Hit   rate: 100.0%
-  Extra rate:   350%
+  Coverage:  27.2 %  missed:  548327
+  Overhead:     2 %  added:    11907
+  Count:     753247
 
