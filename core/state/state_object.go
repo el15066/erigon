@@ -158,6 +158,7 @@ func (so *stateObject) touch() {
 
 // GetState returns a value from account storage.
 func (so *stateObject) GetState(key *common.Hash, out *uint256.Int) {
+	if common.STORAGE_TRACING { so.GetCommittedState(key, out) }
 	bench.Tick(30)
 	value, dirty := so.dirtyStorage[*key]
 	if dirty {
@@ -167,7 +168,7 @@ func (so *stateObject) GetState(key *common.Hash, out *uint256.Int) {
 	}
 	bench.Tick(31)
 	// Otherwise return the entry's original value
-	so.GetCommittedState(key, out)
+	if !common.STORAGE_TRACING { so.GetCommittedState(key, out) }
 }
 
 // GetCommittedState retrieves a value from the committed account storage trie.
@@ -176,7 +177,7 @@ func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
 	// If we have the original value cached, return that
 	{
 		value, cached := so.originStorage[*key]
-		if cached {
+		if cached && !common.STORAGE_TRACING {
 			*out = value
 			bench.Tick(33)
 			return
@@ -345,10 +346,17 @@ func (so *stateObject) Code() []byte {
 	}
 	bench.Tick(21)
 	bench.Tick(22)
-	code, err := so.db.stateReader.ReadAccountCode(so.Address(), so.data.Incarnation, common.BytesToHash(so.CodeHash()))
+	a         :=                    so.Address()
+	h         := common.BytesToHash(so.CodeHash())
+	code, err := so.db.stateReader.ReadAccountCode(a, so.data.Incarnation, h)
 	bench.Tick(23)
 	if err != nil {
 		so.setError(fmt.Errorf("can't load code hash %x: %v", so.CodeHash(), err))
+	}
+	if common.CODE_DUMPING {
+		common.CONTRACT_CODE[h]        = code
+		common.CONTRACT_CODE_COUNT[h] += 1
+		common.CONTRACT_CODE_ALIAS[a]  = h
 	}
 	so.code = code
 	return code

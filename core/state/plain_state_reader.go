@@ -33,7 +33,7 @@ type PlainStateReader struct {
 }
 
 func NewPlainStateReader(db kv.Getter) *PlainStateReader {
-	if tracefile == nil && notrace == false {
+	if tracefile == nil && common.STORAGE_TRACING == true && notrace == false {
 		_f, _err := os.OpenFile("logz/reads.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
 		if _err == nil {
 			tracefile = bufio.NewWriterSize(_f, 128*1024)
@@ -46,6 +46,12 @@ func NewPlainStateReader(db kv.Getter) *PlainStateReader {
 		db: db,
 		blockID: -1,
 		txID:    -1,
+	}
+}
+
+func FlushStateReaderTracefile() {
+	if tracefile != nil {
+		tracefile.Flush()
 	}
 }
 

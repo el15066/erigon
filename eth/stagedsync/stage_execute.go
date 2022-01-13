@@ -247,7 +247,7 @@ type tx_dump struct {
 func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan int, cfg ExecuteBlockCfg, from uint64, to uint64) {
 	var ENC = hex.EncodeToString
 	var tracefile *bufio.Writer
-	if false {
+	if common.PREFETCH_TRACING {
 		_f, _err := os.OpenFile("logz/prefetches.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
 		if _err == nil {
 			defer _f.Close()
@@ -258,7 +258,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 		}
 	}
 	var dumpfile *bufio.Writer
-	if true {
+	if common.TX_DUMPING {
 		_f, _err := os.OpenFile("logz/tx_dump.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
 		if _err == nil {
 			defer _f.Close()
@@ -271,7 +271,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 	var storage_prefetch_b = uint64(7500000)
 	var storage_prefetch_i = -1
 	var storage_prefetch_file *bufio.Reader
-	if true {
+	if common.USE_STORAGE_PREFETCH_FILE {
 		_f, _err := os.OpenFile("logz/reads_s.bin", os.O_RDONLY, 0664)
 		if _err == nil {
 			defer _f.Close()
@@ -472,6 +472,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 
 	blockNum := stageProgress
 	go fetchBlocks(blockChan, errChan, quitChan, cfg, blockNum+1, to)
+	defer state.FlushStateReaderTracefile()
 
 	var stoppedErr error
 	bench.Tick(0)
@@ -567,6 +568,58 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	fmt.Println(" 35- 34", bench.DiffStrAuto( 35, 34))
 	fmt.Println(" 37- 36", bench.DiffStrAuto( 37, 36))
 	fmt.Println(" 38- 37", bench.DiffStrAuto( 38, 37))
+
+	if common.CODE_DUMPING {
+		var ENC = hex.EncodeToString
+		{
+			_f, _err := os.OpenFile("logz/code_counts.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+			if _err == nil {
+				f := bufio.NewWriterSize(_f, 128*1024)
+				for k, v := range common.CONTRACT_CODE_COUNT {
+					if v > 100 {
+						f.WriteString(fmt.Sprintf("h_%s %5d\n", ENC(k.Bytes()), v))
+					}
+				}
+				f.Flush()
+				_f.Close()
+			} else {
+				log.Error("Code counts not dumped", "error", _err)
+			}
+		}
+		{
+			_f, _err := os.OpenFile("logz/code_alias.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+			if _err == nil {
+				f := bufio.NewWriterSize(_f, 128*1024)
+				for k, v := range common.CONTRACT_CODE_ALIAS {
+					if common.CONTRACT_CODE_COUNT[v] > 3000 {
+						f.WriteString(fmt.Sprintf("%s h_%s\n", ENC(k.Bytes()), ENC(v.Bytes())))
+					}
+				}
+				f.Flush()
+				_f.Close()
+			} else {
+				log.Error("Code alias not dumped", "error", _err)
+			}
+		}
+		{
+			for k, v := range common.CONTRACT_CODE {
+				// c, ok := common.CONTRACT_CODE_COUNT[k]
+				// fmt.Println(k, c, ok, )
+				if common.CONTRACT_CODE_COUNT[k] > 3000 {
+					_f, _err := os.OpenFile(fmt.Sprintf("logz/code/h_%s.runbin.hex", ENC(k.Bytes())), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+					if _err == nil {
+						f := bufio.NewWriterSize(_f, 128*1024)
+						f.WriteString(ENC(v))
+						f.Flush()
+						_f.Close()
+					} else {
+						log.Error("Code not dumped", "error", _err)
+						break
+					}
+				}
+			}
+		}
+	}
 
 	utils.NotifySIGINT()
 	<-quit

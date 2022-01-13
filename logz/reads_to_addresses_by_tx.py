@@ -16,13 +16,18 @@ def processline(line):
     assert line[135] == '\n'
     return bid, tid, a_lf
 
-bid, tid = '', ''
+bid, tid, alfs = '', '', None
 with open('reads.txt') as fi:
     with open('reads_addresses_by_tx.txt', 'w') as fo:
-        for line in fi:
+        for i, line in enumerate(fi):
+            if i & 0x07ffff == 0: print(f'Input at {i*136>>20:5} MiB', end='\r')
             if line[0] == 'S':
                 nbid, ntid, a_lf = processline(line)
                 if (nbid, ntid) != (bid, tid):
-                    bid, tid = nbid, ntid
+                    bid, tid, alfs = nbid, ntid, set()
                     fo.write(f'Tx {bid} {tid}\n')
-                fo.write(a_lf)
+                if a_lf not in alfs:
+                    alfs.add(a_lf)
+                    fo.write(a_lf)
+
+print('Complete! output is at reads_addresses_by_tx.txt')
