@@ -335,6 +335,12 @@ func (so *stateObject) Address() common.Address {
 
 // Code returns the contract code associated with this object, if any.
 func (so *stateObject) Code() []byte {
+	a :=                    so.Address()
+	h := common.BytesToHash(so.CodeHash())
+	if common.CODE_DUMPING {
+		common.CONTRACT_CODE_COUNT[h] += 1
+		common.CONTRACT_CODE_ALIAS[a]  = h
+	}
 	bench.Tick(20)
 	if so.code != nil {
 		bench.Tick(21)
@@ -346,8 +352,6 @@ func (so *stateObject) Code() []byte {
 	}
 	bench.Tick(21)
 	bench.Tick(22)
-	a         :=                    so.Address()
-	h         := common.BytesToHash(so.CodeHash())
 	code, err := so.db.stateReader.ReadAccountCode(a, so.data.Incarnation, h)
 	bench.Tick(23)
 	if err != nil {
@@ -355,8 +359,6 @@ func (so *stateObject) Code() []byte {
 	}
 	if common.CODE_DUMPING {
 		common.CONTRACT_CODE[h]        = code
-		common.CONTRACT_CODE_COUNT[h] += 1
-		common.CONTRACT_CODE_ALIAS[a]  = h
 	}
 	so.code = code
 	return code
