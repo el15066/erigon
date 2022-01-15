@@ -591,9 +591,9 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			if _err == nil {
 				f := bufio.NewWriterSize(_f, 128*1024)
 				for k, v := range common.CONTRACT_CODE_ALIAS {
-					if common.CONTRACT_CODE_COUNT[v] > 3000 {
-						f.WriteString(fmt.Sprintf("%s h_%s\n", ENC(k.Bytes()), ENC(v.Bytes())))
-					}
+					// if common.CONTRACT_CODE_COUNT[v] > 100 {
+					f.WriteString(fmt.Sprintf("%s h_%s\n", ENC(k.Bytes()), ENC(v.Bytes())))
+					// }
 				}
 				f.Flush()
 				_f.Close()
@@ -605,7 +605,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			for k, v := range common.CONTRACT_CODE {
 				// c, ok := common.CONTRACT_CODE_COUNT[k]
 				// fmt.Println(k, c, ok, )
-				if common.CONTRACT_CODE_COUNT[k] > 3000 {
+				if common.CONTRACT_CODE_COUNT[k] > 100 {
 					_f, _err := os.OpenFile(fmt.Sprintf("logz/code/h_%s.runbin.hex", ENC(k.Bytes())), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 					if _err == nil {
 						f := bufio.NewWriterSize(_f, 128*1024)
