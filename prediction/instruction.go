@@ -34,6 +34,26 @@ func opNot(state *State) error { return uniOp(state, (uint256.Int).Not)  }
 func _iszero(d, v0 *uint256.Int) *uint256.Int { if v0.IsZero() { return d.SetOne() } else { return d.Clear() } }
 func opIszero(state *State) error { return uniOp(state, _iszero) }
 
+func uniOpArgVs(state *State) (*uint256.Int, *uint256.Int) {
+	i  := state.i + 1
+	rd := getArg(state.code, i)
+	r0 := getArg(state.code, i + 2)
+	state.i = i + 4
+	ok := state.known[r0]
+	state.known[rd] = ok
+	if !ok { return nil, nil }
+	d  := &state.regs[rd]
+	v0 := &state.regs[r0]
+	return d, v0
+}
+func opBalance(state *State) error {
+	d, v0 := uniOpArgVs(state)
+	if d == nil { return nil }
+	a := common.Address(v0.Bytes20())
+	d.Set(state.ctx.ibs.GetBalance(a))
+	return nil
+}
+
 func binOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int) *uint256.Int) error {
 	i  := state.i + 1
 	rd := getArg(state.code, i)
@@ -208,12 +228,6 @@ func opAddress(state *State) error {
 	return nil, nil
 }
 
-func opBalance(state *State) error {
-	slot := callContext.stack.Peek()
-	address := common.Address(slot.Bytes20())
-	slot.Set(interpreter.evm.IntraBlockState.GetBalance(address))
-	return nil, nil
-}
 
 func opOrigin(state *State) error {
 	callContext.stack.Push(new(uint256.Int).SetBytes(interpreter.evm.Origin.Bytes()))
