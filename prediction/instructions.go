@@ -16,6 +16,60 @@ import (
 
 func getArg(data []byte, i uint) int { return int(data[i]) | (int(data[i+1]) << 8) }
 
+func zerOpArgs(state *State) int {
+	i  := state.i + 1
+	rd := getArg(state.code, i)
+	state.i = i + 2
+	state.known[rd] = true
+	return rd
+}
+func opReturnDataSize(state *State) error {
+	rd := zerOpArgs(state)
+	state.known[rd] = false
+	return nil
+}
+func opCodeSize(state *State) error {
+	rd := zerOpArgs(state)
+	state.known[rd] = false
+	// a := state.address // not always same as code address, maybe keep a ref to contract's code in state, also see CODECOPY
+	// d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(a)))
+	return nil
+}
+
+func zerOpArgVs(state *State) *uint256.Int {
+	i  := state.i + 1
+	rd := getArg(state.code, i)
+	state.i = i + 2
+	state.known[rd] = true
+	d  := &state.regs[rd]
+	return d
+}
+func opAddress(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetBytes(state.address.Bytes())
+	return nil
+}
+func opOrigin(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetBytes(state.ctx.origin.Bytes())
+	return nil
+}
+func opCaller(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetBytes(state.caller.Bytes())
+	return nil
+}
+func opCallValue(state *State) error {
+	d := zerOpArgVs(state)
+	d.Set(state.callvalue)
+	return nil
+}
+func opCallDataSize(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetUint64(len(state.calldata))
+	return nil
+}
+
 func uniOp(state *State, op func (*uint256.Int, *uint256.Int) *uint256.Int) error {
 	i  := state.i + 1
 	rd := getArg(state.code, i)
@@ -51,6 +105,24 @@ func opBalance(state *State) error {
 	if d == nil { return nil }
 	a := common.Address(v0.Bytes20())
 	d.Set(state.ctx.ibs.GetBalance(a))
+	return nil
+}
+func opExtCodeSize(state *State) error {
+	d, v0 := uniOpArgVs(state)
+	if d == nil { return nil }
+	a := common.Address(v0.Bytes20())
+	d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(a)))
+	return nil
+}
+func opExtCodeHash(state *State) error {
+	d, v0 := uniOpArgVs(state)
+	if d == nil { return nil }
+	a := common.Address(v0.Bytes20())
+	if state.ctx.ibs.Empty(a) { // TODO: maybe speculatively skip check ?
+		d.Clear()
+	} else {
+		d.SetBytes(state.ctx.ibs.GetCodeHash(a).Bytes())
+	}
 	return nil
 }
 
@@ -223,25 +295,27 @@ func triOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int, *uin
 func opAddmod(state *State) error { return triOp(state, (uint256.Int).AddMod) }
 func opMulmod(state *State) error { return triOp(state, (uint256.Int).MulMod) }
 
-func opAddress(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetBytes(callContext.contract.Address().Bytes()))
-	return nil, nil
-}
 
 
-func opOrigin(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetBytes(interpreter.evm.Origin.Bytes()))
-	return nil, nil
-}
-func opCaller(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetBytes(callContext.contract.Caller().Bytes()))
-	return nil, nil
-}
 
-func opCallValue(state *State) error {
-	callContext.stack.Push(callContext.contract.value)
-	return nil, nil
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 func opCallDataLoad(state *State) error {
 	x := callContext.stack.Peek()
@@ -254,10 +328,6 @@ func opCallDataLoad(state *State) error {
 	return nil, nil
 }
 
-func opCallDataSize(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetUint64(uint64(len(callContext.contract.Input))))
-	return nil, nil
-}
 
 func opCallDataCopy(state *State) error {
 	var (
@@ -276,10 +346,6 @@ func opCallDataCopy(state *State) error {
 	return nil, nil
 }
 
-func opReturnDataSize(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetUint64(uint64(len(interpreter.returnData))))
-	return nil, nil
-}
 
 func opReturnDataCopy(state *State) error {
 	var (
@@ -304,19 +370,6 @@ func opReturnDataCopy(state *State) error {
 		return nil, ErrReturnDataOutOfBounds
 	}
 	callContext.memory.Set(memOffset.Uint64(), length.Uint64(), interpreter.returnData[offset64:end64])
-	return nil, nil
-}
-
-func opExtCodeSize(state *State) error {
-	slot := callContext.stack.Peek()
-	slot.SetUint64(uint64(interpreter.evm.IntraBlockState.GetCodeSize(common.Address(slot.Bytes20()))))
-	return nil, nil
-}
-
-func opCodeSize(state *State) error {
-	l := new(uint256.Int)
-	l.SetUint64(uint64(len(callContext.contract.Code)))
-	callContext.stack.Push(l)
 	return nil, nil
 }
 
@@ -350,42 +403,6 @@ func opExtCodeCopy(state *State) error {
 	return nil, nil
 }
 
-// opExtCodeHash returns the code hash of a specified account.
-// There are several cases when the function is called, while we can relay everything
-// to `state.GetCodeHash` function to ensure the correctness.
-//   (1) Caller tries to get the code hash of a normal contract account, state
-// should return the relative code hash and set it as the result.
-//
-//   (2) Caller tries to get the code hash of a non-existent account, state should
-// return common.Hash{} and zero will be set as the result.
-//
-//   (3) Caller tries to get the code hash for an account without contract code,
-// state should return emptyCodeHash(0xc5d246...) as the result.
-//
-//   (4) Caller tries to get the code hash of a precompiled account, the result
-// should be zero or emptyCodeHash.
-//
-// It is worth noting that in order to avoid unnecessary create and clean,
-// all precompile accounts on mainnet have been transferred 1 wei, so the return
-// here should be emptyCodeHash.
-// If the precompile account is not transferred any amount on a private or
-// customized chain, the return value will be zero.
-//
-//   (5) Caller tries to get the code hash for an account which is marked as suicided
-// in the current transaction, the code hash of this account should be returned.
-//
-//   (6) Caller tries to get the code hash for an account which is marked as deleted,
-// this account should be regarded as a non-existent account and zero should be returned.
-func opExtCodeHash(state *State) error {
-	slot := callContext.stack.Peek()
-	address := common.Address(slot.Bytes20())
-	if interpreter.evm.IntraBlockState.Empty(address) {
-		slot.Clear()
-	} else {
-		slot.SetBytes(interpreter.evm.IntraBlockState.GetCodeHash(address).Bytes())
-	}
-	return nil, nil
-}
 
 func opGasprice(state *State) error {
 	v, overflow := uint256.FromBig(interpreter.evm.GasPrice)
@@ -492,47 +509,6 @@ func opSstore(state *State) error {
 	return nil, nil
 }
 
-func traceJump(h common.Hash, src uint64, dst uint64) {
-	if h == (common.Hash{}) { return }
-
-	common.JUMP_COUNT[h] += 1
-	// {
-	// 	e := (src & 0xFFFFFFFF) | (dst << 32)
-	// 	m := common.JUMP_EDGE_COUNT[h]
-	// 	if m == nil {
-	// 		m = map[uint64]uint{}
-	// 		common.JUMP_EDGE_COUNT[h] = m
-	// 	}
-	// 	m[e] += 1
-	// }
-	{
-		m := common.JUMP_CALLS[h]
-		if m == nil {
-			m = map[uint32]struct{}{}
-			common.JUMP_CALLS[h] = m
-		}
-		m[common.CALLID] = struct{}{}
-	}
-	{
-		m1 := common.JUMP_DST_CALLCOUNT[h]
-		if m1 == nil {
-			m1 = map[uint32]map[uint32]map[uint32]uint{}
-			common.JUMP_DST_CALLCOUNT[h] = m1
-		}
-		m2 := m1[uint32(src)]
-		if m2 == nil {
-			m2 = map[uint32]map[uint32]uint{}
-			m1[uint32(src)] = m2
-		}
-		m3 := m2[uint32(dst)]
-		if m3 == nil {
-			m3 = map[uint32]uint{}
-			m2[uint32(dst)] = m3
-		}
-		m3[common.CALLID] += 1
-	}
-}
-
 func opJump(state *State) error {
 	pos := callContext.stack.Pop()
 	if valid, usedBitmap := callContext.contract.validJumpdest(&pos); !valid {
@@ -544,7 +520,6 @@ func opJump(state *State) error {
 		}
 		return nil, ErrInvalidJump
 	}
-	if common.JUMP_TRACING { traceJump(callContext.contract.CodeHash, *pc, pos.Uint64()) }
 	*pc = pos.Uint64()
 	return nil, nil
 }
@@ -561,7 +536,6 @@ func opJumpi(state *State) error {
 			}
 			return nil, ErrInvalidJump
 		}
-		if common.JUMP_TRACING { traceJump(callContext.contract.CodeHash, *pc, pos.Uint64()) }
 		*pc = pos.Uint64()
 	} else {
 		*pc++
