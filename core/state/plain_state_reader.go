@@ -39,7 +39,7 @@ func NewPlainStateReader(db kv.Getter) *PlainStateReader {
 			tracefile = bufio.NewWriterSize(_f, 128*1024)
 		} else {
 			notrace = true
-			fmt.Println("WARN: READS NOT RECORDED", _err)
+			fmt.Println("\n\nWARNING: READS NOT RECORDED", _err)
 		}
 	}
 	return &PlainStateReader{
@@ -60,12 +60,13 @@ func (r *PlainStateReader) SetTxID(   n int) { r.txID    = n }
 
 func (r *PlainStateReader) ReadAccountData(address common.Address) (*accounts.Account, error) {
 
+	enc, err := r.db.GetOne(kv.PlainState, address.Bytes())
+
 	// HERE
 	if tracefile != nil {
-		tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", r.blockID, r.txID, ENC(address.Bytes())))
+		tracefile.WriteString(fmt.Sprintf("A %8d %3d %s %s\n", r.blockID, r.txID, ENC(address.Bytes()), ENC(enc)))
 	}
 
-	enc, err := r.db.GetOne(kv.PlainState, address.Bytes())
 	if err != nil {
 		return nil, err
 	}
@@ -82,12 +83,13 @@ func (r *PlainStateReader) ReadAccountData(address common.Address) (*accounts.Ac
 func (r *PlainStateReader) ReadAccountStorage(address common.Address, incarnation uint64, key *common.Hash) ([]byte, error) {
 	compositeKey := dbutils.PlainGenerateCompositeStorageKey(address.Bytes(), incarnation, key.Bytes())
 
+	enc, err := r.db.GetOne(kv.PlainState, compositeKey)
+
 	// HERE
 	if tracefile != nil {
-		tracefile.WriteString(fmt.Sprintf("S %8d %3d %s\n", r.blockID, r.txID, ENC(compositeKey)))
+		tracefile.WriteString(fmt.Sprintf("S %8d %3d %s %s\n", r.blockID, r.txID, ENC(compositeKey), ENC(enc)))
 	}
 
-	enc, err := r.db.GetOne(kv.PlainState, compositeKey)
 	if err != nil {
 		return nil, err
 	}
