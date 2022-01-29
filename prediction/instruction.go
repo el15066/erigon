@@ -14,12 +14,12 @@ import (
 )
 
 
-func arg2B(data []byte, i uint) int { return uint(data[i]) | (uint(data[i+1]) << 8) }
+func getArg(data []byte, i uint) int { return int(data[i]) | (int(data[i+1]) << 8) }
 
 func uniOp(state *State, op func (*uint256.Int, *uint256.Int) *uint256.Int) error {
 	i  := state.i + 1
-	rd := arg2B(state.code, i)
-	r0 := arg2B(state.code, i + 2)
+	rd := getArg(state.code, i)
+	r0 := getArg(state.code, i + 2)
 	state.i = i + 4
 	ok := state.known[r0]
 	state.known[rd] = ok
@@ -36,9 +36,9 @@ func opIszero(state *State) error { return uniOp(state, _iszero) }
 
 func binOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int) *uint256.Int) error {
 	i  := state.i + 1
-	rd := arg2B(state.code, i)
-	r0 := arg2B(state.code, i + 2)
-	r1 := arg2B(state.code, i + 4)
+	rd := getArg(state.code, i)
+	r0 := getArg(state.code, i + 2)
+	r1 := getArg(state.code, i + 4)
 	state.i = i + 6
 	ok := state.known[r0] && state.known[r1]
 	state.known[rd] = ok
@@ -73,9 +73,9 @@ func opSgt(state *State) error { return binOp(state, _sgt) }
 
 func binOpArgs(state *State) (int, int, int) {
 	i  := state.i + 1
-	rd := arg2B(state.code, i)
-	r0 := arg2B(state.code, i + 2)
-	r1 := arg2B(state.code, i + 4)
+	rd := getArg(state.code, i)
+	r0 := getArg(state.code, i + 2)
+	r1 := getArg(state.code, i + 4)
 	state.i = i + 6
 	ok := state.known[r0] && state.known[r1]
 	state.known[rd] = ok
@@ -165,7 +165,6 @@ func opSAR(state *State) error {
 	d.SRsh(x, uint(i.Uint64()))
 	return nil
 }
-
 func opSha3(state *State) error {
 	rd, r0, r1 := binOpArgs(state)
 	if rd < 0 { return nil }
@@ -186,10 +185,10 @@ func opSha3(state *State) error {
 
 func triOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int, *uint256.Int) *uint256.Int) error {
 	i  := state.i + 1
-	rd := arg2B(state.code, i)
-	r0 := arg2B(state.code, i + 2)
-	r1 := arg2B(state.code, i + 4)
-	r2 := arg2B(state.code, i + 6)
+	rd := getArg(state.code, i)
+	r0 := getArg(state.code, i + 2)
+	r1 := getArg(state.code, i + 4)
+	r2 := getArg(state.code, i + 6)
 	state.i = i + 8
 	ok := state.known[r0] && state.known[r1] && state.known[r2]
 	state.known[rd] = ok
