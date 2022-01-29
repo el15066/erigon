@@ -75,6 +75,7 @@ logz/reads.txt
 logz/prefetches.txt
 logz/tx_dump.txt
 logz/reads_addresses_by_tx.txt
+logz/jump_counts.txt
 logz/code/
 symbolic/sandbox/rat_exec/log.txt
 symbolic/sandbox/rat_exec/log_exe.txt

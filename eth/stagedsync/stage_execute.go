@@ -583,7 +583,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 				f.Flush()
 				_f.Close()
 			} else {
-				log.Error("Code counts not dumped", "error", _err)
+				log.Error("Code counts not saved", "error", _err)
 			}
 		}
 		{
@@ -598,7 +598,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 				f.Flush()
 				_f.Close()
 			} else {
-				log.Error("Code alias not dumped", "error", _err)
+				log.Error("Code alias not saved", "error", _err)
 			}
 		}
 		{
@@ -613,10 +613,51 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 						f.Flush()
 						_f.Close()
 					} else {
-						log.Error("Code not dumped", "error", _err)
+						log.Error("Code not saved", "error", _err)
 						break
 					}
 				}
+			}
+		}
+	}
+
+	if common.JUMP_TRACING {
+		var ENC = hex.EncodeToString
+		{
+			_f, _err := os.OpenFile("logz/jump_counts.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+			if _err == nil {
+				f := bufio.NewWriterSize(_f, 128*1024)
+				// for h, m := range common.JUMP_EDGE_COUNT {
+				// 	total := common.JUMP_COUNT[h]
+				// 	if total > 1000 {
+				// 		f.WriteString(fmt.Sprintf("h_%s %9d\n", ENC(h.Bytes()), total))
+				// 		for e, c := range m {
+				// 			src := e &  0xFFFFFFFF
+				// 			dst := e >> 32
+				// 			f.WriteString(fmt.Sprintf("%08x %08x %8d\n", src, dst, c))
+				// 		}
+				// 	}
+				// }
+				for h, m1 := range common.JUMP_DST_CALLCOUNT {
+					total :=     common.JUMP_COUNT[h]
+					calls := len(common.JUMP_CALLS[h])
+					if calls >= 100 {
+						f.WriteString(fmt.Sprintf("h_%s %7d %9d\n", ENC(h.Bytes()), calls, total))
+						for src, m2 := range m1 {
+							f.WriteString(fmt.Sprintf(" %06x\n", src))
+							for dst, m3 := range m2 {
+								f.WriteString(fmt.Sprintf("  %06x\n", dst))
+								for cid, c := range m3 {
+									f.WriteString(fmt.Sprintf("   %8d %8d\n", cid, c))
+								}
+							}
+						}
+					}
+				}
+				f.Flush()
+				_f.Close()
+			} else {
+				log.Error("Jump counts not saved", "error", _err)
 			}
 		}
 	}

@@ -554,6 +554,47 @@ func opSstore(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]
 	return nil, nil
 }
 
+func traceJump(h common.Hash, src uint64, dst uint64) {
+	if h == (common.Hash{}) { return }
+
+	common.JUMP_COUNT[h] += 1
+	// {
+	// 	e := (src & 0xFFFFFFFF) | (dst << 32)
+	// 	m := common.JUMP_EDGE_COUNT[h]
+	// 	if m == nil {
+	// 		m = map[uint64]uint{}
+	// 		common.JUMP_EDGE_COUNT[h] = m
+	// 	}
+	// 	m[e] += 1
+	// }
+	{
+		m := common.JUMP_CALLS[h]
+		if m == nil {
+			m = map[uint32]struct{}{}
+			common.JUMP_CALLS[h] = m
+		}
+		m[common.CALLID] = struct{}{}
+	}
+	{
+		m1 := common.JUMP_DST_CALLCOUNT[h]
+		if m1 == nil {
+			m1 = map[uint32]map[uint32]map[uint32]uint{}
+			common.JUMP_DST_CALLCOUNT[h] = m1
+		}
+		m2 := m1[uint32(src)]
+		if m2 == nil {
+			m2 = map[uint32]map[uint32]uint{}
+			m1[uint32(src)] = m2
+		}
+		m3 := m2[uint32(dst)]
+		if m3 == nil {
+			m3 = map[uint32]uint{}
+			m2[uint32(dst)] = m3
+		}
+		m3[common.CALLID] += 1
+	}
+}
+
 func opJump(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
 	pos := callContext.stack.Pop()
 	if valid, usedBitmap := callContext.contract.validJumpdest(&pos); !valid {
@@ -565,6 +606,7 @@ func opJump(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]by
 		}
 		return nil, ErrInvalidJump
 	}
+	if common.JUMP_TRACING { traceJump(callContext.contract.CodeHash, *pc, pos.Uint64()) }
 	*pc = pos.Uint64()
 	return nil, nil
 }
@@ -581,6 +623,7 @@ func opJumpi(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]b
 			}
 			return nil, ErrInvalidJump
 		}
+		if common.JUMP_TRACING { traceJump(callContext.contract.CodeHash, *pc, pos.Uint64()) }
 		*pc = pos.Uint64()
 	} else {
 		*pc++

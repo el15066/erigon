@@ -68,7 +68,13 @@ func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, err
 
 	defer callback()
 
-	return evm.interpreter.Run(contract, input, readOnly)
+	t := common.CALLID
+	common.CALLID = common.CALLID_COUNTER
+	common.CALLID_COUNTER += 1
+	// defer func() { common.CALLID = t }()
+	res, err := evm.interpreter.Run(contract, input, readOnly)
+	common.CALLID = t
+	return res, err
 }
 
 func selectInterpreter(evm *EVM, contract *Contract) (func(), error) {
