@@ -342,7 +342,7 @@ func opCallDataCopy(state *State) error {
 	memOffset64 := memOffset.Uint64()
 	length64 := length.Uint64()
 	callContext.memory.Set(memOffset64, length64, getData(callContext.contract.Input, dataOffset64, length64))
-	return nil, nil
+	return nil
 }
 
 
@@ -369,7 +369,7 @@ func opReturnDataCopy(state *State) error {
 		return nil, ErrReturnDataOutOfBounds
 	}
 	callContext.memory.Set(memOffset.Uint64(), length.Uint64(), interpreter.returnData[offset64:end64])
-	return nil, nil
+	return nil
 }
 
 func opCodeCopy(state *State) error {
@@ -399,7 +399,7 @@ func opExtCodeCopy(state *State) error {
 	len64 := length.Uint64()
 	codeCopy := getDataBig(interpreter.evm.IntraBlockState.GetCode(addr), &codeOffset, len64)
 	callContext.memory.Set(memOffset.Uint64(), len64, codeCopy)
-	return nil, nil
+	return nil
 }
 
 
@@ -431,7 +431,7 @@ func opBlockhash(state *State) error {
 	} else {
 		num.Clear()
 	}
-	return nil, nil
+	return nil
 }
 
 func opCoinbase(state *State) error {
@@ -497,7 +497,7 @@ func opSload(state *State) error {
 	loc := callContext.stack.Peek()
 	interpreter.hasherBuf = loc.Bytes32()
 	interpreter.evm.IntraBlockState.GetState(callContext.contract.Address(), &interpreter.hasherBuf, loc)
-	return nil, nil
+	return nil
 }
 
 func opSstore(state *State) error {
@@ -505,7 +505,7 @@ func opSstore(state *State) error {
 	val := callContext.stack.Pop()
 	interpreter.hasherBuf = loc.Bytes32()
 	interpreter.evm.IntraBlockState.SetState(callContext.contract.Address(), &interpreter.hasherBuf, val)
-	return nil, nil
+	return nil
 }
 
 func opJump(state *State) error {
@@ -520,7 +520,7 @@ func opJump(state *State) error {
 		return nil, ErrInvalidJump
 	}
 	*pc = pos.Uint64()
-	return nil, nil
+	return nil
 }
 
 func opJumpi(state *State) error {
@@ -558,7 +558,7 @@ func opMsize(state *State) error {
 
 func opGas(state *State) error {
 	callContext.stack.Push(new(uint256.Int).SetUint64(callContext.contract.Gas))
-	return nil, nil
+	return nil
 }
 
 func opCreate(state *State) error {
@@ -595,7 +595,7 @@ func opCreate(state *State) error {
 	if suberr == ErrExecutionReverted {
 		return res, nil
 	}
-	return nil, nil
+	return nil
 }
 
 func opCreate2(state *State) error {
@@ -627,7 +627,7 @@ func opCreate2(state *State) error {
 	if suberr == ErrExecutionReverted {
 		return res, nil
 	}
-	return nil, nil
+	return nil
 }
 
 func opCall(state *State) error {
@@ -770,7 +770,7 @@ func opRevert(state *State) error {
 }
 
 func opStop(state *State) error {
-	return nil, nil
+	return nil
 }
 
 func opSuicide(state *State) error {
@@ -783,7 +783,7 @@ func opSuicide(state *State) error {
 		interpreter.evm.Config.Tracer.CaptureSelfDestruct(callerAddr, beneficiaryAddr, balance.ToBig())
 	}
 	interpreter.evm.IntraBlockState.Suicide(callerAddr)
-	return nil, nil
+	return nil
 }
 
 // following functions are used by the instruction jump  table
@@ -809,7 +809,7 @@ func makeLog(size int) executionFunc {
 			BlockNumber: interpreter.evm.Context.BlockNumber,
 		})
 
-		return nil, nil
+		return nil
 	}
 }
 
@@ -825,7 +825,7 @@ func opPush1(state *State) error {
 	} else {
 		callContext.stack.Push(integer.Clear())
 	}
-	return nil, nil
+	return nil
 }
 
 // make push instruction function
@@ -848,7 +848,7 @@ func makePush(size uint64, pushByteSize int) executionFunc {
 			callContext.contract.Code[startMin:endMin], pushByteSize)))
 
 		*pc += size
-		return nil, nil
+		return nil
 	}
 }
 
@@ -856,7 +856,7 @@ func makePush(size uint64, pushByteSize int) executionFunc {
 func makeDup(size int64) executionFunc {
 	return func(state *State) error {
 		callContext.stack.Dup(int(size))
-		return nil, nil
+		return nil
 	}
 }
 
@@ -866,7 +866,7 @@ func makeSwap(size int64) executionFunc {
 	size++
 	return func(state *State) error {
 		callContext.stack.Swap(int(size))
-		return nil, nil
+		return nil
 	}
 }
 
