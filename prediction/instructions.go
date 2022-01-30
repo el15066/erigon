@@ -366,30 +366,30 @@ func opSha3(state *State) error {
 	return nil
 }
 
-func binNVOpArgVs(state *State) (*uint256.Int, *uint256.Int) {
+func binNVOpOptArgVs(state *State) (*uint256.Int, *uint256.Int) {
 	i      := state.i + 1
 	i, r0  := getArg(state.code, i)
 	i, r1  := getArg(state.code, i)
 	state.i = i
-	ok := state.known[r0] && state.known[r1]
-	if !ok { return nil, nil }
-	v0 := &state.regs[r0]
-	v1 := &state.regs[r1]
+	var v0, v1 *uint256.Int
+	if state.known[r0] { v0 = &state.regs[r0] }
+	if state.known[r1] { v1 = &state.regs[r1] }
 	return v0, v1
 }
 func opMstore(state *State) error {
-	v0, v1 := binNVOpArgVs(state)
+	v0, v1 := binNVOpOptArgVs(state)
 	if v0 == nil { return nil }
 	i := v0.Uint64()
-	state.mem.SetU256(i, v1)
+	if v1 == nil { state.mem.SetUnknown32(i)
+	} else       { state.mem.SetU256(i, v1) }
 	return nil
 }
 func opMstore8(state *State) error {
-	v0, v1 := binNVOpArgVs(state)
+	v0, v1 := binNVOpOptArgVs(state)
 	if v0 == nil { return nil }
-	i :=      v0.Uint64()
-	b := byte(v1.Uint64())
-	state.mem.SetByte(i, b)
+	i := v0.Uint64()
+	if v1 == nil { state.mem.SetUnknown1(i)
+	} else       { state.mem.SetByte(i, byte(v1.Uint64())) }
 	return nil
 }
 
