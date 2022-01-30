@@ -14,7 +14,7 @@ import (
 )
 
 const BLOCK_ID_SHIFTS = 1
-const BLOCK_ID_CAP    = uint64(65536 << BLOCK_ID_SHIFTS)
+const BLOCK_ID_MAX    = uint64(65536 << BLOCK_ID_SHIFTS) - 1
 const INVALID_TARGET  = uint(-1)
 
 func isValidTarget(target uint) { return target != INVALID_TARGET }
@@ -61,7 +61,7 @@ func opJump(state *State) error {
 	i, rb  := getArg(state.code, i)
 	ok     := state.known[rb]
 	_bid   := &state.regs[rb]
-	if !ok || !_bid.LtUint64(BLOCK_ID_CAP) {
+	if !ok || _bid.GtUint64(BLOCK_ID_MAX) {
 		state.i = INVALID_TARGET
 		return nil
 	}
@@ -77,7 +77,7 @@ func opJumpi(state *State) error {
 	ok     := state.known[rb]
 	_bid   := &state.regs[rb]
 	cond   := &state.regs[rc]
-	if !ok || !_bid.LtUint64(BLOCK_ID_CAP) {
+	if !ok || _bid.GtUint64(BLOCK_ID_MAX) {
 		state.i = INVALID_TARGET
 		return nil
 	}
@@ -290,7 +290,7 @@ func opCallDataLoad(state *State) error {
 	if rd < 0 { return nil }
 	d  := &state.regs[rd]
 	_i := &state.regs[r0]
-	if _i.GtUint64(65536) {
+	if _i.GtUint64(65535) {
 		state.known[rd] = false
 		return nil
 	}
@@ -318,7 +318,7 @@ func opMload(state *State) error {
 	if rd < 0 { return nil }
 	d  := &state.regs[rd]
 	_i := &state.regs[r0]
-	if _i.GtUint64(65536) {
+	if _i.GtUint64(65535) {
 		state.known[rd] = false
 		return nil
 	}
