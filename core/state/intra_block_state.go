@@ -355,6 +355,13 @@ func (sdb *IntraBlockState) GetState(addr common.Address, key *common.Hash, valu
 		value.Clear()
 	}
 }
+// Similar to GetState, but will ignore the value read.
+func (sdb *IntraBlockState) PrefetchState(addr common.Address, key *common.Hash) {
+	stateObject := sdb.getStateObject(addr)
+	if stateObject != nil && !stateObject.deleted {
+		stateObject.PrefetchState(key)
+	}
+}
 
 // GetCommittedState retrieves a value from the given account's committed storage trie.
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
@@ -475,6 +482,13 @@ func (sdb *IntraBlockState) SetState(addr common.Address, key *common.Hash, valu
 	stateObject := sdb.GetOrNewStateObject(addr)
 	if stateObject != nil {
 		stateObject.SetState(key, value)
+	}
+}
+// Similar to SetState, but will not update the db.
+func (sdb *IntraBlockState) SetDirtyState(addr common.Address, key *common.Hash, value uint256.Int) {
+	stateObject := sdb.GetOrNewStateObject(addr)
+	if stateObject != nil {
+		stateObject.SetDirtyState(key, value)
 	}
 }
 

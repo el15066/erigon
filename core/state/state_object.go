@@ -170,6 +170,12 @@ func (so *stateObject) GetState(key *common.Hash, out *uint256.Int) {
 	// Otherwise return the entry's original value
 	if !common.STORAGE_TRACING { so.GetCommittedState(key, out) }
 }
+// Similar to GetState, but will ignore the value read.
+func (so *stateObject) PrefetchState(key *common.Hash) {
+	if _, dirty := so.dirtyStorage[*key]; !dirty {
+		so.PrefetchCommittedState(key)
+	}
+}
 
 // GetCommittedState retrieves a value from the committed account storage trie.
 func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
@@ -209,6 +215,12 @@ func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
 	so.blockOriginStorage[*key] = *out
 	bench.Tick(38)
 }
+// Similar to GetCommittedState, but will ignore the value read.
+func (so *stateObject) PrefetchCommittedState(key *common.Hash) {
+	if _, cached := so.originStorage[*key]; cached { return }
+	if so.created { return }
+	_, err := so.db.stateReader.ReadAccountStorage(so.address, so.data.GetIncarnation(), key)
+}
 
 // SetState updates a value in account storage.
 func (so *stateObject) SetState(key *common.Hash, value uint256.Int) {
@@ -224,6 +236,11 @@ func (so *stateObject) SetState(key *common.Hash, value uint256.Int) {
 		key:      *key,
 		prevalue: prev,
 	})
+	so.setState(key, value)
+}
+// Similar to SetState, but will not update the db.
+func (so *stateObject) SetDirtyState(key *common.Hash, value uint256.Int) {
+	so.PrefetchState(key)
 	so.setState(key, value)
 }
 
