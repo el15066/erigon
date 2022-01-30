@@ -13,7 +13,88 @@ import (
 	"github.com/ledgerwatch/log/v3"
 )
 
+const BLOCK_ID_SHIFTS = 1
+const BLOCK_ID_CAP    = uint64(65536 << BLOCK_ID_SHIFTS)
+const INVALID_TARGET  = uint(-1)
+
+func isValidTarget(target uint) { return target != INVALID_TARGET }
+
 func getArg(data []byte, i uint) (int, int) { return i+2, int(data[i]) | (int(data[i+1]) << 8) }
+
+func opStop(state *State) error {
+	state.i = INVALID_TARGET
+	return nil
+}
+func opConstant(state *State) error {
+	// Equivalent of PUSH, a constant is given as immediate value
+	i      := state.i
+	size   := state.code[i] - OP_CONSTANT_OFFSET
+	i, rd  := getArg(state.code, i + 1)
+	state.known[rd] = true
+	d      := &state.regs[rd]
+	d.SetBytes(state.code[i : i + size])
+	state.i = i + size
+	return nil
+}
+func opPhi(state *State) error {
+	// Artifact of SSA, should be removed with proper reg allocation
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	_, rs  := getArg(state.code, i + 2 * state.phiindex)
+	state.i = i + 2 * state.philen
+	state.known[rd] = state.known[rs]
+	d      := &state.regs[rd]
+	s      := &state.regs[rs]
+	d.Set(s)
+	return nil
+}
+func opBlockId(state *State) error {
+	// Artifact of SSA, should be removed with proper reg allocation
+	// Similar to JUMPDEST
+	i      := state.i + 1
+	i, bid := getArg(state.code, i)
+	state.i = i
+	return state.changeBlock(bid)
+}
+func opJump(state *State) error {
+	i      := state.i + 1
+	i, rb  := getArg(state.code, i)
+	ok     := state.known[rb]
+	_bid   := &state.regs[rb]
+	if !ok || !_bid.LtUint64(BLOCK_ID_CAP) {
+		state.i = INVALID_TARGET
+		return nil
+	}
+	bid    := _bid.Uint64() >> BLOCK_ID_SHIFTS
+	state.i = state.bidToIndex(bid)
+	state.changeBlock(bid)
+	return nil
+}
+func opJumpi(state *State) error {
+	i      := state.i + 1
+	i, rb  := getArg(state.code, i)
+	i, rc  := getArg(state.code, i)
+	ok     := state.known[rb]
+	_bid   := &state.regs[rb]
+	cond   := &state.regs[rc]
+	if !ok || !_bid.LtUint64(BLOCK_ID_CAP) {
+		state.i = INVALID_TARGET
+		return nil
+	}
+	bid    := _bid.Uint64() >> BLOCK_ID_SHIFTS
+	target := state.bidToIndex(bid)
+	var taken bool
+	if state.known[rc] { taken = !cond.IsZero()
+	} else             { taken = isValidTarget(target) }
+	if taken {
+		state.i = target
+		state.changeBlock(bid)
+	}
+	else{
+		state.i = i
+	}
+	return nil
+}
 
 func zerOpArgs(state *State) int {
 	i      := state.i + 1
@@ -559,109 +640,6 @@ func opExtCodeCopy(state *State) error {
 
 
 
-func opJump(state *State) error {
-	pos := callContext.stack.Pop()
-	if valid, usedBitmap := callContext.contract.validJumpdest(&pos); !valid {
-		if usedBitmap && interpreter.cfg.TraceJumpDest {
-			log.Warn("Code Bitmap used for detecting invalid jump",
-				"tx", fmt.Sprintf("0x%x", interpreter.evm.TxContext.TxHash),
-				"block number", interpreter.evm.Context.BlockNumber,
-			)
-		}
-		return nil, ErrInvalidJump
-	}
-	*pc = pos.Uint64()
-	return nil
-}
-
-func opJumpi(state *State) error {
-	pos, cond := callContext.stack.Pop(), callContext.stack.Pop()
-	if !cond.IsZero() {
-		if valid, usedBitmap := callContext.contract.validJumpdest(&pos); !valid {
-			if usedBitmap && interpreter.cfg.TraceJumpDest {
-				log.Warn("Code Bitmap used for detecting invalid jump",
-					"tx", fmt.Sprintf("0x%x", interpreter.evm.TxContext.TxHash),
-					"block number", interpreter.evm.Context.BlockNumber,
-				)
-			}
-			return nil, ErrInvalidJump
-		}
-		*pc = pos.Uint64()
-	} else {
-		*pc++
-	}
-	return nil
-}
-
-func opCreate(state *State) error {
-	var (
-		value  = callContext.stack.Pop()
-		offset = callContext.stack.Pop()
-		size   = callContext.stack.Peek()
-		input  = callContext.memory.GetCopy(offset.Uint64(), size.Uint64())
-		gas    = callContext.contract.Gas
-	)
-	if interpreter.evm.ChainRules.IsEIP150 {
-		gas -= gas / 64
-	}
-	// reuse size int for stackvalue
-	stackvalue := size
-
-	callContext.contract.UseGas(gas)
-
-	res, addr, returnGas, suberr := interpreter.evm.Create(callContext.contract, input, gas, &value)
-
-	// Push item on the stack based on the returned error. If the ruleset is
-	// homestead we must check for CodeStoreOutOfGasError (homestead only
-	// rule) and treat as an error, if the ruleset is frontier we must
-	// ignore this error and pretend the operation was successful.
-	if interpreter.evm.ChainRules.IsHomestead && suberr == ErrCodeStoreOutOfGas {
-		stackvalue.Clear()
-	} else if suberr != nil && suberr != ErrCodeStoreOutOfGas {
-		stackvalue.Clear()
-	} else {
-		stackvalue.SetBytes(addr.Bytes())
-	}
-	callContext.contract.Gas += returnGas
-
-	if suberr == ErrExecutionReverted {
-		return res, nil
-	}
-	return nil
-}
-
-func opCreate2(state *State) error {
-	var (
-		endowment    = callContext.stack.Pop()
-		offset, size = callContext.stack.Pop(), callContext.stack.Pop()
-		salt         = callContext.stack.Pop()
-		input        = callContext.memory.GetCopy(offset.Uint64(), size.Uint64())
-		gas          = callContext.contract.Gas
-	)
-
-	// Apply EIP150
-	gas -= gas / 64
-	callContext.contract.UseGas(gas)
-	// reuse size int for stackvalue
-	stackValue := size
-	res, addr, returnGas, suberr := interpreter.evm.Create2(callContext.contract, input, gas, &endowment, &salt)
-
-	// Push item on the stack based on the returned error.
-	if suberr != nil {
-		stackValue.Clear()
-	} else {
-		stackValue.SetBytes(addr.Bytes())
-	}
-
-	callContext.stack.Push(&stackValue)
-	callContext.contract.Gas += returnGas
-
-	if suberr == ErrExecutionReverted {
-		return res, nil
-	}
-	return nil
-}
-
 func opCall(state *State) error {
 	stack := callContext.stack
 	// Pop gas. The actual gas in interpreter.evm.callGasTemp.
@@ -789,116 +767,35 @@ func opStaticCall(state *State) error {
 	return ret, nil
 }
 
-func opReturn(state *State) error {
-	offset, size := callContext.stack.Pop(), callContext.stack.Pop()
-	ret := callContext.memory.GetPtr(offset.Uint64(), size.Uint64())
-	return ret, nil
-}
-
-func opRevert(state *State) error {
-	offset, size := callContext.stack.Pop(), callContext.stack.Pop()
-	ret := callContext.memory.GetPtr(offset.Uint64(), size.Uint64())
-	return ret, nil
-}
-
-func opStop(state *State) error {
-	return nil
-}
-
-func opSuicide(state *State) error {
-	beneficiary := callContext.stack.Pop()
-	callerAddr := callContext.contract.Address()
-	beneficiaryAddr := common.Address(beneficiary.Bytes20())
-	balance := interpreter.evm.IntraBlockState.GetBalance(callerAddr)
-	interpreter.evm.IntraBlockState.AddBalance(beneficiaryAddr, balance)
-	if interpreter.evm.Config.Debug {
-		interpreter.evm.Config.Tracer.CaptureSelfDestruct(callerAddr, beneficiaryAddr, balance.ToBig())
-	}
-	interpreter.evm.IntraBlockState.Suicide(callerAddr)
-	return nil
-}
-
-// following functions are used by the instruction jump  table
-
-// make log instruction function
-func makeLog(size int) executionFunc {
-	return func(state *State) error {
-		topics := make([]common.Hash, size)
-		stack := callContext.stack
-		mStart, mSize := stack.Pop(), stack.Pop()
-		for i := 0; i < size; i++ {
-			addr := stack.Pop()
-			topics[i] = common.Hash(addr.Bytes32())
-		}
-
-		d := callContext.memory.GetCopy(mStart.Uint64(), mSize.Uint64())
-		interpreter.evm.IntraBlockState.AddLog(&types.Log{
-			Address: callContext.contract.Address(),
-			Topics:  topics,
-			Data:    d,
-			// This is a non-consensus field, but assigned here because
-			// core/state doesn't know the current block number.
-			BlockNumber: interpreter.evm.Context.BlockNumber,
-		})
-
-		return nil
-	}
-}
-
-// opPush1 is a specialized version of pushN
-func opPush1(state *State) error {
-	var (
-		codeLen = uint64(len(callContext.contract.Code))
-		integer = new(uint256.Int)
-	)
-	*pc++
-	if *pc < codeLen {
-		callContext.stack.Push(integer.SetUint64(uint64(callContext.contract.Code[*pc])))
-	} else {
-		callContext.stack.Push(integer.Clear())
-	}
-	return nil
-}
-
-// make push instruction function
-func makePush(size uint64, pushByteSize int) executionFunc {
-	return func(state *State) error {
-		codeLen := len(callContext.contract.Code)
-
-		startMin := int(*pc + 1)
-		if startMin >= codeLen {
-			startMin = codeLen
-		}
-		endMin := startMin + pushByteSize
-		if startMin+pushByteSize >= codeLen {
-			endMin = codeLen
-		}
-
-		integer := new(uint256.Int)
-		callContext.stack.Push(integer.SetBytes(common.RightPadBytes(
-			// So it doesn't matter what we push onto the stack.
-			callContext.contract.Code[startMin:endMin], pushByteSize)))
-
-		*pc += size
-		return nil
-	}
-}
-
-// make dup instruction function
-func makeDup(size int64) executionFunc {
-	return func(state *State) error {
-		callContext.stack.Dup(int(size))
-		return nil
-	}
-}
-
-// make swap instruction function
-func makeSwap(size int64) executionFunc {
-	// switch n + 1 otherwise n would be swapped with n
-	size++
-	return func(state *State) error {
-		callContext.stack.Swap(int(size))
-		return nil
-	}
-}
-
+// func opConstant01(state *State) error { return opConstant(state,  1) }
+// func opConstant02(state *State) error { return opConstant(state,  2) }
+// func opConstant03(state *State) error { return opConstant(state,  3) }
+// func opConstant04(state *State) error { return opConstant(state,  4) }
+// func opConstant05(state *State) error { return opConstant(state,  5) }
+// func opConstant06(state *State) error { return opConstant(state,  6) }
+// func opConstant07(state *State) error { return opConstant(state,  7) }
+// func opConstant08(state *State) error { return opConstant(state,  8) }
+// func opConstant09(state *State) error { return opConstant(state,  9) }
+// func opConstant10(state *State) error { return opConstant(state, 10) }
+// func opConstant11(state *State) error { return opConstant(state, 11) }
+// func opConstant12(state *State) error { return opConstant(state, 12) }
+// func opConstant13(state *State) error { return opConstant(state, 13) }
+// func opConstant14(state *State) error { return opConstant(state, 14) }
+// func opConstant15(state *State) error { return opConstant(state, 15) }
+// func opConstant16(state *State) error { return opConstant(state, 16) }
+// func opConstant17(state *State) error { return opConstant(state, 17) }
+// func opConstant18(state *State) error { return opConstant(state, 18) }
+// func opConstant19(state *State) error { return opConstant(state, 19) }
+// func opConstant20(state *State) error { return opConstant(state, 20) }
+// func opConstant21(state *State) error { return opConstant(state, 21) }
+// func opConstant22(state *State) error { return opConstant(state, 22) }
+// func opConstant23(state *State) error { return opConstant(state, 23) }
+// func opConstant24(state *State) error { return opConstant(state, 24) }
+// func opConstant25(state *State) error { return opConstant(state, 25) }
+// func opConstant26(state *State) error { return opConstant(state, 26) }
+// func opConstant27(state *State) error { return opConstant(state, 27) }
+// func opConstant28(state *State) error { return opConstant(state, 28) }
+// func opConstant29(state *State) error { return opConstant(state, 29) }
+// func opConstant30(state *State) error { return opConstant(state, 30) }
+// func opConstant31(state *State) error { return opConstant(state, 31) }
+// func opConstant32(state *State) error { return opConstant(state, 32) }
