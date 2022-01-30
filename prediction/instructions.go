@@ -170,7 +170,7 @@ func binOpArgs(state *State) (int, int, int) {
 	state.i = i
 	ok := state.known[r0] && state.known[r1]
 	state.known[rd] = ok
-	if !ok { return -1, -1, -1 }
+	if !ok { rd = -1 }
 	return rd, r0, r1
 }
 func opExp(state *State) error {
