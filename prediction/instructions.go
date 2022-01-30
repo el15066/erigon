@@ -13,13 +13,12 @@ import (
 	"github.com/ledgerwatch/log/v3"
 )
 
-
-func getArg(data []byte, i uint) int { return int(data[i]) | (int(data[i+1]) << 8) }
+func getArg(data []byte, i uint) (int, int) { return i+2, int(data[i]) | (int(data[i+1]) << 8) }
 
 func zerOpArgs(state *State) int {
-	i  := state.i + 1
-	rd := getArg(state.code, i)
-	state.i = i + 2
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	state.i = i
 	state.known[rd] = true
 	return rd
 }
@@ -37,9 +36,9 @@ func opCodeSize(state *State) error {
 }
 
 func zerOpArgVs(state *State) *uint256.Int {
-	i  := state.i + 1
-	rd := getArg(state.code, i)
-	state.i = i + 2
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	state.i = i
 	state.known[rd] = true
 	d  := &state.regs[rd]
 	return d
@@ -71,10 +70,10 @@ func opCallDataSize(state *State) error {
 }
 
 func uniOp(state *State, op func (*uint256.Int, *uint256.Int) *uint256.Int) error {
-	i  := state.i + 1
-	rd := getArg(state.code, i)
-	r0 := getArg(state.code, i + 2)
-	state.i = i + 4
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i)
+	state.i = i
 	ok := state.known[r0]
 	state.known[rd] = ok
 	if !ok { return nil }
@@ -89,10 +88,10 @@ func _iszero(d, v0 *uint256.Int) *uint256.Int { if v0.IsZero() { return d.SetOne
 func opIszero(state *State) error { return uniOp(state, _iszero) }
 
 func uniOpArgVs(state *State) (*uint256.Int, *uint256.Int) {
-	i  := state.i + 1
-	rd := getArg(state.code, i)
-	r0 := getArg(state.code, i + 2)
-	state.i = i + 4
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i)
+	state.i = i
 	ok := state.known[r0]
 	state.known[rd] = ok
 	if !ok { return nil, nil }
@@ -127,11 +126,11 @@ func opExtCodeHash(state *State) error {
 }
 
 func binOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int) *uint256.Int) error {
-	i  := state.i + 1
-	rd := getArg(state.code, i)
-	r0 := getArg(state.code, i + 2)
-	r1 := getArg(state.code, i + 4)
-	state.i = i + 6
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i)
+	i, r1  := getArg(state.code, i)
+	state.i = i
 	ok := state.known[r0] && state.known[r1]
 	state.known[rd] = ok
 	if !ok { return nil }
@@ -164,11 +163,11 @@ func opSlt(state *State) error { return binOp(state, _slt) }
 func opSgt(state *State) error { return binOp(state, _sgt) }
 
 func binOpArgs(state *State) (int, int, int) {
-	i  := state.i + 1
-	rd := getArg(state.code, i)
-	r0 := getArg(state.code, i + 2)
-	r1 := getArg(state.code, i + 4)
-	state.i = i + 6
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i)
+	i, r1  := getArg(state.code, i)
+	state.i = i
 	ok := state.known[r0] && state.known[r1]
 	state.known[rd] = ok
 	if !ok { return -1, -1, -1 }
@@ -276,12 +275,12 @@ func opSha3(state *State) error {
 }
 
 func triOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int, *uint256.Int) *uint256.Int) error {
-	i  := state.i + 1
-	rd := getArg(state.code, i)
-	r0 := getArg(state.code, i + 2)
-	r1 := getArg(state.code, i + 4)
-	r2 := getArg(state.code, i + 6)
-	state.i = i + 8
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i)
+	i, r1  := getArg(state.code, i)
+	i, r2  := getArg(state.code, i)
+	state.i = i
 	ok := state.known[r0] && state.known[r1] && state.known[r2]
 	state.known[rd] = ok
 	if !ok { return nil }
