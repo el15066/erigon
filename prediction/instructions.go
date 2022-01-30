@@ -164,6 +164,35 @@ func opExtCodeHash(state *State) error {
 	}
 	return nil
 }
+func opSload(state *State) error {
+	d, v0 := uniOpArgVs(state)
+	if d == nil { return nil }
+	a := state.address
+	// k := (*common.Hash)(v0) // hash is []byte :(
+	k := &state.ctx.hasherBuf
+	*k = v0.Bytes32()
+	state.ctx.ibs.GetState(a, k, d)
+	return nil
+}
+
+func uniNVOpArgVs(state *State) (*uint256.Int) {
+	i      := state.i + 1
+	i, r0  := getArg(state.code, i)
+	state.i = i
+	ok := state.known[r0]
+	if !ok { return nil }
+	v0 := &state.regs[r0]
+	return v0
+}
+func opStouch(state *State) error {
+	v0 := uniNVOpArgVs(state)
+	if v0 == nil { return nil }
+	a := state.address
+	k := &state.ctx.hasherBuf
+	*k = v0.Bytes32()
+	state.ctx.ibs.PrefetchState(a, k)
+	return nil
+}
 
 func uniOpArgs(state *State) (int, int) {
 	i      := state.i + 1
@@ -392,6 +421,17 @@ func opMstore8(state *State) error {
 	} else       { state.mem.SetByte(i, byte(v1.Uint64())) }
 	return nil
 }
+func opSstore(state *State) error {
+	v0, v1 := binNVOpOptArgVs(state)
+	if v0 == nil { return nil }
+	a := state.address
+	k := &state.ctx.hasherBuf
+	*k = v0.Bytes32()
+	// state.ctx.ibs.PrefetchState(a, k)
+	if v1 == nil { state.ctx.ibs.PrefetchState(a, k)
+	} else       { state.ctx.ibs.SetDirtyState(a, k, v1) }
+	return nil
+}
 
 func triOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int, *uint256.Int) *uint256.Int) error {
 	i      := state.i + 1
@@ -479,7 +519,6 @@ func opCodeCopy(state *State) error {
 	return nil
 }
 
-
 func tetNVOpArgVs(state *State) (*uint256.Int, *uint256.Int, *uint256.Int, *uint256.Int) {
 	i      := state.i + 1
 	i, r0  := getArg(state.code, i)
@@ -519,22 +558,6 @@ func opExtCodeCopy(state *State) error {
 
 
 
-
-
-func opSload(state *State) error {
-	loc := callContext.stack.Peek()
-	interpreter.hasherBuf = loc.Bytes32()
-	interpreter.evm.IntraBlockState.GetState(callContext.contract.Address(), &interpreter.hasherBuf, loc)
-	return nil
-}
-
-func opSstore(state *State) error {
-	loc := callContext.stack.Pop()
-	val := callContext.stack.Pop()
-	interpreter.hasherBuf = loc.Bytes32()
-	interpreter.evm.IntraBlockState.SetState(callContext.contract.Address(), &interpreter.hasherBuf, val)
-	return nil
-}
 
 func opJump(state *State) error {
 	pos := callContext.stack.Pop()
