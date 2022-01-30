@@ -68,6 +68,46 @@ func opCallDataSize(state *State) error {
 	d.SetUint64(len(state.calldata))
 	return nil
 }
+func opGasprice(state *State) error {
+	d := zerOpArgVs(state)
+	d.Set(state.ctx.gasPrice)
+	return nil
+}
+func opCoinbase(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetBytes(state.ctx.coinbase.Bytes())
+	return nil
+}
+func opTimestamp(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetUint64(state.ctx.timestamp)
+	return nil
+}
+func opNumber(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetUint64(state.ctx.blockNumber)
+	return nil
+}
+func opDifficulty(state *State) error {
+	d := zerOpArgVs(state)
+	d.Set(state.ctx.difficulty)
+	return nil
+}
+func opMsize(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetUint64(state.mem.msize())
+	return nil
+}
+func opGas(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetUint64(state.ctx.gasLimit) // we don't track gas usage, so return max
+	return nil
+}
+func opGasLimit(state *State) error {
+	d := zerOpArgVs(state)
+	d.SetUint64(state.ctx.gasLimit)
+	return nil
+}
 
 func uniOp(state *State, op func (*uint256.Int, *uint256.Int) *uint256.Int) error {
 	i      := state.i + 1
@@ -122,6 +162,58 @@ func opExtCodeHash(state *State) error {
 	} else {
 		d.SetBytes(state.ctx.ibs.GetCodeHash(a).Bytes())
 	}
+	return nil
+}
+
+func uniOpArgs(state *State) (int, int) {
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i)
+	state.i = i
+	ok := state.known[r0]
+	state.known[rd] = ok
+	if !ok { rd = -1 }
+	return rd, r0
+}
+func opCallDataLoad(state *State) error {
+	rd, r0 := uniOpArgs(state)
+	if rd < 0 { return nil }
+	d  := &state.regs[rd]
+	_i := &state.regs[r0]
+	if _i.GtUint64(65536) {
+		state.known[rd] = false
+		return nil
+	}
+	i := _i.Uint64()
+	d.SetBytes(getData(state.calldata, i, 32))
+	return nil
+}
+func opBlockhash(state *State) error {
+	rd, r0 := uniOpArgs(state)
+	if rd < 0 { return nil }
+	d  := &state.regs[rd]
+	_i := &state.regs[r0]
+	if !_i.IsUint64() {
+		state.known[rd] = false
+		return nil
+	}
+	i     := _i.Uint64()
+	delta := state.ctx.blockNumber - i - 1
+	if delta < 256 { d.SetBytes(state.ctx.GetHash(i).Bytes())
+	} else         { d.Clear() }
+	return nil
+}
+func opMload(state *State) error {
+	rd, r0 := uniOpArgs(state)
+	if rd < 0 { return nil }
+	d  := &state.regs[rd]
+	_i := &state.regs[r0]
+	if _i.GtUint64(65536) {
+		state.known[rd] = false
+		return nil
+	}
+	i := _i.Uint64()
+	d.SetBytes(state.mem.get(i, 32))
 	return nil
 }
 
@@ -274,6 +366,33 @@ func opSha3(state *State) error {
 	return nil
 }
 
+func binNVOpArgVs(state *State) (*uint256.Int, *uint256.Int) {
+	i      := state.i + 1
+	i, r0  := getArg(state.code, i)
+	i, r1  := getArg(state.code, i)
+	state.i = i
+	ok := state.known[r0] && state.known[r1]
+	if !ok { return nil, nil }
+	v0 := &state.regs[r0]
+	v1 := &state.regs[r1]
+	return v0, v1
+}
+func opMstore(state *State) error {
+	v0, v1 := binNVOpArgVs(state)
+	if v0 == nil { return nil }
+	i := v0.Uint64()
+	state.mem.SetU256(i, v1)
+	return nil
+}
+func opMstore8(state *State) error {
+	v0, v1 := binNVOpArgVs(state)
+	if v0 == nil { return nil }
+	i :=      v0.Uint64()
+	b := byte(v1.Uint64())
+	state.mem.SetByte(i, b)
+	return nil
+}
+
 func triOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int, *uint256.Int) *uint256.Int) error {
 	i      := state.i + 1
 	i, rd  := getArg(state.code, i)
@@ -294,204 +413,113 @@ func triOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int, *uin
 func opAddmod(state *State) error { return triOp(state, (uint256.Int).AddMod) }
 func opMulmod(state *State) error { return triOp(state, (uint256.Int).MulMod) }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-func opCallDataLoad(state *State) error {
-	x := callContext.stack.Peek()
-	if offset, overflow := x.Uint64WithOverflow(); !overflow {
-		data := getData(callContext.contract.Input, offset, 32)
-		x.SetBytes(data)
-	} else {
-		x.Clear()
-	}
-	return nil, nil
+func triOpArgs(state *State) (int, int, int, int) {
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i)
+	i, r1  := getArg(state.code, i)
+	i, r2  := getArg(state.code, i)
+	state.i = i
+	ok := state.known[r0] && state.known[r1] && state.known[r2]
+	state.known[rd] = ok
+	if !ok { rd = -1 }
+	return rd, r0, r1, r2
 }
 
-
+func triNVOpArgVs(state *State) (*uint256.Int, *uint256.Int, *uint256.Int) {
+	i      := state.i + 1
+	i, r0  := getArg(state.code, i)
+	i, r1  := getArg(state.code, i)
+	i, r2  := getArg(state.code, i)
+	state.i = i
+	ok := state.known[r0] && state.known[r1] && state.known[r2]
+	if !ok { return nil, nil, nil }
+	v0 := &state.regs[r0]
+	v1 := &state.regs[r1]
+	v2 := &state.regs[r2]
+	return v0, v1, v2
+}
 func opCallDataCopy(state *State) error {
-	var (
-		memOffset  = callContext.stack.Pop()
-		dataOffset = callContext.stack.Pop()
-		length     = callContext.stack.Pop()
-	)
-	dataOffset64, overflow := dataOffset.Uint64WithOverflow()
-	if overflow {
-		dataOffset64 = 0xffffffffffffffff
-	}
-	// These values are checked for overflow during gas cost calculation
-	memOffset64 := memOffset.Uint64()
-	length64 := length.Uint64()
-	callContext.memory.Set(memOffset64, length64, getData(callContext.contract.Input, dataOffset64, length64))
+	v0, v1, v2 := triNVOpArgs(state)
+	if v0 == nil { return nil }
+	o := v0.Uint64()
+	i := v1.Uint64()
+	s := v2.Uint64()
+	// if i < 65536 {
+	data := getData(state.calldata, i, s)
+	state.mem.Set(o, s, data)
+	// } else {
+	// 	state.mem.SetUnknown(o, s)
+	// }
 	return nil
 }
-
-
 func opReturnDataCopy(state *State) error {
-	var (
-		memOffset  = callContext.stack.Pop()
-		dataOffset = callContext.stack.Pop()
-		length     = callContext.stack.Pop()
-	)
-
-	offset64, overflow := dataOffset.Uint64WithOverflow()
-	if overflow {
-		return nil, ErrReturnDataOutOfBounds
-	}
-	// we can reuse dataOffset now (aliasing it for clarity)
-	end := dataOffset
-	_, overflow = end.AddOverflow(&dataOffset, &length)
-	if overflow {
-		return nil, ErrReturnDataOutOfBounds
-	}
-
-	end64, overflow := end.Uint64WithOverflow()
-	if overflow || uint64(len(interpreter.returnData)) < end64 {
-		return nil, ErrReturnDataOutOfBounds
-	}
-	callContext.memory.Set(memOffset.Uint64(), length.Uint64(), interpreter.returnData[offset64:end64])
+	v0, v1, v2 := triNVOpArgs(state)
+	if v0 == nil { return nil }
+	o := v0.Uint64()
+	// i := v1.Uint64()
+	s := v2.Uint64()
+	state.mem.SetUnknown(o, s)
 	return nil
 }
-
 func opCodeCopy(state *State) error {
-	var (
-		memOffset  = callContext.stack.Pop()
-		codeOffset = callContext.stack.Pop()
-		length     = callContext.stack.Pop()
-	)
-	uint64CodeOffset, overflow := codeOffset.Uint64WithOverflow()
-	if overflow {
-		uint64CodeOffset = 0xffffffffffffffff
-	}
-	codeCopy := getData(callContext.contract.Code, uint64CodeOffset, length.Uint64())
-	callContext.memory.Set(memOffset.Uint64(), length.Uint64(), codeCopy)
-	return nil, nil
+	// simillar to CODESIZE, these should really have been optimized out by the analyzer
+	v0, v1, v2 := triNVOpArgs(state)
+	if v0 == nil { return nil }
+	o := v0.Uint64()
+	// i := v1.Uint64()
+	s := v2.Uint64()
+	// if i < 1024 * 1024 {
+	// a    := state.address
+	// data := getData(state.ctx.ibs.GetCode(a), i, s)
+	// state.mem.Set(o, s, data)
+	// } else {
+	state.mem.SetUnknown(o, s)
+	// }
+	return nil
 }
 
+
+func tetNVOpArgVs(state *State) (*uint256.Int, *uint256.Int, *uint256.Int, *uint256.Int) {
+	i      := state.i + 1
+	i, r0  := getArg(state.code, i)
+	i, r1  := getArg(state.code, i)
+	i, r2  := getArg(state.code, i)
+	i, r3  := getArg(state.code, i)
+	state.i = i
+	ok := state.known[r0] && state.known[r1] && state.known[r2] && state.known[r3]
+	if !ok { return nil, nil, nil, nil }
+	v0 := &state.regs[r0]
+	v1 := &state.regs[r1]
+	v2 := &state.regs[r2]
+	v3 := &state.regs[r3]
+	return v0, v1, v2, v3
+}
 func opExtCodeCopy(state *State) error {
-	var (
-		stack      = callContext.stack
-		a          = stack.Pop()
-		memOffset  = stack.Pop()
-		codeOffset = stack.Pop()
-		length     = stack.Pop()
-	)
-	addr := common.Address(a.Bytes20())
-	len64 := length.Uint64()
-	codeCopy := getDataBig(interpreter.evm.IntraBlockState.GetCode(addr), &codeOffset, len64)
-	callContext.memory.Set(memOffset.Uint64(), len64, codeCopy)
+	v0, v1, v2, v3 := tetNVOpArgs(state)
+	if v0 == nil { return nil }
+	a := common.Address(v0.Bytes20())
+	o := v1.Uint64()
+	i := v2.Uint64()
+	s := v3.Uint64()
+	// if i < 1024 * 1024 {
+	data := getData(state.ctx.ibs.GetCode(a), i, s)
+	state.mem.Set(o, s, data)
+	// } else {
+	// 	state.mem.SetUnknown(o, s)
+	// }
 	return nil
 }
 
 
-func opGasprice(state *State) error {
-	v, overflow := uint256.FromBig(interpreter.evm.GasPrice)
-	if overflow {
-		return nil, fmt.Errorf("interpreter.evm.GasPrice higher than 2^256-1")
-	}
-	callContext.stack.Push(v)
-	return nil, nil
-}
 
-func opBlockhash(state *State) error {
-	num := callContext.stack.Peek()
-	num64, overflow := num.Uint64WithOverflow()
-	if overflow {
-		num.Clear()
-		return nil, nil
-	}
-	var upper, lower uint64
-	upper = interpreter.evm.Context.BlockNumber
-	if upper < 257 {
-		lower = 0
-	} else {
-		lower = upper - 256
-	}
-	if num64 >= lower && num64 < upper {
-		num.SetBytes(interpreter.evm.Context.GetHash(num64).Bytes())
-	} else {
-		num.Clear()
-	}
-	return nil
-}
 
-func opCoinbase(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetBytes(interpreter.evm.Context.Coinbase.Bytes()))
-	return nil, nil
-}
 
-func opTimestamp(state *State) error {
-	v := new(uint256.Int).SetUint64(interpreter.evm.Context.Time)
-	callContext.stack.Push(v)
-	return nil, nil
-}
 
-func opNumber(state *State) error {
-	v := new(uint256.Int).SetUint64(interpreter.evm.Context.BlockNumber)
-	callContext.stack.Push(v)
-	return nil, nil
-}
 
-func opDifficulty(state *State) error {
-	v, overflow := uint256.FromBig(interpreter.evm.Context.Difficulty)
-	if overflow {
-		return nil, fmt.Errorf("interpreter.evm.Context.Difficulty higher than 2^256-1")
-	}
-	callContext.stack.Push(v)
-	return nil, nil
-}
 
-func opGasLimit(state *State) error {
-	if interpreter.evm.Context.MaxGasLimit {
-		callContext.stack.Push(new(uint256.Int).SetAllOne())
-	} else {
-		callContext.stack.Push(new(uint256.Int).SetUint64(interpreter.evm.Context.GasLimit))
-	}
-	return nil, nil
-}
 
-func opPop(state *State) error {
-	callContext.stack.Pop()
-	return nil, nil
-}
 
-func opMload(state *State) error {
-	v := callContext.stack.Peek()
-	offset := v.Uint64()
-	v.SetBytes(callContext.memory.GetPtr(offset, 32))
-	return nil, nil
-}
-
-func opMstore(state *State) error {
-	mStart, val := callContext.stack.Pop(), callContext.stack.Pop()
-	callContext.memory.Set32(mStart.Uint64(), &val)
-	return nil, nil
-}
-
-func opMstore8(state *State) error {
-	off, val := callContext.stack.Pop(), callContext.stack.Pop()
-	callContext.memory.store[off.Uint64()] = byte(val.Uint64())
-	return nil, nil
-}
 
 func opSload(state *State) error {
 	loc := callContext.stack.Peek()
@@ -539,25 +567,6 @@ func opJumpi(state *State) error {
 	} else {
 		*pc++
 	}
-	return nil, nil
-}
-
-func opJumpdest(state *State) error {
-	return nil, nil
-}
-
-func opPc(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetUint64(*pc))
-	return nil, nil
-}
-
-func opMsize(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetUint64(uint64(callContext.memory.Len())))
-	return nil, nil
-}
-
-func opGas(state *State) error {
-	callContext.stack.Push(new(uint256.Int).SetUint64(callContext.contract.Gas))
 	return nil
 }
 
