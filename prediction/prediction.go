@@ -5,6 +5,10 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+const BLOCK_ID_SHIFTS = 1
+const BLOCK_ID_MAX    = uint64(65536 << BLOCK_ID_SHIFTS) - 1
+const INVALID_TARGET  = uint(-1)
+
 type Regs  [65536]uint256.Int
 type Known [65536]bool
 type Mem   [65536]byte

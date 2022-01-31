@@ -13,13 +13,9 @@ import (
 	"github.com/ledgerwatch/log/v3"
 )
 
-const BLOCK_ID_SHIFTS = 1
-const BLOCK_ID_MAX    = uint64(65536 << BLOCK_ID_SHIFTS) - 1
-const INVALID_TARGET  = uint(-1)
-
 func isValidTarget(target uint) { return target != INVALID_TARGET }
 
-func getArg(data []byte, i uint) (int, int) { return i+2, int(data[i]) | (int(data[i+1]) << 8) }
+func getArg(data []byte, i uint) (uint, uint16) { return i+2, uint16(data[i]) | (uint16(data[i+1]) << 8) }
 
 func opStop(state *State) {
 	state.i = INVALID_TARGET
@@ -37,6 +33,7 @@ func opConstant(state *State) {
 	return
 }
 func opPhi(state *State) {
+	if state.phiindex >= state.philen { panic("state.phiindex >= state.philen") }
 	// Artifact of SSA, should be removed with proper reg allocation
 	i      := state.i + 1
 	i, rd  := getArg(state.code, i)
@@ -54,7 +51,8 @@ func opBlockId(state *State) {
 	i      := state.i + 1
 	i, bid := getArg(state.code, i)
 	state.i = i
-	return state.changeBlock(bid)
+	state.changeBlock(bid)
+	return
 }
 func opJump(state *State) {
 	i      := state.i + 1
@@ -67,7 +65,7 @@ func opJump(state *State) {
 	}
 	bid    := _bid.Uint64() >> BLOCK_ID_SHIFTS
 	state.i = state.bidToIndex(bid)
-	state.changeBlock(bid)
+	state.changeBlock(uint16(bid))
 	return
 }
 func opJumpi(state *State) {
@@ -88,7 +86,7 @@ func opJumpi(state *State) {
 	} else             { taken = isValidTarget(target) }
 	if taken {
 		state.i = target
-		state.changeBlock(bid)
+		state.changeBlock(uint16(bid))
 	}
 	else{
 		state.i = i
