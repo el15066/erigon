@@ -618,139 +618,90 @@ func opExtCodeCopy(state *State) {
 
 
 
-
-
-
-
-
-
-
-func opCall(state *State) error {
-	stack := callContext.stack
-	// Pop gas. The actual gas in interpreter.evm.callGasTemp.
-	// We can use this as a temporary value
-	temp := stack.Pop()
-	gas := interpreter.evm.callGasTemp
-	// Pop other call parameters.
-	addr, value, inOffset, inSize, retOffset, retSize := stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop()
-	toAddr := common.Address(addr.Bytes20())
-	// Get the arguments from the memory.
-	args := callContext.memory.GetPtr(inOffset.Uint64(), inSize.Uint64())
-
-	if !value.IsZero() {
-		gas += params.CallStipend
+const (
+	CALL_REGULAR  CallOpType = iota
+	CALL_CODE
+	CALL_DELEGATE
+	CALL_STATIC
+)
+func opCallCommon(state *State, t CallOpType) {
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i) // gas
+	i, r1  := getArg(state.code, i) // address
+	var r2 uint16
+	if t == CALL_REGULAR ||
+	   t == CALL_CODE {
+		i, r2  := getArg(state.code, i) // value
 	}
-
-	ret, returnGas, err := interpreter.evm.Call(callContext.contract, toAddr, args, gas, &value, false /* bailout */)
-
-	if err != nil {
-		temp.Clear()
-	} else {
-		temp.SetOne()
+	i, r3  := getArg(state.code, i) // i0
+	i, r4  := getArg(state.code, i) // i1-i0
+	i, r5  := getArg(state.code, i) // o0
+	i, r6  := getArg(state.code, i) // o1-o0
+	state.i = i
+	ok := state.known[r1] && state.known[r3] && state.known[r4]
+	state.known[rd] = ok
+	if !ok { return }
+	d  := &state.regs[rd]
+	var v0, v1, v2, v3, v4, v5, v6 *uint256.Int
+	if state.known[r0] { v0 = &state.regs[r0] }
+	if state.known[r1] { v1 = &state.regs[r1] }
+	if state.known[r2] { v2 = &state.regs[r2] }
+	if state.known[r3] { v3 = &state.regs[r3] }
+	if state.known[r4] { v4 = &state.regs[r4] }
+	if state.known[r5] { v5 = &state.regs[r5] }
+	if state.known[r6] { v6 = &state.regs[r6] }
+	//
+	ca := &common.Address(v1.Bytes20())
+	//
+	if v3.GtUint64(65535) || v4.GtUint64(65535) {
+		state.known[rd] = false
+		return
 	}
-	stack.Push(&temp)
-	if err == nil || err == ErrExecutionReverted {
-		ret = common.CopyBytes(ret)
-		callContext.memory.Set(retOffset.Uint64(), retSize.Uint64(), ret)
+	i0 := v3.Uint64()
+	i1 := v4.Uint64() + i0
+	//
+	if !(v5 == nil || v6 == nil) {
+		if !(v5.GtUint64(65535) || v6.GtUint64(65535)) {
+			o0 := v5.Uint64()
+			o1 := v6.Uint64() + o0
+    		// clear resulting mem, since we don't currently support return value
+			state.mem.SetUnknown(o0, o1)
+		}
 	}
-
-	callContext.contract.Gas += returnGas
-
-	return ret, nil
+	//
+	ns := newState(state.ctx)
+	ns.calldata = state.mem.getRaw(i0, i1)
+	//
+	if t == CALL_REGULAR  { ns.address = ca
+	} else                { ns.address = state.address }
+	//
+	if t == CALL_DELEGATE { ns.caller  = state.caller
+	} else                { ns.caller  = state.address }
+	//
+	switch {
+		case t == CALL_DELEGATE: ns.callvalue.Set(state.callvalue)
+		case t == CALL_STATIC:   ns.callvalue.Clear()
+		case v2 != nil:          ns.callvalue.Set(v2)
+		default:                 ns.callvalue.Clear()
+	}
+	//
+	reservedGaz := state.gaz / 4
+	ns.gaz       = state.gaz - reserved_gaz
+	//
+	res, known  := predictCall(ns, ca)
+	//
+	state.gaz    =    ns.gaz + reserved_gaz
+	freeState(ns)
+	//
+	d.SetUint64(uint64(res))
+	state.known[rd] = known
+	return
 }
-
-func opCallCode(state *State) {
-	// Pop gas. The actual gas is in interpreter.evm.callGasTemp.
-	stack := callContext.stack
-	// We use it as a temporary value
-	temp := stack.Pop()
-	gas := interpreter.evm.callGasTemp
-	// Pop other call parameters.
-	addr, value, inOffset, inSize, retOffset, retSize := stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop()
-	toAddr := common.Address(addr.Bytes20())
-	// Get arguments from the memory.
-	args := callContext.memory.GetPtr(inOffset.Uint64(), inSize.Uint64())
-
-	//TODO: use uint256.Int instead of converting with toBig()
-	if !value.IsZero() {
-		gas += params.CallStipend
-	}
-
-	ret, returnGas, err := interpreter.evm.CallCode(callContext.contract, toAddr, args, gas, &value)
-	if err != nil {
-		temp.Clear()
-	} else {
-		temp.SetOne()
-	}
-	stack.Push(&temp)
-	if err == nil || err == ErrExecutionReverted {
-		ret = common.CopyBytes(ret)
-		callContext.memory.Set(retOffset.Uint64(), retSize.Uint64(), ret)
-	}
-
-	callContext.contract.Gas += returnGas
-
-	return ret, nil
-}
-
-func opDelegateCall(state *State) {
-	stack := callContext.stack
-	// Pop gas. The actual gas is in interpreter.evm.callGasTemp.
-	// We use it as a temporary value
-	temp := stack.Pop()
-	gas := interpreter.evm.callGasTemp
-	// Pop other call parameters.
-	addr, inOffset, inSize, retOffset, retSize := stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop()
-	toAddr := common.Address(addr.Bytes20())
-	// Get arguments from the memory.
-	args := callContext.memory.GetPtr(inOffset.Uint64(), inSize.Uint64())
-
-	// fmt.Println("opDelegateCall", toAddr)
-	ret, returnGas, err := interpreter.evm.DelegateCall(callContext.contract, toAddr, args, gas)
-	if err != nil {
-		temp.Clear()
-	} else {
-		temp.SetOne()
-	}
-	stack.Push(&temp)
-	if err == nil || err == ErrExecutionReverted {
-		ret = common.CopyBytes(ret)
-		callContext.memory.Set(retOffset.Uint64(), retSize.Uint64(), ret)
-	}
-
-	callContext.contract.Gas += returnGas
-
-	return ret, nil
-}
-
-func opStaticCall(state *State) {
-	// Pop gas. The actual gas is in interpreter.evm.callGasTemp.
-	stack := callContext.stack
-	// We use it as a temporary value
-	temp := stack.Pop()
-	gas := interpreter.evm.callGasTemp
-	// Pop other call parameters.
-	addr, inOffset, inSize, retOffset, retSize := stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop()
-	toAddr := common.Address(addr.Bytes20())
-	// Get arguments from the memory.
-	args := callContext.memory.GetPtr(inOffset.Uint64(), inSize.Uint64())
-
-	ret, returnGas, err := interpreter.evm.StaticCall(callContext.contract, toAddr, args, gas)
-	if err != nil {
-		temp.Clear()
-	} else {
-		temp.SetOne()
-	}
-	stack.Push(&temp)
-	if err == nil || err == ErrExecutionReverted {
-		ret = common.CopyBytes(ret)
-		callContext.memory.Set(retOffset.Uint64(), retSize.Uint64(), ret)
-	}
-
-	callContext.contract.Gas += returnGas
-
-	return ret, nil
-}
+func opCall(        state *State) { return opCallCommon(state, CALL_REGULAR)  }
+func opCallCode(    state *State) { return opCallCommon(state, CALL_CODE)     }
+func opDelegateCall(state *State) { return opCallCommon(state, CALL_DELEGATE) }
+func opStaticCall(  state *State) { return opCallCommon(state, CALL_STATIC)   }
 
 // func opConstant01(state *State) { return opConstant(state,  1) }
 // func opConstant02(state *State) { return opConstant(state,  2) }
