@@ -1,5 +1,5 @@
 
-package prediction
+package prediction_internal
 
 import (
 	"golang.org/x/crypto/sha3"
@@ -13,11 +13,11 @@ type Regs  [65536]uint256.Int
 type Known [65536]bool
 type Mem   [65536]byte
 
-type Block struct {
+type BlockTableEntry struct {
 	index uint
-	edges []uint16
+	edges []uint16 // allow in-edges
 }
-type BlockTable map[uint]Block
+type BlockTable map[uint]BlockTableEntry
 
 // Ctx can't change during execution of a TX, only between TXs, should not be copied and is unique to each thread
 type Ctx struct {
