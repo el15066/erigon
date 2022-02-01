@@ -159,9 +159,21 @@ func (state *State) changeBlock(bid uint16) {
 	}
 }
 
+// Not exact, only for prediction
+func isPrecompile(codeAddress *common.Address) bool {
+	last := codeAddress[common.AddressLength-1]
+	if 1 <= last && last < 10 {
+		ok := true
+		for i := 0; i < common.AddressLength - 1; i += 1 {
+			ok = ok && codeAddress[i] == 0
+		}
+		return ok
+	}
+	return false
+}
+
 func predictCall(state *State, codeAddress *common.Address) (byte, bool) {
-	isPrecompile := 1 <= codeAddress < 10
-	if isPrecompile { return 1, true }
+	if isPrecompile(codeAddress) { return 1, true }
 
 	find the predictor
 	load blocktable, code
