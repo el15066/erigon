@@ -2,7 +2,15 @@
 package prediction_internal
 
 import (
-	"golang.org/x/crypto/sha3"
+	"math"
+	"encoding/binary"
+
+	"github.com/holiman/uint256"
+
+	common  "github.com/ledgerwatch/erigon/common"
+	crypto  "github.com/ledgerwatch/erigon/crypto"
+	stateDB "github.com/ledgerwatch/erigon/core/state"
+	kvDB    "github.com/ledgerwatch/erigon-lib/kv"
 )
 
 const BLOCK_ID_SHIFTS = 1

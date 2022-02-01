@@ -1,16 +1,10 @@
 
-package prediction
+package prediction_internal
 
 import (
-	"fmt"
-
 	"github.com/holiman/uint256"
-	"golang.org/x/crypto/sha3"
 
 	"github.com/ledgerwatch/erigon/common"
-	"github.com/ledgerwatch/erigon/core/types"
-	"github.com/ledgerwatch/erigon/params"
-	"github.com/ledgerwatch/log/v3"
 )
 
 func isValidTarget(target uint) { return target != INVALID_TARGET }
