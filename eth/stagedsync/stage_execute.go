@@ -293,7 +293,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
 				break Loop
 			}
-			if PREFETCH_ACCOUNTS {
+			if common.PREFETCH_ACCOUNTS {
 				for i, tx := range block.Transactions() {
 					// prefetch 'from' account
 					//
@@ -311,22 +311,22 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 					//
 					// prefetch 'to' account (nil if contract creation)
 					to_addr := tx.GetTo()
-					if to_addr != nil && !bytes.Equal(to_addr, from_addr) {
+					if to_addr != nil && *to_addr != from_addr {
 						if tracefile != nil {
 							tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(to_addr.Bytes())))
 						}
 						to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
 						//
 						// prefetch its code if it's a contract
-						if PREFETCH_CODE {
+						if common.PREFETCH_CODE {
 							var to_acc accounts.Account
 							to_acc.DecodeForStorage(to_data)
 							// 
 							if !to_acc.IsEmptyCodeHash() {
-								db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
 								if tracefile != nil {
-									tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(a.CodeHash.Bytes())))
+									tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(to_acc.CodeHash.Bytes())))
 								}
+								db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
 								if dumpfile != nil {
 									t, _ := json.Marshal(&tx_dump{
 										Block:      blockNum,
@@ -350,13 +350,14 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 									})
 									dumpfile.Write(append(t, byte('\n')))
 								}
-								if USE_PREDICTORS {
+								if common.USE_PREDICTORS {
 									var from_acc accounts.Account
 									from_acc.DecodeForStorage(from_data)
+
 								}
 							}
 						}
-					} // else is contract creation
+					}
 					//
 					// GET storage prefetch locations
 					// read 2 bytes
@@ -478,7 +479,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	logTime := time.Now()
 	var gas uint64
 
-	blockChan := make(chan *types.Block, BLOCK_READAHEAD - 1)
+	blockChan := make(chan *types.Block, common.BLOCK_READAHEAD - 1)
 	errChan   := make(chan error)
 	quitChan  := make(chan int)
 
