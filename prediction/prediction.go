@@ -4,7 +4,7 @@ package prediction
 import (
 	"math/big"
 
-	"github.com/holiman/uint256"
+	uint256  "github.com/holiman/uint256"
 
 	internal "github.com/ledgerwatch/erigon/prediction/prediction_internal"
 	common   "github.com/ledgerwatch/erigon/common"

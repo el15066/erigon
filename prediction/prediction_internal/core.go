@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"encoding/binary"
 
-	"github.com/holiman/uint256"
+	uint256 "github.com/holiman/uint256"
 
 	common  "github.com/ledgerwatch/erigon/common"
 	crypto  "github.com/ledgerwatch/erigon/crypto"
@@ -170,7 +170,25 @@ func PredictTX(
 	predictCall(state, address)
 	freeState(state)
 }
-
+func predictCall(state *State, codeAddress common.Address) (byte, bool) {
+	if isPrecompile(codeAddress) { return 1, true }
+	//
+	ch    := state.ibs.GetCodeHash(codeAddress)
+	p, ok := getPredictor(ch)
+	if !ok { return 0, false }
+	state.blockTbl = p.blockTbl
+	state.code     = p.code
+	state.curBlock = 0
+	state.i        = 0
+	i_max         := len(code)
+	//
+	for state.i < i_max && state.gaz > 0 {
+		state.gaz -= 1
+		op := code[state.i]
+		jumpTable[op](state)
+	}
+	return 1, true
+}
 // Not exact, only for prediction
 func isPrecompile(codeAddress common.Address) bool {
 	last := codeAddress[common.AddressLength-1]
@@ -182,25 +200,4 @@ func isPrecompile(codeAddress common.Address) bool {
 		return ok
 	}
 	return false
-}
-
-func predictCall(state *State, codeAddress common.Address) (byte, bool) {
-	if isPrecompile(codeAddress) { return 1, true }
-
-	// find the predictor
-	// load blocktable, code
-	// not found ? return 0, false
-	// state.blockTbl = blockTbl
-	code := []byte{}
-	state.code     = code
-	state.curBlock = 0
-	state.i        = 0
-	i_max         := len(code)
-	//
-	for state.i < i_max && state.gaz > 0 {
-		state.gaz -= 1
-		op := code[state.i]
-		jumpTable[op](state)
-	}
-	return 1, true
 }
