@@ -48,6 +48,16 @@ func (mem *Mem) set32(i0 uint64, data [32]byte) {        mem.set(i0, 32, data[:]
 func (mem *Mem) setUnknown1( i uint64) { mem.setUnknown(i, 1 ) }
 func (mem *Mem) setUnknown32(i uint64) { mem.setUnknown(i, 32) }
 
+
+// ibs.Empty(a)
+// ibs.GetBalance(a)
+// ibs.GetCode(a)
+// ibs.GetCodeHash(a)
+// ibs.GetCodeSize(a)
+// ibs.GetState(a, k, d)
+// ibs.PrefetchState(a, k)
+// ibs.SetDirtyState(a, k, v)
+
 type BlockTableEntry struct {
 	index int
 	edges []uint16 // allow in-edges
@@ -113,22 +123,6 @@ func freeState(state *State) {
 	// TODO: allow to be reused by newState
 }
 
-func run(address *common.Address) {
-	ctx := &Ctx{
-		hasher: sha3.NewLegacyKeccak256().(keccakState)
-	}
-	predictTX(ctx, address)
-}
-
-func predictTX(ctx *Ctx, address *common.Address) {
-	state := newState(ctx)
-	state.address = address
-	state.caller  = ctx.origin
-	state.gaz     = 10000
-	predictCall()
-	freeState(state)
-}
-
 func (state *State) bidToIndex(bid64 uint64) int {
 	if bid64 <= 0xFFFF {
 		bid := uint16(bid64)
@@ -157,6 +151,15 @@ func (state *State) changeBlock(bid uint16) {
 	} else {
 		state.i = INVALID_TARGET
 	}
+}
+
+func PredictTX(ctx *Ctx, address *common.Address) {
+	state := newState(ctx)
+	state.address = address
+	state.caller  = ctx.origin
+	state.gaz     = 10000
+	predictCall(state, address)
+	freeState(state)
 }
 
 // Not exact, only for prediction
