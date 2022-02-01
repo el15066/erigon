@@ -219,7 +219,7 @@ func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
 func (so *stateObject) PrefetchCommittedState(key *common.Hash) {
 	if _, cached := so.originStorage[*key]; cached { return }
 	if so.created { return }
-	_, err := so.db.stateReader.ReadAccountStorage(so.address, so.data.GetIncarnation(), key)
+	so.db.stateReader.ReadAccountStorage(so.address, so.data.GetIncarnation(), key)
 }
 
 // SetState updates a value in account storage.

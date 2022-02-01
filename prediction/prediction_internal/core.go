@@ -15,7 +15,7 @@ import (
 
 const BLOCK_ID_SHIFTS = 1
 const BLOCK_ID_MAX    = uint64(65536 << BLOCK_ID_SHIFTS) - 1
-const INVALID_TARGET  = uint(-1)
+const INVALID_TARGET  = int(math.MaxInt64)
 
 type Regs  [65536]uint256.Int
 type Known [65536]bool
@@ -49,10 +49,10 @@ func (mem *Mem) setUnknown1( i uint64) { mem.setUnknown(i, 1 ) }
 func (mem *Mem) setUnknown32(i uint64) { mem.setUnknown(i, 32) }
 
 type BlockTableEntry struct {
-	index uint
+	index int
 	edges []uint16 // allow in-edges
 }
-type BlockTable map[uint]BlockTableEntry
+type BlockTable map[uint16]BlockTableEntry
 
 // Ctx can't change during execution of a TX, only between TXs, should not be copied and is unique to each thread
 type Ctx struct {
@@ -91,23 +91,23 @@ type State struct {
 	address   *common.Address
 	// codeaddr  *common.Address
 	caller    *common.Address
-	callvalue uint256.Int
-	blockTbl  *BlockTable
+	callvalue *uint256.Int
+	blockTbl  BlockTable
 	code      []byte
 	calldata  []byte
 	gaz       uint
 	regs      Regs
 	known     Known
 	mem       Mem
-	curBlock  uint
-	phiindex  uint
-	philen    uint
-	i         uint
+	curBlock  uint16
+	phiindex  int
+	philen    int
+	i         int
 }
 
 func newState(ctx *Ctx) *State {
 	// TODO: create a pool and allocate without clearing any fields
-	return &State{ ctx }
+	return &State{ ctx: ctx }
 }
 func freeState(state *State) {
 	// TODO: allow to be reused by newState
@@ -129,7 +129,7 @@ func predictTX(ctx *Ctx, address *common.Address) {
 	freeState(state)
 }
 
-func (state *State) bidToIndex(bid64 uint64) uint {
+func (state *State) bidToIndex(bid64 uint64) int {
 	if bid64 <= 0xFFFF {
 		bid := uint16(bid64)
 		if b, ok := state.blockTbl[bid]; ok {

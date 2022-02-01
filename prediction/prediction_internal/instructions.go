@@ -7,9 +7,10 @@ import (
 	"github.com/ledgerwatch/erigon/common"
 )
 
-func isValidTarget(target uint) { return target != INVALID_TARGET }
 
-func getArg(data []byte, i uint) (uint, uint16) { return i+2, uint16(data[i]) | (uint16(data[i+1]) << 8) }
+func isValidTarget(target int) bool { return target != INVALID_TARGET }
+
+func getArg(data []byte, i int) (int, uint16) { return i+2, uint16(data[i]) | (uint16(data[i+1]) << 8) }
 
 func opStop(state *State) {
 	state.i = INVALID_TARGET
@@ -18,7 +19,7 @@ func opStop(state *State) {
 func opConstant(state *State) {
 	// Equivalent of PUSH, a constant is given as immediate value
 	i      := state.i
-	size   := state.code[i] - OP_CONSTANT_OFFSET
+	size   := int(state.code[i]) - OP_CONSTANT_OFFSET
 	i, rd  := getArg(state.code, i + 1)
 	state.known[rd] = true
 	d      := &state.regs[rd]
@@ -57,9 +58,9 @@ func opJump(state *State) {
 		state.i = INVALID_TARGET
 		return
 	}
-	bid    := _bid.Uint64() >> BLOCK_ID_SHIFTS
-	state.i = state.bidToIndex(bid)
-	state.changeBlock(uint16(bid))
+	bid64  := _bid.Uint64() >> BLOCK_ID_SHIFTS
+	state.i = state.bidToIndex(bid64)
+	state.changeBlock(uint16(bid64))
 	return
 }
 func opJumpi(state *State) {
@@ -73,22 +74,21 @@ func opJumpi(state *State) {
 		state.i = INVALID_TARGET
 		return
 	}
-	bid    := _bid.Uint64() >> BLOCK_ID_SHIFTS
-	target := state.bidToIndex(bid)
+	bid64  := _bid.Uint64() >> BLOCK_ID_SHIFTS
+	target := state.bidToIndex(bid64)
 	var taken bool
 	if state.known[rc] { taken = !cond.IsZero()
 	} else             { taken = isValidTarget(target) }
 	if taken {
 		state.i = target
-		state.changeBlock(uint16(bid))
-	}
-	else{
+		state.changeBlock(uint16(bid64))
+	} else  {
 		state.i = i
 	}
 	return
 }
 
-func zerOpArgs(state *State) int {
+func zerOpArgs(state *State) uint16 {
 	i      := state.i + 1
 	i, rd  := getArg(state.code, i)
 	state.i = i
@@ -104,7 +104,7 @@ func opCodeSize(state *State) {
 	rd := zerOpArgs(state)
 	state.known[rd] = false
 	// a := state.address // not always same as code address, maybe keep a ref to contract's code in state, also see CODECOPY
-	// d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(a)))
+	// d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(*a)))
 	return
 }
 
@@ -138,7 +138,7 @@ func opCallValue(state *State) {
 }
 func opCallDataSize(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(len(state.calldata))
+	d.SetUint64(uint64(len(state.calldata)))
 	return
 }
 func opGasprice(state *State) {
@@ -195,39 +195,39 @@ func uniOp(state *State, op func (*uint256.Int, *uint256.Int) *uint256.Int) {
 	op(d, v0)
 	return
 }
-func opNot(state *State) { return uniOp(state, (uint256.Int).Not)  }
+func opNot(state *State) { uniOp(state, (*uint256.Int).Not)  }
 
 func _iszero(d, v0 *uint256.Int) *uint256.Int { if v0.IsZero() { return d.SetOne() } else { return d.Clear() } }
-func opIszero(state *State) { return uniOp(state, _iszero) }
+func opIszero(state *State) { uniOp(state, _iszero) }
 
-func uniOpArgVs(state *State) (*uint256.Int, *uint256.Int) {
+func uniOpArgVs(state *State) (uint16, *uint256.Int, *uint256.Int) {
 	i      := state.i + 1
 	i, rd  := getArg(state.code, i)
 	i, r0  := getArg(state.code, i)
 	state.i = i
 	ok := state.known[r0]
 	state.known[rd] = ok
-	if !ok { return, nil }
+	if !ok { return 0, nil, nil }
 	d  := &state.regs[rd]
 	v0 := &state.regs[r0]
-	return d, v0
+	return rd, d, v0
 }
 func opBalance(state *State) {
-	d, v0 := uniOpArgVs(state)
+	_,  d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := common.Address(v0.Bytes20())
 	d.Set(state.ctx.ibs.GetBalance(a))
 	return
 }
 func opExtCodeSize(state *State) {
-	d, v0 := uniOpArgVs(state)
+	_,  d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := common.Address(v0.Bytes20())
 	d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(a)))
 	return
 }
 func opExtCodeHash(state *State) {
-	d, v0 := uniOpArgVs(state)
+	_,  d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := common.Address(v0.Bytes20())
 	if state.ctx.ibs.Empty(a) { // TODO: maybe speculatively skip check ?
@@ -238,13 +238,13 @@ func opExtCodeHash(state *State) {
 	return
 }
 func opSload(state *State) {
-	d, v0 := uniOpArgVs(state)
+	_,  d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := state.address
 	// k := (*common.Hash)(v0) // hash is []byte :(
-	k := &state.ctx.hasherBuf
+	k := &state.ctx.buf
 	*k = v0.Bytes32()
-	state.ctx.ibs.GetState(a, k, d)
+	state.ctx.ibs.GetState(*a, (*common.Hash)(k), d)
 	return
 }
 
@@ -278,44 +278,39 @@ func uniOpArgs(state *State) (int, int) {
 	return rd, r0
 }
 func opCallDataLoad(state *State) {
-	rd, r0 := uniOpArgs(state)
-	if rd < 0 { return }
-	d  := &state.regs[rd]
-	_i := &state.regs[r0]
-	if _i.GtUint64(65535) {
+	rd, d, v0 := uniOpArgVs(state)
+	if d == nil { return }
+	if v0.GtUint64(65535) {
 		state.known[rd] = false
 		return
 	}
-	i := _i.Uint64()
+	i := v0.Uint64()
 	d.SetBytes(getData(state.calldata, i, 32))
 	return
 }
 func opBlockhash(state *State) {
-	rd, r0 := uniOpArgs(state)
-	if rd < 0 { return }
-	d  := &state.regs[rd]
-	_i := &state.regs[r0]
-	if !_i.IsUint64() {
+	rd, d, v0 := uniOpArgVs(state)
+	if d == nil { return }
+	if !v0.IsUint64() {
 		state.known[rd] = false
 		return
 	}
-	i     := _i.Uint64()
+	i     := v0.Uint64()
 	delta := state.ctx.blockNumber - i - 1
-	if delta < 256 { d.SetBytes(state.ctx.GetHash(i).Bytes())
+	if delta < 256 { d.SetBytes(state.ctx.getHashBytes(i))
 	} else         { d.Clear() }
 	return
 }
 func opMload(state *State) {
-	rd, r0 := uniOpArgs(state)
-	if rd < 0 { return }
-	d  := &state.regs[rd]
-	_i := &state.regs[r0]
-	if _i.GtUint64(65535) {
+	rd, d, v0 := uniOpArgVs(state)
+	if d == nil { return }
+	i    := v0.Uint64()
+	data := state.mem.get32(i)
+	if data == nil {
 		state.known[rd] = false
 		return
 	}
-	i := _i.Uint64()
-	d.SetBytes(state.mem.get(i, 32))
+	d.SetBytes(data)
 	return
 }
 
@@ -334,29 +329,29 @@ func binOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int) *uin
 	op(d, v0, v1)
 	return
 }
-func opAdd( state *State) { return binOp(state, (uint256.Int).Add)  }
-func opSub( state *State) { return binOp(state, (uint256.Int).Sub)  }
-func opMul( state *State) { return binOp(state, (uint256.Int).Mul)  }
-func opDiv( state *State) { return binOp(state, (uint256.Int).Div)  }
-func opSdiv(state *State) { return binOp(state, (uint256.Int).SDiv) }
-func opMod( state *State) { return binOp(state, (uint256.Int).Mod)  }
-func opSmod(state *State) { return binOp(state, (uint256.Int).SMod) }
-func opAnd( state *State) { return binOp(state, (uint256.Int).And)  }
-func opOr(  state *State) { return binOp(state, (uint256.Int).Or)   }
-func opXor( state *State) { return binOp(state, (uint256.Int).Xor)  }
+func opAdd( state *State) { binOp(state, (*uint256.Int).Add)  }
+func opSub( state *State) { binOp(state, (*uint256.Int).Sub)  }
+func opMul( state *State) { binOp(state, (*uint256.Int).Mul)  }
+func opDiv( state *State) { binOp(state, (*uint256.Int).Div)  }
+func opSdiv(state *State) { binOp(state, (*uint256.Int).SDiv) }
+func opMod( state *State) { binOp(state, (*uint256.Int).Mod)  }
+func opSmod(state *State) { binOp(state, (*uint256.Int).SMod) }
+func opAnd( state *State) { binOp(state, (*uint256.Int).And)  }
+func opOr(  state *State) { binOp(state, (*uint256.Int).Or)   }
+func opXor( state *State) { binOp(state, (*uint256.Int).Xor)  }
 
 func _eq( d, v0, v1 *uint256.Int) *uint256.Int { if v0.Eq( v1) { return d.SetOne() } else { return d.Clear() } }
 func _lt( d, v0, v1 *uint256.Int) *uint256.Int { if v0.Lt( v1) { return d.SetOne() } else { return d.Clear() } }
 func _gt( d, v0, v1 *uint256.Int) *uint256.Int { if v0.Gt( v1) { return d.SetOne() } else { return d.Clear() } }
 func _slt(d, v0, v1 *uint256.Int) *uint256.Int { if v0.Slt(v1) { return d.SetOne() } else { return d.Clear() } }
 func _sgt(d, v0, v1 *uint256.Int) *uint256.Int { if v0.Sgt(v1) { return d.SetOne() } else { return d.Clear() } }
-func opEq( state *State) { return binOp(state, _eq)  }
-func opLt( state *State) { return binOp(state, _lt)  }
-func opGt( state *State) { return binOp(state, _gt)  }
-func opSlt(state *State) { return binOp(state, _slt) }
-func opSgt(state *State) { return binOp(state, _sgt) }
+func opEq( state *State) { binOp(state, _eq)  }
+func opLt( state *State) { binOp(state, _lt)  }
+func opGt( state *State) { binOp(state, _gt)  }
+func opSlt(state *State) { binOp(state, _slt) }
+func opSgt(state *State) { binOp(state, _sgt) }
 
-func binOpArgs(state *State) (int, int, int) {
+func binOpArgVs(state *State) (uint16, *uint256.Int, *uint256.Int, *uint256.Int) {
 	i      := state.i + 1
 	i, rd  := getArg(state.code, i)
 	i, r0  := getArg(state.code, i)
@@ -364,15 +359,17 @@ func binOpArgs(state *State) (int, int, int) {
 	state.i = i
 	ok := state.known[r0] && state.known[r1]
 	state.known[rd] = ok
-	if !ok { rd = -1 }
-	return rd, r0, r1
+	if !ok { return 0, nil, nil, nil }
+	d  := &state.regs[rd]
+	v0 := &state.regs[r0]
+	v1 := &state.regs[r1]
+	return rd, d, v0, v1
 }
 func opExp(state *State) {
-	rd, r0, r1 := binOpArgs(state)
-	if rd < 0 { return }
-	d := &state.regs[rd]
-	b := &state.regs[r0]
-	e := &state.regs[r1]
+	rd, d, v0, v1 := binOpArgVs(state)
+	if d == nil { return }
+	b := v0
+	e := v1
 	switch {
 		case e.IsZero():      d.SetOne()
 		case b.IsZero():      d.Clear()
@@ -385,11 +382,10 @@ func opExp(state *State) {
 	return
 }
 func opSignExtend(state *State) {
-	rd, r0, r1 := binOpArgs(state)
-	if rd < 0 { return }
-	d := &state.regs[rd]
-	i := &state.regs[r0]
-	x := &state.regs[r1]
+	rd, d, v0, v1 := binOpArgVs(state)
+	if d == nil { return }
+	i := v0
+	x := v1
 	if i.GtUint64(31) {
 		state.known[rd] = false // same as EXP
 		return
@@ -398,25 +394,22 @@ func opSignExtend(state *State) {
 	return
 }
 func opByte(state *State) {
-	rd, r0, r1 := binOpArgs(state)
-	if rd < 0 { return }
-	d  := &state.regs[rd]
-	_i := &state.regs[r0]
-	x  := &state.regs[r1]
-	if _i.GtUint64(31) {
+	rd, d, v0, v1 := binOpArgVs(state)
+	if d == nil { return }
+	if v0.GtUint64(31) {
 		state.known[rd] = false // same as EXP
 		return
 	}
-	i := _i.Uint64()
+	i := v0.Uint64()
+	x := v1
 	d.SetUint64((x[3 - i / 8] >> ((7 - i % 8) * 8)) & 0xFF)
 	return
 }
 func opSHL(state *State) {
-	rd, r0, r1 := binOpArgs(state)
-	if rd < 0 { return }
-	d := &state.regs[rd]
-	i := &state.regs[r0]
-	x := &state.regs[r1]
+	rd, d, v0, v1 := binOpArgVs(state)
+	if d == nil { return }
+	i := v0
+	x := v1
 	if i.GtUint64(255) {
 		state.known[rd] = false // same as EXP
 		return
@@ -425,11 +418,10 @@ func opSHL(state *State) {
 	return
 }
 func opSHR(state *State) {
-	rd, r0, r1 := binOpArgs(state)
-	if rd < 0 { return }
-	d := &state.regs[rd]
-	i := &state.regs[r0]
-	x := &state.regs[r1]
+	rd, d, v0, v1 := binOpArgVs(state)
+	if d == nil { return }
+	i := v0
+	x := v1
 	if i.GtUint64(255) {
 		state.known[rd] = false // same as EXP
 		return
@@ -438,11 +430,10 @@ func opSHR(state *State) {
 	return
 }
 func opSAR(state *State) {
-	rd, r0, r1 := binOpArgs(state)
-	if rd < 0 { return }
-	d := &state.regs[rd]
-	i := &state.regs[r0]
-	x := &state.regs[r1]
+	rd, d, v0, v1 := binOpArgVs(state)
+	if d == nil { return }
+	i := v0
+	x := v1
 	if i.GtUint64(255) {
 		state.known[rd] = false // same as EXP
 		return
@@ -451,20 +442,16 @@ func opSAR(state *State) {
 	return
 }
 func opSha3(state *State) {
-	rd, r0, r1 := binOpArgs(state)
-	if rd < 0 { return }
-	d := &state.regs[rd]
-	i := &state.regs[r0]
-	s := &state.regs[r1]
-	data, ok := state.mem.get(i.Uint64(), i.Uint64() + s.Uint64())
-	if !ok {
+	rd, d, v0, v1 := binOpArgVs(state)
+	if d == nil { return }
+	i := v0.Uint64()
+	s := v1.Uint64()
+	data := state.mem.get(i, s)
+	if data == nil {
 		state.known[rd] = false
 		return
 	}
-	state.ctx.hasher.Reset()
-	state.ctx.hasher.Write(data)
-	if _, err := state.ctx.hasher.Read(state.ctx.hasherBuf[:]); err != nil { return err }
-	d.SetBytes(state.ctx.hasherBuf[:])
+	d.SetBytes(state.ctx.SHA3(data))
 	return
 }
 
@@ -482,27 +469,27 @@ func opMstore(state *State) {
 	v0, v1 := binNVOpOptArgVs(state)
 	if v0 == nil { return }
 	i := v0.Uint64()
-	if v1 == nil { state.mem.SetUnknown32(i)
-	} else       { state.mem.SetU256(i, v1) }
+	if v1 == nil { state.mem.setUnknown32(i)
+	} else       { state.mem.set32(i, v1.Bytes32()) }
 	return
 }
 func opMstore8(state *State) {
 	v0, v1 := binNVOpOptArgVs(state)
 	if v0 == nil { return }
 	i := v0.Uint64()
-	if v1 == nil { state.mem.SetUnknown1(i)
-	} else       { state.mem.SetByte(i, byte(v1.Uint64())) }
+	if v1 == nil { state.mem.setUnknown1(i)
+	} else       { state.mem.setByte(i, byte(v1.Uint64())) }
 	return
 }
 func opSstore(state *State) {
 	v0, v1 := binNVOpOptArgVs(state)
 	if v0 == nil { return }
 	a := state.address
-	k := &state.ctx.hasherBuf
+	k := &state.ctx.buf
 	*k = v0.Bytes32()
 	// state.ctx.ibs.PrefetchState(a, k)
-	if v1 == nil { state.ctx.ibs.PrefetchState(a, k)
-	} else       { state.ctx.ibs.SetDirtyState(a, k, v1) }
+	if v1 == nil { state.ctx.ibs.PrefetchState(*a, (*common.Hash)(k))
+	} else       { state.ctx.ibs.SetDirtyState(*a, (*common.Hash)(k), *v1) }
 	return
 }
 
@@ -523,8 +510,8 @@ func triOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int, *uin
 	op(d, v0, v1, v2)
 	return
 }
-func opAddmod(state *State) { return triOp(state, (uint256.Int).AddMod) }
-func opMulmod(state *State) { return triOp(state, (uint256.Int).MulMod) }
+func opAddmod(state *State) { triOp(state, (*uint256.Int).AddMod) }
+func opMulmod(state *State) { triOp(state, (*uint256.Int).MulMod) }
 
 func triNVOpArgVs(state *State) (*uint256.Int, *uint256.Int, *uint256.Int) {
 	i      := state.i + 1
@@ -533,48 +520,48 @@ func triNVOpArgVs(state *State) (*uint256.Int, *uint256.Int, *uint256.Int) {
 	i, r2  := getArg(state.code, i)
 	state.i = i
 	ok := state.known[r0] && state.known[r1] && state.known[r2]
-	if !ok { return, nil, nil }
+	if !ok { return nil, nil, nil }
 	v0 := &state.regs[r0]
 	v1 := &state.regs[r1]
 	v2 := &state.regs[r2]
 	return v0, v1, v2
 }
 func opCallDataCopy(state *State) {
-	v0, v1, v2 := triNVOpArgs(state)
+	v0, v1, v2 := triNVOpArgVs(state)
 	if v0 == nil { return }
 	o := v0.Uint64()
 	i := v1.Uint64()
 	s := v2.Uint64()
 	// if i < 65536 {
 	data := getData(state.calldata, i, s)
-	state.mem.Set(o, s, data)
+	state.mem.set(o, s, data)
 	// } else {
-	// 	state.mem.SetUnknown(o, s)
+	// 	state.mem.setUnknown(o, s)
 	// }
 	return
 }
 func opReturnDataCopy(state *State) {
-	v0, v1, v2 := triNVOpArgs(state)
+	v0, _,  v2 := triNVOpArgVs(state)
 	if v0 == nil { return }
 	o := v0.Uint64()
 	// i := v1.Uint64()
 	s := v2.Uint64()
-	state.mem.SetUnknown(o, s)
+	state.mem.setUnknown(o, s)
 	return
 }
 func opCodeCopy(state *State) {
 	// simillar to CODESIZE, these should really have been optimized out by the analyzer
-	v0, v1, v2 := triNVOpArgs(state)
+	v0, _,  v2 := triNVOpArgVs(state)
 	if v0 == nil { return }
 	o := v0.Uint64()
 	// i := v1.Uint64()
 	s := v2.Uint64()
 	// if i < 1024 * 1024 {
 	// a    := state.address
-	// data := getData(state.ctx.ibs.GetCode(a), i, s)
-	// state.mem.Set(o, s, data)
+	// data := getData(state.ctx.ibs.GetCode(*a), i, s)
+	// state.mem.set(o, s, data)
 	// } else {
-	state.mem.SetUnknown(o, s)
+	state.mem.setUnknown(o, s)
 	// }
 	return
 }
@@ -587,7 +574,7 @@ func tetNVOpArgVs(state *State) (*uint256.Int, *uint256.Int, *uint256.Int, *uint
 	i, r3  := getArg(state.code, i)
 	state.i = i
 	ok := state.known[r0] && state.known[r1] && state.known[r2] && state.known[r3]
-	if !ok { return, nil, nil, nil }
+	if !ok { return nil, nil, nil, nil }
 	v0 := &state.regs[r0]
 	v1 := &state.regs[r1]
 	v2 := &state.regs[r2]
@@ -595,7 +582,7 @@ func tetNVOpArgVs(state *State) (*uint256.Int, *uint256.Int, *uint256.Int, *uint
 	return v0, v1, v2, v3
 }
 func opExtCodeCopy(state *State) {
-	v0, v1, v2, v3 := tetNVOpArgs(state)
+	v0, v1, v2, v3 := tetNVOpArgVs(state)
 	if v0 == nil { return }
 	a := common.Address(v0.Bytes20())
 	o := v1.Uint64()
@@ -603,15 +590,15 @@ func opExtCodeCopy(state *State) {
 	s := v3.Uint64()
 	// if i < 1024 * 1024 {
 	data := getData(state.ctx.ibs.GetCode(a), i, s)
-	state.mem.Set(o, s, data)
+	state.mem.set(o, s, data)
 	// } else {
-	// 	state.mem.SetUnknown(o, s)
+	// 	state.mem.setUnknown(o, s)
 	// }
 	return
 }
 
 
-
+type CallOpType byte
 const (
 	CALL_REGULAR  CallOpType = iota
 	CALL_CODE
@@ -626,7 +613,7 @@ func opCallCommon(state *State, t CallOpType) {
 	var r2 uint16
 	if t == CALL_REGULAR ||
 	   t == CALL_CODE {
-		i, r2  := getArg(state.code, i) // value
+		i, r2 = getArg(state.code, i) // value
 	}
 	i, r3  := getArg(state.code, i) // i0
 	i, r4  := getArg(state.code, i) // i1-i0
@@ -646,26 +633,30 @@ func opCallCommon(state *State, t CallOpType) {
 	if state.known[r5] { v5 = &state.regs[r5] }
 	if state.known[r6] { v6 = &state.regs[r6] }
 	//
-	ca := &common.Address(v1.Bytes20())
+	_ = v0 // ignore gas
 	//
-	if v3.GtUint64(65535) || v4.GtUint64(65535) {
+	_ca := common.Address(v1.Bytes20())
+	ca  := &_ca
+	//
+	i0 := v3.Uint64()
+	iS := v4.Uint64()
+	idata := state.mem.get(i0, iS)
+	if !(v3.IsUint64() && v4.IsUint64() && idata != nil) {
 		state.known[rd] = false
 		return
 	}
-	i0 := v3.Uint64()
-	i1 := v4.Uint64() + i0
 	//
 	if !(v5 == nil || v6 == nil) {
-		if !(v5.GtUint64(65535) || v6.GtUint64(65535)) {
+		if v5.IsUint64() && v6.IsUint64() {
 			o0 := v5.Uint64()
-			o1 := v6.Uint64() + o0
+			oS := v6.Uint64()
     		// clear resulting mem, since we don't currently support return value
-			state.mem.SetUnknown(o0, o1)
+			state.mem.setUnknown(o0, oS)
 		}
 	}
 	//
 	ns := newState(state.ctx)
-	ns.calldata = state.mem.getRaw(i0, i1)
+	copy(ns.calldata, idata)
 	//
 	if t == CALL_REGULAR  { ns.address = ca
 	} else                { ns.address = state.address }
@@ -681,21 +672,21 @@ func opCallCommon(state *State, t CallOpType) {
 	}
 	//
 	reservedGaz := state.gaz / 4
-	ns.gaz       = state.gaz - reserved_gaz
+	ns.gaz       = state.gaz - reservedGaz
 	//
 	res, known  := predictCall(ns, ca)
 	//
-	state.gaz    =    ns.gaz + reserved_gaz
+	state.gaz    =    ns.gaz + reservedGaz
 	freeState(ns)
 	//
 	d.SetUint64(uint64(res))
 	state.known[rd] = known
 	return
 }
-func opCall(        state *State) { return opCallCommon(state, CALL_REGULAR)  }
-func opCallCode(    state *State) { return opCallCommon(state, CALL_CODE)     }
-func opDelegateCall(state *State) { return opCallCommon(state, CALL_DELEGATE) }
-func opStaticCall(  state *State) { return opCallCommon(state, CALL_STATIC)   }
+func opCall(        state *State) { opCallCommon(state, CALL_REGULAR)  }
+func opCallCode(    state *State) { opCallCommon(state, CALL_CODE)     }
+func opDelegateCall(state *State) { opCallCommon(state, CALL_DELEGATE) }
+func opStaticCall(  state *State) { opCallCommon(state, CALL_STATIC)   }
 
 // func opConstant01(state *State) { return opConstant(state,  1) }
 // func opConstant02(state *State) { return opConstant(state,  2) }
