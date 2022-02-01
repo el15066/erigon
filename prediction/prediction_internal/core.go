@@ -3,6 +3,7 @@ package prediction_internal
 
 import (
 	"math"
+	"math/big"
 	"encoding/binary"
 
 	"github.com/holiman/uint256"
@@ -69,15 +70,17 @@ type Ctx struct {
 	hasher      crypto.KeccakState
 	buf         [32]byte
 	ibs         *stateDB.IntraBlockState
-	origin      *common.Address
-	coinbase    *common.Address
-	gasPrice    *uint256.Int
-	difficulty  *uint256.Int
-	timestamp   uint64
-	blockNumber uint64
-	gasLimit    uint64
+	//
+	Coinbase    common.Address
+	Difficulty  *big.Int
+	BlockNumber uint64
+	Timestamp   uint64
+	GasLimit    uint64
+	//
+	Origin      common.Address
+	GasPrice    *uint256.Int
 }
-func newCtx(db kvDB.Getter) *Ctx {
+func NewCtx(db kvDB.Getter) *Ctx {
 	return &Ctx{
 		hasher: crypto.NewKeccakState(),
 		ibs:    stateDB.New(stateDB.NewPlainStateReader(db)),
@@ -98,12 +101,12 @@ func (ctx *Ctx) getHashBytes(i uint64) []byte {
 // State changes during the execution of a TX, and is 'copied' during calls
 type State struct {
 	ctx       *Ctx
-	address   *common.Address
-	// codeaddr  *common.Address
-	caller    *common.Address
-	callvalue *uint256.Int
+	address   common.Address
+	// codeaddr  common.Address
+	caller    common.Address
 	blockTbl  BlockTable
 	code      []byte
+	callvalue *uint256.Int
 	calldata  []byte
 	gaz       uint
 	regs      Regs
@@ -114,7 +117,6 @@ type State struct {
 	philen    int
 	i         int
 }
-
 func newState(ctx *Ctx) *State {
 	// TODO: create a pool and allocate without clearing any fields
 	return &State{ ctx: ctx }
@@ -153,17 +155,20 @@ func (state *State) changeBlock(bid uint16) {
 	}
 }
 
-func PredictTX(ctx *Ctx, address *common.Address) {
+func PredictTX(
+	ctx       *Ctx,
+	address   common.Address,
+) {
 	state := newState(ctx)
-	state.address = address
-	state.caller  = ctx.origin
-	state.gaz     = 10000
+	state.address   = address
+	state.caller    = ctx.Origin
+	state.gaz       = 10000
 	predictCall(state, address)
 	freeState(state)
 }
 
 // Not exact, only for prediction
-func isPrecompile(codeAddress *common.Address) bool {
+func isPrecompile(codeAddress common.Address) bool {
 	last := codeAddress[common.AddressLength-1]
 	if 1 <= last && last < 10 {
 		ok := true
@@ -175,7 +180,7 @@ func isPrecompile(codeAddress *common.Address) bool {
 	return false
 }
 
-func predictCall(state *State, codeAddress *common.Address) (byte, bool) {
+func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if isPrecompile(codeAddress) { return 1, true }
 
 	// find the predictor

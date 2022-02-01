@@ -116,7 +116,7 @@ func opCodeSize(state *State) {
 	rd := zerOpArgs(state)
 	state.known[rd] = false
 	// a := state.address // not always same as code address, maybe keep a ref to contract's code in state, also see CODECOPY
-	// d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(*a)))
+	// d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(a)))
 	return
 }
 
@@ -135,7 +135,7 @@ func opAddress(state *State) {
 }
 func opOrigin(state *State) {
 	d := zerOpArgVs(state)
-	d.SetBytes(state.ctx.origin.Bytes())
+	d.SetBytes(state.ctx.Origin.Bytes())
 	return
 }
 func opCaller(state *State) {
@@ -155,27 +155,27 @@ func opCallDataSize(state *State) {
 }
 func opGasprice(state *State) {
 	d := zerOpArgVs(state)
-	d.Set(state.ctx.gasPrice)
+	d.Set(state.ctx.GasPrice)
 	return
 }
 func opCoinbase(state *State) {
 	d := zerOpArgVs(state)
-	d.SetBytes(state.ctx.coinbase.Bytes())
+	d.SetBytes(state.ctx.Coinbase.Bytes())
 	return
 }
 func opTimestamp(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.ctx.timestamp)
+	d.SetUint64(state.ctx.Timestamp)
 	return
 }
 func opNumber(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.ctx.blockNumber)
+	d.SetUint64(state.ctx.BlockNumber)
 	return
 }
 func opDifficulty(state *State) {
 	d := zerOpArgVs(state)
-	d.Set(state.ctx.difficulty)
+	d.SetFromBig(state.ctx.Difficulty)
 	return
 }
 func opMsize(state *State) {
@@ -185,12 +185,12 @@ func opMsize(state *State) {
 }
 func opGas(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.ctx.gasLimit) // we don't track gas usage, so return max
+	d.SetUint64(state.ctx.GasLimit) // we don't track gas usage, so return max
 	return
 }
 func opGasLimit(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.ctx.gasLimit)
+	d.SetUint64(state.ctx.GasLimit)
 	return
 }
 
@@ -256,7 +256,7 @@ func opSload(state *State) {
 	// k := (*common.Hash)(v0) // hash is []byte :(
 	k := &state.ctx.buf
 	*k = v0.Bytes32()
-	state.ctx.ibs.GetState(*a, (*common.Hash)(k), d)
+	state.ctx.ibs.GetState(a, (*common.Hash)(k), d)
 	return
 }
 func opCallDataLoad(state *State) {
@@ -278,7 +278,7 @@ func opBlockhash(state *State) {
 		return
 	}
 	i     := v0.Uint64()
-	delta := state.ctx.blockNumber - i - 1
+	delta := state.ctx.BlockNumber - i - 1
 	if delta < 256 { d.SetBytes(state.ctx.getHashBytes(i))
 	} else         { d.Clear() }
 	return
@@ -311,7 +311,7 @@ func opStouch(state *State) {
 	a := state.address
 	k := &state.ctx.buf
 	*k = v0.Bytes32()
-	state.ctx.ibs.PrefetchState(*a, (*common.Hash)(k))
+	state.ctx.ibs.PrefetchState(a, (*common.Hash)(k))
 	return
 }
 
@@ -489,8 +489,8 @@ func opSstore(state *State) {
 	k := &state.ctx.buf
 	*k = v0.Bytes32()
 	// state.ctx.ibs.PrefetchState(a, k)
-	if v1 == nil { state.ctx.ibs.PrefetchState(*a, (*common.Hash)(k))
-	} else       { state.ctx.ibs.SetDirtyState(*a, (*common.Hash)(k), *v1) }
+	if v1 == nil { state.ctx.ibs.PrefetchState(a, (*common.Hash)(k))
+	} else       { state.ctx.ibs.SetDirtyState(a, (*common.Hash)(k), *v1) }
 	return
 }
 
@@ -559,7 +559,7 @@ func opCodeCopy(state *State) {
 	s := v2.Uint64()
 	// if i < 1024 * 1024 {
 	// a    := state.address
-	// data := getData(state.ctx.ibs.GetCode(*a), i, s)
+	// data := getData(state.ctx.ibs.GetCode(a), i, s)
 	// state.mem.set(o, s, data)
 	// } else {
 	state.mem.setUnknown(o, s)
@@ -636,11 +636,10 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	_ = v0 // ignore gas
 	//
-	_ca := common.Address(v1.Bytes20())
-	ca  := &_ca
+	ca    := common.Address(v1.Bytes20())
 	//
-	i0 := v3.Uint64()
-	iS := v4.Uint64()
+	i0    := v3.Uint64()
+	iS    := v4.Uint64()
 	idata := state.mem.get(i0, iS)
 	if !(v3.IsUint64() && v4.IsUint64() && idata != nil) {
 		state.known[rd] = false
