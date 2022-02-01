@@ -37,6 +37,8 @@ import (
 	"github.com/ledgerwatch/log/v3"
 
 	"github.com/ledgerwatch/erigon/bench"
+
+	"github.com/ledgerwatch/erigon/prediction"
 )
 
 const (
@@ -237,11 +239,12 @@ type tx_dump struct {
     Timestamp  uint64
     Difficulty uint64
     Gaslimit   uint64
-    Chainid    uint64
+    // Chainid    uint64
     Address    string
     Origin     string
     Callvalue  *uint256.Int
     Calldata   string
+    // GasPrice   string
 }
 
 func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan int, cfg ExecuteBlockCfg, from uint64, to uint64) {
@@ -287,11 +290,24 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 	db, err := cfg.db.BeginRo(context.Background())
 	if err == nil {
 		defer db.Rollback()
+		//
+		if common.USE_PREDICTORS {
+			prediction.InitCtx(db)
+		}
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
 			block, err := readBlock(blockNum, db)
 			if err != nil {
 				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
 				break Loop
+			}
+			if common.USE_PREDICTORS {
+				prediction.SetBlockVars(
+					block.Coinbase(),
+					block.Difficulty(),
+					blockNum,
+					block.Time(),
+					block.GasLimit(),
+				)
 			}
 			if common.PREFETCH_ACCOUNTS {
 				for i, tx := range block.Transactions() {
@@ -336,7 +352,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 										Timestamp:  block.Time(),
 										Difficulty: block.Difficulty().Uint64(),
 										Gaslimit:   block.GasLimit(),
-										Chainid:    cfg.chainConfig.ChainID.Uint64(),
+										// Chainid:    cfg.chainConfig.ChainID.Uint64(),
 										// Selfbalance: is dynamic
 										Address:    ENC(to_addr.Bytes()),
 										// Balance: is dynamic
@@ -344,7 +360,8 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 										// Caller: same as origin for now
 										Callvalue:  tx.GetValue(),
 										Calldata:   ENC(tx.GetData()),
-										// Gasprice: n/a after LONDON
+										// Gasprice: n/a after LONDON // TODO: verify below is correct
+										// Gasprice: ENC(tx.GetPrice().Bytes32()),
 										// Extcode: not here
 										// Returndata: n/a
 									})
@@ -353,7 +370,16 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 								if common.USE_PREDICTORS {
 									var from_acc accounts.Account
 									from_acc.DecodeForStorage(from_data)
-
+									//
+									prediction.PredictTX(
+										*to_addr,
+										//
+										from_addr,
+										tx.GetPrice(),
+										//
+										tx.GetValue(),
+										tx.GetData(),
+									)
 								}
 							}
 						}

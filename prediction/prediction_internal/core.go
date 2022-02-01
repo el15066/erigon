@@ -158,10 +158,14 @@ func (state *State) changeBlock(bid uint16) {
 func PredictTX(
 	ctx       *Ctx,
 	address   common.Address,
+	callvalue *uint256.Int,
+	calldata  []byte,
 ) {
 	state := newState(ctx)
 	state.address   = address
 	state.caller    = ctx.Origin
+	state.callvalue = callvalue
+	state.calldata  = calldata
 	state.gaz       = 10000
 	predictCall(state, address)
 	freeState(state)
