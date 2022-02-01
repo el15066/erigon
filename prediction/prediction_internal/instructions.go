@@ -247,36 +247,6 @@ func opSload(state *State) {
 	state.ctx.ibs.GetState(*a, (*common.Hash)(k), d)
 	return
 }
-
-func uniNVOpArgVs(state *State) (*uint256.Int) {
-	i      := state.i + 1
-	i, r0  := getArg(state.code, i)
-	state.i = i
-	ok := state.known[r0]
-	if !ok { return }
-	v0 := &state.regs[r0]
-	return v0
-}
-func opStouch(state *State) {
-	v0 := uniNVOpArgVs(state)
-	if v0 == nil { return }
-	a := state.address
-	k := &state.ctx.hasherBuf
-	*k = v0.Bytes32()
-	state.ctx.ibs.PrefetchState(a, k)
-	return
-}
-
-func uniOpArgs(state *State) (int, int) {
-	i      := state.i + 1
-	i, rd  := getArg(state.code, i)
-	i, r0  := getArg(state.code, i)
-	state.i = i
-	ok := state.known[r0]
-	state.known[rd] = ok
-	if !ok { rd = -1 }
-	return rd, r0
-}
 func opCallDataLoad(state *State) {
 	rd, d, v0 := uniOpArgVs(state)
 	if d == nil { return }
@@ -311,6 +281,25 @@ func opMload(state *State) {
 		return
 	}
 	d.SetBytes(data)
+	return
+}
+
+func uniNVOpArgVs(state *State) (*uint256.Int) {
+	i      := state.i + 1
+	i, r0  := getArg(state.code, i)
+	state.i = i
+	ok := state.known[r0]
+	if !ok { return nil }
+	v0 := &state.regs[r0]
+	return v0
+}
+func opStouch(state *State) {
+	v0 := uniNVOpArgVs(state)
+	if v0 == nil { return }
+	a := state.address
+	k := &state.ctx.buf
+	*k = v0.Bytes32()
+	state.ctx.ibs.PrefetchState(*a, (*common.Hash)(k))
 	return
 }
 
