@@ -175,10 +175,11 @@ func isPrecompile(codeAddress *common.Address) bool {
 func predictCall(state *State, codeAddress *common.Address) (byte, bool) {
 	if isPrecompile(codeAddress) { return 1, true }
 
-	find the predictor
-	load blocktable, code
-	not found ? return 0, false
-	state.blockTbl = blockTbl
+	// find the predictor
+	// load blocktable, code
+	// not found ? return 0, false
+	// state.blockTbl = blockTbl
+	code := []byte{}
 	state.code     = code
 	state.curBlock = 0
 	state.i        = 0
@@ -187,6 +188,7 @@ func predictCall(state *State, codeAddress *common.Address) (byte, bool) {
 	for state.i < i_max && state.gaz > 0 {
 		state.gaz -= 1
 		op := code[state.i]
-		jt[op](&state)
+		jumpTable[op](state)
 	}
+	return 1, true
 }
