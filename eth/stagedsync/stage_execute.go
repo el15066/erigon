@@ -268,7 +268,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 			log.Warn("Transactions not dumped", "error", _err)
 		}
 	}
-	var storage_prefetch_b = uint64(7500000)
+	var storage_prefetch_b = uint64(7500000) // where the file starts
 	var storage_prefetch_i = -1
 	var storage_prefetch_file *bufio.Reader
 	if common.USE_STORAGE_PREFETCH_FILE {
@@ -276,115 +276,127 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 		if _err == nil {
 			defer _f.Close()
 			storage_prefetch_file = bufio.NewReaderSize(_f, 128*1024)
-			storage_prefetch_i = 0
+			storage_prefetch_i    = 0
 		} else {
 			log.Warn("Storage prefetch file", "error", _err)
 		}
 	}
-	var err   error
-	var block *types.Block
-	var db    kv.Tx
-	db, err = cfg.db.BeginRo(context.Background())
+	// var err   error
+	// var block *types.Block
+	// var db    kv.Tx
+	db, err := cfg.db.BeginRo(context.Background())
 	if err == nil {
 		defer db.Rollback()
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
-			if block, err = readBlock(blockNum, db); err != nil || block == nil {
+			block, err := readBlock(blockNum, db)
+			if err != nil {
 				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
-				break
+				break Loop
 			}
-			for i, tx := range block.Transactions() {
-				// prefetch 'from' account
-				// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
-				// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
-				from_addr, ok := tx.GetSender()
-				if ok {
-					db.GetOne(kv.PlainState, from_addr.Bytes())
+			if PREFETCH_ACCOUNTS {
+				for i, tx := range block.Transactions() {
+					// prefetch 'from' account
+					//
+					// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
+					// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
+					from_addr, ok := tx.GetSender()
+					if !ok {
+						log.Error("Sender not in tx", "block_number", blockNum, "tx_index", i)
+						break Loop
+					}
 					if tracefile != nil {
 						tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(from_addr.Bytes())))
 					}
-				} else {
-					log.Error("Sender not in tx", "block_number", blockNum, "tx_index", i)
-				}
-				// prefetch 'to' account, and its code if it's a contract
-				to_addr := tx.GetTo()
-				if to_addr != nil { // && !bytes.Equal(to_addr, from_addr) {
-					enc, _err := db.GetOne(kv.PlainState, to_addr.Bytes())
-					if tracefile != nil {
-						tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(to_addr.Bytes())))
-					}
-					if _err == nil {
-						var a accounts.Account
-						_err = a.DecodeForStorage(enc)
-						if _err == nil && !a.IsEmptyCodeHash() {
-							db.GetOne(kv.Code, a.CodeHash.Bytes())
-							if tracefile != nil {
-								tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(a.CodeHash.Bytes())))
-							}
-							if dumpfile != nil {
-								t, _ := json.Marshal(&tx_dump{
-									Block:      blockNum,
-									Index:      i,
-									// Blockhash: not here (array of 256 most recent)
-									Coinbase:   ENC(block.Coinbase().Bytes()),
-									Timestamp:  block.Time(),
-									Difficulty: block.Difficulty().Uint64(),
-									Gaslimit:   block.GasLimit(),
-									Chainid:    cfg.chainConfig.ChainID.Uint64(),
-									// Selfbalance: is dynamic
-									Address:    ENC(to_addr.Bytes()),
-									// Balance: is dynamic
-									Origin:     ENC(from_addr.Bytes()),
-									// Caller: same as origin for now
-									Callvalue:  tx.GetValue(),
-									Calldata:   ENC(tx.GetData()),
-									// Gasprice: n/a after LONDON
-									// Extcode: not here
-									// Returndata: n/a
-								})
-								dumpfile.Write(append(t, byte('\n')))
-							}
-						}
-					}
-				} // else is contract creation
-				//
-				// GET storage prefetch locations
-				// read 2 bytes
-				// if 0 -> update tx index
-				// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
-				// fetch all those addresses
-				// loop
-				// why loop? -> 1 tx can call many contracts
-				for i == storage_prefetch_i {
-					_count  := make([]byte, 2)
-					_, _err := io.ReadFull(storage_prefetch_file, _count)
-					if _err != nil {
-						log.Warn("Read from storage prefetch file", "error", _err)
-						storage_prefetch_i    = -1
-						storage_prefetch_file = nil
-						break
-					}
-					count := int(binary.BigEndian.Uint16(_count))
+					from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
 					//
-					// fmt.Println(i, "count", count)
-					if count != 0 {
-						compositeKey := make([]byte, 60)
-						io.ReadFull(storage_prefetch_file, compositeKey[:28])
-						for j := 0; j < count; j++ {
-							io.ReadFull(storage_prefetch_file, compositeKey[28:])
-							db.GetOne(kv.PlainState, compositeKey)
-							// fmt.Println(i, ENC(compositeKey))
+					// prefetch 'to' account (nil if contract creation)
+					to_addr := tx.GetTo()
+					if to_addr != nil && !bytes.Equal(to_addr, from_addr) {
+						if tracefile != nil {
+							tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(to_addr.Bytes())))
 						}
-					} else {
-						_diff := make([]byte, 2)
-						io.ReadFull(storage_prefetch_file, _diff)
-						diff  := int(binary.BigEndian.Uint16(_diff))
-						// fmt.Println(i, "diff", diff)
-						if diff != 0 {
-							storage_prefetch_i += diff
+						to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
+						//
+						// prefetch its code if it's a contract
+						if PREFETCH_CODE {
+							var to_acc accounts.Account
+							to_acc.DecodeForStorage(to_data)
+							// 
+							if !to_acc.IsEmptyCodeHash() {
+								db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
+								if tracefile != nil {
+									tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(a.CodeHash.Bytes())))
+								}
+								if dumpfile != nil {
+									t, _ := json.Marshal(&tx_dump{
+										Block:      blockNum,
+										Index:      i,
+										// Blockhash: not here (array of 256 most recent)
+										Coinbase:   ENC(block.Coinbase().Bytes()),
+										Timestamp:  block.Time(),
+										Difficulty: block.Difficulty().Uint64(),
+										Gaslimit:   block.GasLimit(),
+										Chainid:    cfg.chainConfig.ChainID.Uint64(),
+										// Selfbalance: is dynamic
+										Address:    ENC(to_addr.Bytes()),
+										// Balance: is dynamic
+										Origin:     ENC(from_addr.Bytes()),
+										// Caller: same as origin for now
+										Callvalue:  tx.GetValue(),
+										Calldata:   ENC(tx.GetData()),
+										// Gasprice: n/a after LONDON
+										// Extcode: not here
+										// Returndata: n/a
+									})
+									dumpfile.Write(append(t, byte('\n')))
+								}
+								if USE_PREDICTORS {
+									var from_acc accounts.Account
+									from_acc.DecodeForStorage(from_data)
+								}
+							}
+						}
+					} // else is contract creation
+					//
+					// GET storage prefetch locations
+					// read 2 bytes
+					// if 0 -> update tx index
+					// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
+					// fetch all those addresses
+					// loop
+					// why loop? -> 1 tx can call many contracts
+					for i == storage_prefetch_i {
+						_count  := make([]byte, 2)
+						_, _err := io.ReadFull(storage_prefetch_file, _count)
+						if _err != nil {
+							log.Warn("Read from storage prefetch file", "error", _err)
+							storage_prefetch_i    = -1
+							storage_prefetch_file = nil
+							break
+						}
+						count := int(binary.BigEndian.Uint16(_count))
+						//
+						// fmt.Println(i, "count", count)
+						if count != 0 {
+							compositeKey := make([]byte, 60)
+							io.ReadFull(storage_prefetch_file, compositeKey[:28])
+							for j := 0; j < count; j++ {
+								io.ReadFull(storage_prefetch_file, compositeKey[28:])
+								db.GetOne(kv.PlainState, compositeKey)
+								// fmt.Println(i, ENC(compositeKey))
+							}
 						} else {
-							storage_prefetch_i = -1
+							_diff := make([]byte, 2)
+							io.ReadFull(storage_prefetch_file, _diff)
+							diff  := int(binary.BigEndian.Uint16(_diff))
+							// fmt.Println(i, "diff", diff)
+							if diff != 0 {
+								storage_prefetch_i += diff
+							} else {
+								storage_prefetch_i = -1
+							}
+							break
 						}
-						break
 					}
 				}
 			}
@@ -466,7 +478,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	logTime := time.Now()
 	var gas uint64
 
-	blockChan := make(chan *types.Block, 100)
+	blockChan := make(chan *types.Block, BLOCK_READAHEAD - 1)
 	errChan   := make(chan error)
 	quitChan  := make(chan int)
 

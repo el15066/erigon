@@ -5,9 +5,13 @@ const  STORAGE_TRACING = false
 const PREFETCH_TRACING = false
 const       TX_DUMPING = false
 const     CODE_DUMPING = false
-const     JUMP_TRACING = true
+const     JUMP_TRACING = false
 
-const USE_STORAGE_PREFETCH_FILE = true
+const BLOCK_READAHEAD           = 100 + 1
+const PREFETCH_ACCOUNTS         = true
+const PREFETCH_CODE             = true
+const USE_PREDICTORS            = true
+const USE_STORAGE_PREFETCH_FILE = false
 
 // if CODE_DUMPING {
 var CONTRACT_CODE       = map[Hash][]byte{}
