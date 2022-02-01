@@ -7,6 +7,18 @@ import (
 	"github.com/ledgerwatch/erigon/common"
 )
 
+// from core/vm/common.go
+func getData(data []byte, start uint64, size uint64) []byte {
+	length := uint64(len(data))
+	if start > length {
+		start = length
+	}
+	end := start + size
+	if end > length {
+		end = length
+	}
+	return common.RightPadBytes(data[start:end], int(size))
+}
 
 func isValidTarget(target int) bool { return target != INVALID_TARGET }
 
