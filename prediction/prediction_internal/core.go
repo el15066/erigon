@@ -21,6 +21,33 @@ type Regs  [65536]uint256.Int
 type Known [65536]bool
 type Mem   [65536]byte
 
+func (mem *Mem) msize() uint64 {
+	return 2048 // TODO: keep track of this
+}
+func (mem *Mem) get(i0, s uint64) []byte {
+	i1 := i0 + s
+	if i1 > uint64(len(mem)) || i0 > i1 { return nil }
+	return mem[i0:i1]
+}
+func (mem *Mem) set(i0, s uint64, data []byte) {
+	i1 := i0 + s
+	if i1 > uint64(len(mem)) || i0 > i1 { return }
+	copy(mem[i0:i1], data)
+}
+func (mem *Mem) setUnknown(i0, s uint64) {
+	i1 := i0 + s
+	if i1 > uint64(len(mem)) || i0 > i1 { return }
+	copy(mem[i0:i1], random_byte_string)
+}
+func (mem *Mem) setByte(i uint64, b byte) {
+	if i >= uint64(len(mem)) { return }
+	mem[i] = b
+}
+func (mem *Mem) get32(i0 uint64)        []byte  { return mem.get(i0, 32)          }
+func (mem *Mem) set32(i0 uint64, data [32]byte) {        mem.set(i0, 32, data[:]) }
+func (mem *Mem) setUnknown1( i uint64) { mem.setUnknown(i, 1 ) }
+func (mem *Mem) setUnknown32(i uint64) { mem.setUnknown(i, 32) }
+
 type BlockTableEntry struct {
 	index uint
 	edges []uint16 // allow in-edges
@@ -29,9 +56,33 @@ type BlockTable map[uint]BlockTableEntry
 
 // Ctx can't change during execution of a TX, only between TXs, should not be copied and is unique to each thread
 type Ctx struct {
-	var hasher    keccakState
-	var hasherBuf common.Hash
-	origin        *common.Address
+	hasher      crypto.KeccakState
+	buf         [32]byte
+	ibs         *stateDB.IntraBlockState
+	origin      *common.Address
+	coinbase    *common.Address
+	gasPrice    *uint256.Int
+	difficulty  *uint256.Int
+	timestamp   uint64
+	blockNumber uint64
+	gasLimit    uint64
+}
+func newCtx(db kvDB.Getter) *Ctx {
+	return &Ctx{
+		hasher: crypto.NewKeccakState(),
+		ibs:    stateDB.New(stateDB.NewPlainStateReader(db)),
+	}
+}
+func (ctx *Ctx) SHA3(data []byte) []byte {
+	ctx.hasher.Reset()
+	ctx.hasher.Write(data)
+	ctx.hasher.Read(ctx.buf[:])
+	return ctx.buf[:]
+}
+func (ctx *Ctx) getHashBytes(i uint64) []byte {
+	copy(                      ctx.buf[ 0:24], "BLOCKHASH_abcdef01234567")
+	binary.BigEndian.PutUint64(ctx.buf[24:32], i)
+	return ctx.SHA3(ctx.buf[:])
 }
 
 // State changes during the execution of a TX, and is 'copied' during calls
