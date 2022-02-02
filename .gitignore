@@ -77,12 +77,12 @@ logz/tx_dump.txt
 logz/reads_addresses_by_tx.txt
 logz/jump_counts.txt
 logz/code/
+logz/disasm/
 symbolic/sandbox/rat_exec/log.txt
 symbolic/sandbox/rat_exec/log_exe.txt
 symbolic/sandbox/rat_exec/exec_errors.txt
 symbolic/sandbox/rat_exec/code*/
-symbolic/sandbox/envon_test/log.txt
-symbolic/sandbox/envon_test/log_exe.txt
+symbolic/sandbox/envon_test/log*.txt
 symbolic/sandbox/envon_test/exec_errors.txt
 symbolic/sandbox/envon_test/code*/
 
