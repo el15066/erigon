@@ -4,14 +4,23 @@ package prediction
 import (
 	"math/big"
 
-	uint256  "github.com/holiman/uint256"
+	uint256 "github.com/holiman/uint256"
+	common  "github.com/ledgerwatch/erigon/common"
+	kvDB    "github.com/ledgerwatch/erigon-lib/kv"
 
-	internal "github.com/ledgerwatch/erigon/prediction/prediction_internal"
-	common   "github.com/ledgerwatch/erigon/common"
-	kvDB     "github.com/ledgerwatch/erigon-lib/kv"
+	internal    "github.com/ledgerwatch/erigon/prediction/prediction_internal"
+	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 )
 
 var ctx internal.Ctx
+
+func Init() {
+	var err error
+	err = predictorDB.Init(); if err != nil { panic(err) }
+}
+func Close() {
+	predictorDB.Close()
+}
 
 func InitCtx(db kvDB.Getter) {
 	ctx = *internal.NewCtx(db)

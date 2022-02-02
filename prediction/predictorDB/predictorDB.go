@@ -31,7 +31,7 @@ func Close() {
 	pdb.Mu.Lock()
 	defer pdb.Mu.Unlock()
 	//
-	pdb.Cache.Purge()
+	// pdb.Cache.Purge()
 	pdb.DB.CloseDB()
 }
 

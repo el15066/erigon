@@ -518,6 +518,11 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	logTime := time.Now()
 	var gas uint64
 
+	if common.USE_PREDICTORS {
+		prediction.Init()
+		defer prediction.Close()
+	}
+
 	blockChan := make(chan *types.Block, common.BLOCK_READAHEAD - 1)
 	errChan   := make(chan error)
 	quitChan  := make(chan int)

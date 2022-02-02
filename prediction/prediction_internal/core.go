@@ -2,6 +2,7 @@
 package prediction_internal
 
 import (
+	"fmt"
 	"math"
 	"math/big"
 	"encoding/binary"
@@ -17,9 +18,13 @@ import (
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 )
 
-const BLOCK_ID_SHIFTS = 1
+const BLOCK_ID_SHIFTS = 0
 const BLOCK_ID_MAX    = uint64(65536 << BLOCK_ID_SHIFTS) - 1
 const INVALID_TARGET  = int(math.MaxInt64)
+
+var JumpTable [256]func(*State)
+
+func init() { JumpTable = jumpTable } // go doesn't like circle with opCallCommon
 
 type Regs  [65536]uint256.Int
 type Known [65536]bool
@@ -105,7 +110,7 @@ type State struct {
 	code      []byte
 	callvalue *uint256.Int
 	calldata  []byte
-	gaz       uint
+	gaz       int
 	regs      Regs
 	known     Known
 	mem       Mem
@@ -182,7 +187,10 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	for state.i < i_max && state.gaz > 0 {
 		state.gaz -= 1
 		op := state.code[state.i]
-		jumpTable[op](state)
+		JumpTable[op](state)
+	}
+	if state.gaz <= 0 {
+		fmt.Println("Call out of gaz, ca:", codeAddress)
 	}
 	return 1, true
 }
