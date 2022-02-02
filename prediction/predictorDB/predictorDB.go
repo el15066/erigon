@@ -66,10 +66,40 @@ func GetPredictor(h common.Hash) types.Predictor {
 	return p
 }
 
-func decodePredictor(blocks []byte, code []byte) types.Predictor {
-	res := types.Predictor{ Code: code }
-	// for ??? {
-	// 	res.BlockTbl[k] = v
-	// }
+func decodePredictor(bt []byte, code []byte) types.Predictor {
+	res  := types.Predictor{
+		BlockTbl: types.BlockTable{},
+		Code:     code,
+	}
+	ok   := true
+	i    := 0
+	imax := len(bt)
+	for i < imax {
+		// fmt.Println("i 6", i, imax)
+		//
+		if imax - i < 6     { ok = false; break }
+		bid   := uint16(bt[i]) | (uint16(bt[i+1]) << 8);                        i += 2
+		pos   :=    int(bt[i]) | (   int(bt[i+1]) << 8) | (int(bt[i+2]) << 16); i += 3
+		c     :=    int(bt[i]);                                                 i += 1
+		//
+		// fmt.Println("i 2c", i, c, imax)
+		if imax - i < 2 * c { ok = false; break }
+		edges := make([]uint16, c)
+		for j := 0; j < c; j += 1 {
+			e := uint16(bt[i]) | (uint16(bt[i+1]) << 8);                        i += 2
+			edges[j] = e
+		}
+		// fmt.Println("i ok", i, imax)
+		//
+		res.BlockTbl[bid] = types.BlockTableEntry{
+			Index: pos,
+			Edges: edges,
+		}
+	}
+	//
+	if !ok {
+		res.Code     = nil
+		res.BlockTbl = nil
+	}
 	return res
 }
