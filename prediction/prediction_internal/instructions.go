@@ -655,7 +655,7 @@ func opCallCommon(state *State, t CallOpType) {
 		}
 	}
 	//
-	ns := newState(state.ctx)
+	ns := state.ctx.sp.NewState()
 	copy(ns.calldata, idata)
 	//
 	if t == CALL_REGULAR  { ns.address = ca
@@ -677,7 +677,7 @@ func opCallCommon(state *State, t CallOpType) {
 	res, known  := predictCall(ns, ca)
 	//
 	state.gaz    =    ns.gaz + reservedGaz
-	freeState(ns)
+	state.ctx.sp.FreeState(ns)
 	//
 	d.SetUint64(uint64(res))
 	state.known[rd] = known

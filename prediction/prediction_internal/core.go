@@ -14,7 +14,6 @@ import (
 	stateDB "github.com/ledgerwatch/erigon/core/state"
 	kvDB    "github.com/ledgerwatch/erigon-lib/kv"
 
-	types       "github.com/ledgerwatch/erigon/prediction/types"
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 )
 
@@ -69,6 +68,7 @@ func (mem *Mem) setUnknown32(i uint64) { mem.setUnknown(i, 32) }
 
 // Ctx can't change during execution of a TX, only between TXs, should not be copied and is unique to each thread
 type Ctx struct {
+	sp          StatePool
 	hasher      crypto.KeccakState
 	buf         [32]byte
 	ibs         *stateDB.IntraBlockState
@@ -83,10 +83,12 @@ type Ctx struct {
 	GasPrice    *uint256.Int
 }
 func NewCtx(db kvDB.Getter) *Ctx {
-	return &Ctx{
+	ctx := &Ctx{
 		hasher: crypto.NewKeccakState(),
 		ibs:    stateDB.New(stateDB.NewPlainStateReader(db)),
 	}
+	ctx.sp.Init(ctx)
+	return ctx
 }
 func (ctx *Ctx) SHA3(data []byte) []byte {
 	ctx.hasher.Reset()
@@ -100,77 +102,20 @@ func (ctx *Ctx) getHashBytes(i uint64) []byte {
 	return ctx.SHA3(ctx.buf[:])
 }
 
-// State changes during the execution of a TX, and is 'copied' during calls
-type State struct {
-	ctx       *Ctx
-	address   common.Address
-	// codeaddr  common.Address
-	caller    common.Address
-	blockTbl  types.BlockTable
-	code      []byte
-	callvalue *uint256.Int
-	calldata  []byte
-	gaz       int
-	regs      Regs
-	known     Known
-	mem       Mem
-	curBlock  uint16
-	phiindex  int
-	philen    int
-	i         int
-}
-func newState(ctx *Ctx) *State {
-	// TODO: create a pool and allocate without clearing any fields
-	return &State{ ctx: ctx }
-}
-func freeState(state *State) {
-	// TODO: allow to be reused by newState
-}
-
-func (state *State) bidToIndex(bid64 uint64) int {
-	if bid64 <= 0xFFFF {
-		bid := uint16(bid64)
-		if b, ok := state.blockTbl[bid]; ok {
-			return b.Index
-		}
-	}
-	return INVALID_TARGET
-}
-
-func (state *State) changeBlock(bid uint16) {
-	b, ok := state.blockTbl[bid]
-	if ok {
-		ok = false
-		for i, e := range b.Edges {
-			if e == state.curBlock {
-				state.phiindex = i
-				ok = true
-				break
-			}
-		}
-	}
-	if ok {
-		state.philen   = len(b.Edges)
-		state.curBlock = bid
-	} else {
-		state.i = INVALID_TARGET
-	}
-}
-
 func PredictTX(
 	ctx       *Ctx,
 	address   common.Address,
 	callvalue *uint256.Int,
 	calldata  []byte,
 ) {
-	state := newState(ctx)
+	state := ctx.sp.NewState()
 	state.address   = address
 	state.caller    = ctx.Origin
 	state.callvalue = callvalue
 	state.calldata  = calldata
 	state.gaz       = 10000
 	predictCall(state, address)
-	freeState(state)
+	ctx.sp.FreeState(state)
 }
 func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if isPrecompile(codeAddress) { return 1, true }
