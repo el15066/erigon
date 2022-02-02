@@ -2,35 +2,60 @@
 package prediction_internal
 
 import (
+	"sync"
+
 	// lru       "github.com/hashicorp/golang-lru/simplelru" //  thread-safe
 	simplelru "github.com/hashicorp/golang-lru/simplelru" // not thread-safe
 
-	common  "github.com/ledgerwatch/erigon/common"
+	common    "github.com/ledgerwatch/erigon/common"
 )
 
-var cache *simplelru.LRU
+var pdb predictorCache
+
+type predictorCache struct {
+	var mu    sync.Mutex
+	var cache *simplelru.LRU
+	var db    predictorDB
+}
 
 type Predictor struct {
 	blockTbl  BlockTable
 	code      []byte
 }
 
-func init() {
-	cache, _ = simplelru.NewLRU(2048)
+func InitPredictorDB() error {
+	pdb.db, err := openPredictorDB()
+	if err != nil { return err }
+	pdb.cache, _ = simplelru.NewLRU(2048)
+	return nil
+}
+func ClosePredictorDB() error {
+	pdb.mu.Lock()
+	defer pdb.mu.Unlock()
+	//
+	pdb.cache.Purge()
+	pdb.db.closeDB()
 }
 
-func getPredictor(h common.Hash) Predictor {
-	p, ok := cache.Get(h)
+func GetPredictor(h common.Hash) Predictor {
+	pdb.mu.Lock()
+	defer pdb.mu.Unlock()
+	//
+	p, ok := pdb.cache.Get(h)
 	if !ok {
-		data, ok := db.GetOne(h)
+		b, c, ok := pdb.db.get(h)
 		if !ok { return nil }
-		p,    ok = decodePredictor(data)
+		p,     ok = decodePredictor(b, c)
 		if !ok { return nil }
-		cache.Add(h, p)
+		pdb.cache.Add(h, p)
 	}
 	return p
 }
 
-func decodePredictor(data []byte) (Predictor, bool) {
-	// TODO
+func decodePredictor(blocks []byte, code []byte) (Predictor, bool) {
+	res := Predictor{ code: code }
+	// for ??? {
+	// 	res.blockTbl[k] = v
+	// }
+	return res, true
 }
