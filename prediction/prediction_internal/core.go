@@ -12,6 +12,9 @@ import (
 	crypto  "github.com/ledgerwatch/erigon/crypto"
 	stateDB "github.com/ledgerwatch/erigon/core/state"
 	kvDB    "github.com/ledgerwatch/erigon-lib/kv"
+
+	types       "github.com/ledgerwatch/erigon/prediction/types"
+	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 )
 
 const BLOCK_ID_SHIFTS = 1
@@ -59,12 +62,6 @@ func (mem *Mem) setUnknown32(i uint64) { mem.setUnknown(i, 32) }
 // ibs.PrefetchState(a, k)
 // ibs.SetDirtyState(a, k, v)
 
-type BlockTableEntry struct {
-	index int
-	edges []uint16 // allow in-edges
-}
-type BlockTable map[uint16]BlockTableEntry
-
 // Ctx can't change during execution of a TX, only between TXs, should not be copied and is unique to each thread
 type Ctx struct {
 	hasher      crypto.KeccakState
@@ -104,7 +101,7 @@ type State struct {
 	address   common.Address
 	// codeaddr  common.Address
 	caller    common.Address
-	blockTbl  BlockTable
+	blockTbl  types.BlockTable
 	code      []byte
 	callvalue *uint256.Int
 	calldata  []byte
@@ -129,7 +126,7 @@ func (state *State) bidToIndex(bid64 uint64) int {
 	if bid64 <= 0xFFFF {
 		bid := uint16(bid64)
 		if b, ok := state.blockTbl[bid]; ok {
-			return b.index
+			return b.Index
 		}
 	}
 	return INVALID_TARGET
@@ -139,7 +136,7 @@ func (state *State) changeBlock(bid uint16) {
 	b, ok := state.blockTbl[bid]
 	if ok {
 		ok = false
-		for i, e := range b.edges {
+		for i, e := range b.Edges {
 			if e == state.curBlock {
 				state.phiindex = i
 				ok = true
@@ -148,7 +145,7 @@ func (state *State) changeBlock(bid uint16) {
 		}
 	}
 	if ok {
-		state.philen   = len(b.edges)
+		state.philen   = len(b.Edges)
 		state.curBlock = bid
 	} else {
 		state.i = INVALID_TARGET
@@ -174,7 +171,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if isPrecompile(codeAddress) { return 1, true }
 	//
 	ch := state.ctx.ibs.GetCodeHash(codeAddress)
-	p  := GetPredictor(ch)
+	p  := predictorDB.GetPredictor(ch)
 	if p.Code == nil { return 0, false }
 	state.blockTbl = p.BlockTbl
 	state.code     = p.Code
