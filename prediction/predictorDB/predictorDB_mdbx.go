@@ -6,7 +6,6 @@ import (
 
 	kv   "github.com/ledgerwatch/erigon-lib/kv"
 	mdbx "github.com/ledgerwatch/erigon-lib/kv/mdbx"
-	log  "github.com/ledgerwatch/log/v3"
 )
 
 type PredictorDB struct {
@@ -18,6 +17,7 @@ func (db PredictorDB) CloseDB() {
 }
 func (db PredictorDB) get(k []byte) []byte {
 	tx,   err := db.u.BeginRo(context.Background()); if err != nil { return nil }
+	defer tx.Rollback()
 	data, err := tx.GetOne("p", k);                  if err != nil { return nil }
 	return data
 }
@@ -32,14 +32,31 @@ func (db PredictorDB) Get(k []byte) ([]byte, []byte) {
 }
 
 func openPredictorDB() (PredictorDB, error) {
-	db, err := openMDBX("predictors.sqlite3")
+	db, err := openMDBX("predictorDB")
 	return PredictorDB{ u: db }, err
 }
 
+// https://github.com/ledgerwatch/erigon-lib/blob/main/kv/tables.go#L460
+// https://github.com/ledgerwatch/erigon-lib/blob/main/kv/mdbx/kv_mdbx.go#L42
+// https://github.com/ledgerwatch/erigon-lib/blob/main/kv/mdbx/kv_mdbx.go#L232
+var tablesCfg = kv.TableCfg{
+	"p": {},
+}
+func myTables(_ignore kv.TableCfg) kv.TableCfg { return tablesCfg }
+
 // node/node.go:521
+// https://github.com/ledgerwatch/erigon-lib/blob/main/kv/mdbx/util.go
 // https://github.com/ledgerwatch/erigon-lib/blob/main/kv/mdbx/kv_mdbx.go
 func openMDBX(fileName string) (kv.RwDB, error) {
-	db, err := mdbx.NewMDBX(log.New()).Path(fileName).Readonly().Exclusive().Label(kv.Label(77)).DBVerbosity(kv.DBVerbosityLvl(2)).Open()
+	db, err := mdbx.
+		NewMDBX(log).
+		WithTablessCfg(myTables).
+		Path(fileName).
+		Label(kv.Label(77)).
+		DBVerbosity(kv.DBVerbosityLvl(2)). // for c code, 2 is warning, >2 gives info
+		Exclusive().
+		Readonly().
+		Open()
 	if err != nil { return nil, err }
 	return db, err
 }
