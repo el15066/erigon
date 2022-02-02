@@ -5,7 +5,9 @@ import (
 	"errors"
 	"database/sql"
 
-	// _ "github.com/mattn/go-sqlite3" // provided by other lib
+	// _ "github.com/mattn/go-sqlite3" // link-time collision with other lib
+	// _ "crawshaw.io/sqlite" // not a driver
+	// TODO
 )
 
 type predictorDB sql.DB
