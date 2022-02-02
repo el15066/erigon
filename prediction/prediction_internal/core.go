@@ -15,6 +15,8 @@ import (
 	kvDB    "github.com/ledgerwatch/erigon-lib/kv"
 
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
+
+	bench "github.com/ledgerwatch/erigon/bench"
 )
 
 const BLOCK_ID_SHIFTS = 0
@@ -108,20 +110,30 @@ func PredictTX(
 	callvalue *uint256.Int,
 	calldata  []byte,
 ) {
+	bench.Tick(200)
 	state := ctx.sp.NewState()
+	bench.Tick(201)
 	state.address   = address
 	state.caller    = ctx.Origin
 	state.callvalue = callvalue
 	state.calldata  = calldata
 	state.gaz       = 10000
+	bench.Tick(202)
 	predictCall(state, address)
+	bench.Tick(203)
 	ctx.sp.FreeState(state)
+	bench.Tick(204)
 }
+
+var inside = false
+
 func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if isPrecompile(codeAddress) { return 1, true }
 	//
+	bench.Tick(210)
 	ch := state.ctx.ibs.GetCodeHash(codeAddress)
 	p  := predictorDB.GetPredictor(ch)
+	bench.Tick(211)
 	if p.Code == nil { return 0, false }
 	state.blockTbl = p.BlockTbl
 	state.code     = p.Code
@@ -129,10 +141,20 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	state.i        = 0
 	i_max         := len(state.code)
 	//
+	me := false
+	if !inside {
+		inside = true
+		me = true
+		bench.Tick(212)
+	}
 	for state.i < i_max && state.gaz > 0 {
 		state.gaz -= 1
 		op := state.code[state.i]
 		JumpTable[op](state)
+	}
+	if me {
+		bench.Tick(213)
+		inside = false
 	}
 	if state.gaz <= 0 {
 		fmt.Println("Call out of gaz, ca:", codeAddress)

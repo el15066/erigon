@@ -57,7 +57,7 @@ func DiffStr(indexA int, isPrevA bool, indexB int, isPrevB bool) string {
 	if countsA != countsB || countsA == 0 {
 		return "N/A"
 	}
-	return fmt.Sprintf("%14d %14d %11d", (ticksA - ticksB) / countsA, countsA, (ticksA - ticksB) / 1000)
+	return fmt.Sprintf("%14d %14d %14d", (ticksA - ticksB) / countsA, countsA, (ticksA - ticksB) / 1000)
 }
 
 func DiffStrAuto(indexA int, indexB int) string {
@@ -67,6 +67,7 @@ func DiffStrAuto(indexA int, indexB int) string {
 }
 
 func PrintAll() {
+	fmt.Println("__TO-FROM ___AVERAGE_ns_ _______COUNT__ _____TOTAL_us_")
 	pairs := len(all_counts) - 1
 	for i := 0; i < pairs; i += 1 {
 		if all_counts[i] > 0 && all_counts[i+1] > 0 {

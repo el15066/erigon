@@ -10,6 +10,8 @@ import (
 
 	internal    "github.com/ledgerwatch/erigon/prediction/prediction_internal"
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
+
+	bench "github.com/ledgerwatch/erigon/bench"
 )
 
 var ctx internal.Ctx
@@ -49,7 +51,10 @@ func PredictTX(
 	callvalue *uint256.Int,
 	calldata  []byte,
 ) {
+	bench.Tick(150)
 	ctx.Origin   = origin
 	ctx.GasPrice = gasPrice
+	bench.Tick(151)
 	internal.PredictTX(&ctx, to_addr, callvalue, calldata)
+	bench.Tick(152)
 }
