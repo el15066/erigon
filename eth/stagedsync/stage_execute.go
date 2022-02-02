@@ -311,6 +311,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 			}
 			if common.PREFETCH_ACCOUNTS {
 				for i, tx := range block.Transactions() {
+					bench.Tick(100)
 					// prefetch 'from' account
 					//
 					// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
@@ -325,23 +326,29 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 					}
 					from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
 					//
+					bench.Tick(101)
 					// prefetch 'to' account (nil if contract creation)
 					to_addr := tx.GetTo()
 					if to_addr != nil && *to_addr != from_addr {
+						bench.Tick(105)
 						if tracefile != nil {
 							tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(to_addr.Bytes())))
 						}
 						to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
 						//
+						bench.Tick(106)
 						// prefetch its code if it's a contract
 						if common.PREFETCH_CODE {
 							var to_acc accounts.Account
 							to_acc.DecodeForStorage(to_data)
 							// 
+							bench.Tick(107)
 							if !to_acc.IsEmptyCodeHash() {
+								bench.Tick(110)
 								if tracefile != nil {
 									tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(to_acc.CodeHash.Bytes())))
 								}
+								bench.Tick(111)
 								db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
 								if dumpfile != nil {
 									t, _ := json.Marshal(&tx_dump{
@@ -367,6 +374,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 									})
 									dumpfile.Write(append(t, byte('\n')))
 								}
+								bench.Tick(112)
 								if common.USE_PREDICTORS {
 									var from_acc accounts.Account
 									from_acc.DecodeForStorage(from_data)
@@ -381,9 +389,12 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 										tx.GetData(),
 									)
 								}
+								bench.Tick(113)
 							}
 						}
+						bench.Tick(108)
 					}
+					bench.Tick(102)
 					//
 					// GET storage prefetch locations
 					// read 2 bytes
@@ -425,6 +436,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 							break
 						}
 					}
+					bench.Tick(103)
 				}
 			}
 			select {
@@ -453,6 +465,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 			}
 		}
 	}
+	log.Info("Prefetch thread exiting", "error", err)
 	close(blockChan)
 	<-quitChan
 	errChan <- err
@@ -592,21 +605,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	if err == nil { err = err2 }
 
 	// HERE
-	fmt.Println("  1-  0", bench.DiffStrAuto(  1,  0))
-	fmt.Println("  2-  1", bench.DiffStrAuto(  2,  1))
-	fmt.Println("  3-  2", bench.DiffStrAuto(  3,  2))
-	fmt.Println("  4-  3", bench.DiffStrAuto(  4,  3))
-	fmt.Println("  5-  4", bench.DiffStrAuto(  5,  4))
-	fmt.Println(" 11- 10", bench.DiffStrAuto( 11, 10))
-	fmt.Println(" 13- 12", bench.DiffStrAuto( 13, 12))
-	fmt.Println(" 15- 14", bench.DiffStrAuto( 15, 14))
-	fmt.Println(" 21- 20", bench.DiffStrAuto( 21, 20))
-	fmt.Println(" 23- 22", bench.DiffStrAuto( 23, 22))
-	fmt.Println(" 31- 30", bench.DiffStrAuto( 31, 30))
-	fmt.Println(" 33- 32", bench.DiffStrAuto( 33, 32))
-	fmt.Println(" 35- 34", bench.DiffStrAuto( 35, 34))
-	fmt.Println(" 37- 36", bench.DiffStrAuto( 37, 36))
-	fmt.Println(" 38- 37", bench.DiffStrAuto( 38, 37))
+	bench.PrintAll()
 
 	if common.CODE_DUMPING {
 		var ENC = hex.EncodeToString

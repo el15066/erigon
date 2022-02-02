@@ -29,7 +29,7 @@ import (
 	"github.com/ledgerwatch/erigon/rlp"
 	"github.com/ledgerwatch/erigon/turbo/trie"
 
-	"github.com/ledgerwatch/erigon/bench"
+	_ "github.com/ledgerwatch/erigon/bench"
 )
 
 var emptyCodeHash = crypto.Keccak256(nil)
@@ -159,14 +159,14 @@ func (so *stateObject) touch() {
 // GetState returns a value from account storage.
 func (so *stateObject) GetState(key *common.Hash, out *uint256.Int) {
 	if common.STORAGE_TRACING { so.GetCommittedState(key, out) }
-	bench.Tick(30)
+	// bench.Tick(30)
 	value, dirty := so.dirtyStorage[*key]
 	if dirty {
 		*out = value
-		bench.Tick(31)
+		// bench.Tick(31)
 		return
 	}
-	bench.Tick(31)
+	// bench.Tick(31)
 	// Otherwise return the entry's original value
 	if !common.STORAGE_TRACING { so.GetCommittedState(key, out) }
 }
@@ -179,41 +179,41 @@ func (so *stateObject) PrefetchState(key *common.Hash) {
 
 // GetCommittedState retrieves a value from the committed account storage trie.
 func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
-	bench.Tick(32)
+	// bench.Tick(32)
 	// If we have the original value cached, return that
 	{
 		value, cached := so.originStorage[*key]
 		if cached && !common.STORAGE_TRACING {
 			*out = value
-			bench.Tick(33)
+			// bench.Tick(33)
 			return
 		}
 	}
 	if so.created {
 		out.Clear()
-		bench.Tick(33)
+		// bench.Tick(33)
 		return
 	}
-	bench.Tick(33)
-	bench.Tick(34)
+	// bench.Tick(33)
+	// bench.Tick(34)
 	// Load from DB in case it is missing.
 	enc, err := so.db.stateReader.ReadAccountStorage(so.address, so.data.GetIncarnation(), key)
-	bench.Tick(35)
+	// bench.Tick(35)
 	if err != nil {
 		so.setError(err)
 		out.Clear()
 		return
 	}
-	bench.Tick(36)
+	// bench.Tick(36)
 	if enc != nil {
 		out.SetBytes(enc)
 	} else {
 		out.Clear()
 	}
-	bench.Tick(37)
+	// bench.Tick(37)
 	so.originStorage[*key] = *out
 	so.blockOriginStorage[*key] = *out
-	bench.Tick(38)
+	// bench.Tick(38)
 }
 // Similar to GetCommittedState, but will ignore the value read.
 func (so *stateObject) PrefetchCommittedState(key *common.Hash) {
@@ -358,19 +358,19 @@ func (so *stateObject) Code() []byte {
 		common.CONTRACT_CODE_COUNT[h] += 1
 		common.CONTRACT_CODE_ALIAS[a]  = h
 	}
-	bench.Tick(20)
+	// bench.Tick(20)
 	if so.code != nil {
-		bench.Tick(21)
+		// bench.Tick(21)
 		return so.code
 	}
 	if bytes.Equal(so.CodeHash(), emptyCodeHash) {
-		bench.Tick(21)
+		// bench.Tick(21)
 		return nil
 	}
-	bench.Tick(21)
-	bench.Tick(22)
+	// bench.Tick(21)
+	// bench.Tick(22)
 	code, err := so.db.stateReader.ReadAccountCode(a, so.data.Incarnation, h)
-	bench.Tick(23)
+	// bench.Tick(23)
 	if err != nil {
 		so.setError(fmt.Errorf("can't load code hash %x: %v", so.CodeHash(), err))
 	}

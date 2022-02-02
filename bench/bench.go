@@ -65,3 +65,12 @@ func DiffStrAuto(indexA int, indexB int) string {
 	} else if all_counts[indexA] < all_counts[indexB] { return DiffStr(indexA, false, indexB,  true)
 	} else                                            { return DiffStr(indexA, false, indexB, false) }
 }
+
+func PrintAll() {
+	pairs := len(all_counts) - 1
+	for i := 0; i < pairs; i += 1 {
+		if all_counts[i] > 0 && all_counts[i+1] > 0 {
+			fmt.Println(fmt.Sprintf("%4d-%4d %s", i+1, i, DiffStrAuto(i+1, i)))
+		}
+	}
+}
