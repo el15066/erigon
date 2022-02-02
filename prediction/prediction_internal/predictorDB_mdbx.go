@@ -2,6 +2,7 @@
 package prediction_internal
 
 import (
+	kv   "github.com/ledgerwatch/erigon-lib/kv"
 	mdbx "github.com/ledgerwatch/erigon-lib/kv/mdbx"
 	log  "github.com/ledgerwatch/log/v3"
 )

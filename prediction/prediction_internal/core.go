@@ -41,7 +41,7 @@ func (mem *Mem) setUnknown(i0, s uint64) {
 	copy(mem[i0:i1], random_byte_string)
 }
 func (mem *Mem) setByte(i uint64, b byte) {
-	if i >= uint64(len(mem)) { return }
+	if i >= uint64(len(mem))            { return }
 	mem[i] = b
 }
 func (mem *Mem) get32(i0 uint64)        []byte  { return mem.get(i0, 32)          }
@@ -173,18 +173,18 @@ func PredictTX(
 func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if isPrecompile(codeAddress) { return 1, true }
 	//
-	ch    := state.ibs.GetCodeHash(codeAddress)
-	p, ok := getPredictor(ch)
-	if !ok { return 0, false }
-	state.blockTbl = p.blockTbl
-	state.code     = p.code
+	ch := state.ctx.ibs.GetCodeHash(codeAddress)
+	p  := GetPredictor(ch)
+	if p.Code == nil { return 0, false }
+	state.blockTbl = p.BlockTbl
+	state.code     = p.Code
 	state.curBlock = 0
 	state.i        = 0
-	i_max         := len(code)
+	i_max         := len(state.code)
 	//
 	for state.i < i_max && state.gaz > 0 {
 		state.gaz -= 1
-		op := code[state.i]
+		op := state.code[state.i]
 		jumpTable[op](state)
 	}
 	return 1, true
@@ -194,7 +194,7 @@ func isPrecompile(codeAddress common.Address) bool {
 	last := codeAddress[common.AddressLength-1]
 	if 1 <= last && last < 10 {
 		ok := true
-		for i := 0; i < common.AddressLength - 1; i += 1 {
+		for i := 0; i < common.AddressLength-1; i += 1 {
 			ok = ok && codeAddress[i] == 0
 		}
 		return ok
