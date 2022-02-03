@@ -66,10 +66,13 @@ func GetPredictor(h common.Hash) types.Predictor {
 	return p
 }
 
+// _padding needs to hold at least the `CONSTANT_32` instruction's size
+const _padding = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" // 40 B
+
 func decodePredictor(bt []byte, code []byte) types.Predictor {
 	res  := types.Predictor{
 		BlockTbl: types.BlockTable{},
-		Code:     code,
+		Code:     append(code, _padding...), // to prevent index panic
 	}
 	ok   := true
 	i    := 0
