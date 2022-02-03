@@ -646,17 +646,8 @@ func opCallCommon(state *State, t CallOpType) {
 		return
 	}
 	//
-	if !(v5 == nil || v6 == nil) {
-		if v5.IsUint64() && v6.IsUint64() {
-			o0 := v5.Uint64()
-			oS := v6.Uint64()
-    		// clear resulting mem, since we don't currently support return value
-			state.mem.setUnknown(o0, oS)
-		}
-	}
-	//
 	ns := state.ctx.sp.NewState()
-	copy(ns.calldata, idata)
+	ns.calldata = idata
 	//
 	if t == CALL_REGULAR  { ns.address = ca
 	} else                { ns.address = state.address }
@@ -678,6 +669,16 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	state.gaz    =    ns.gaz + reservedGaz
 	state.ctx.sp.FreeState(ns)
+	//
+	if !(v5 == nil || v6 == nil) {
+		if v5.IsUint64() && v6.IsUint64() {
+			o0 := v5.Uint64()
+			oS := v6.Uint64()
+			// clear resulting mem, since we don't currently support return value
+			// fmt.Println("setUnknown odata")
+			state.mem.setUnknown(o0, oS)
+		}
+	}
 	//
 	d.SetUint64(uint64(res))
 	state.known[rd] = known
