@@ -31,7 +31,7 @@ func opStop(state *State) {
 func opConstant(state *State) {
 	// Equivalent of PUSH, a constant is given as immediate value
 	i      := state.i
-	size   := int(state.code[i]) - OP_CONSTANT_OFFSET
+	size   := int(state.code[i]) - OP_CONSTANT_OFFSET + 1
 	i, rd  := getArg(state.code, i + 1)
 	state.known[rd] = true
 	d      := &state.regs[rd]
