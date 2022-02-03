@@ -2,7 +2,7 @@
 package prediction_internal
 
 import (
-	"fmt"
+	// "fmt"
 	"math"
 	"math/big"
 	"encoding/binary"
@@ -157,7 +157,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 		inside = false
 	}
 	if state.gaz <= 0 {
-		fmt.Println("Call out of gaz, ca:", codeAddress)
+		// fmt.Println("Call out of gaz, ca:", codeAddress)
 	}
 	return 1, true
 }
