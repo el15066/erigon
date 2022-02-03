@@ -519,6 +519,24 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		log.Info(fmt.Sprintf("[%s] Blocks execution", logPrefix), "from", s.BlockNumber, "to", to)
 	}
 
+	log.Info("Globals",
+		"STORAGE_TRACING",           common.STORAGE_TRACING,
+		"PREFETCH_TRACING",          common.PREFETCH_TRACING,
+		"TX_DUMPING",                common.TX_DUMPING,
+		"CODE_DUMPING",              common.CODE_DUMPING,
+		"JUMP_TRACING",              common.JUMP_TRACING,
+		"PREFETCH_BLOCKS",           common.PREFETCH_BLOCKS,
+		"BLOCK_READAHEAD",           common.BLOCK_READAHEAD,
+		"PREFETCH_ACCOUNTS",         common.PREFETCH_ACCOUNTS,
+		"PREFETCH_CODE",             common.PREFETCH_CODE,
+		"USE_PREDICTORS",            common.USE_PREDICTORS,
+		"USE_STORAGE_PREFETCH_FILE", common.USE_STORAGE_PREFETCH_FILE,
+		"PREDICTOR_CACHE_SIZE",      common.PREDICTOR_CACHE_SIZE,
+		"PREDICTOR_INITIAL_GAZ",     common.PREDICTOR_INITIAL_GAZ,
+		"PREDICTOR_RESERVE_GAZ_DIV", common.PREDICTOR_RESERVE_GAZ_DIV,
+		"PREDICTOR_CALL_GAZ_BONUS",  common.PREDICTOR_CALL_GAZ_BONUS,
+	)
+
 	var batch ethdb.DbWithPendingMutations
 	batch = olddb.NewBatch(tx, quit)
 	defer batch.Rollback()
