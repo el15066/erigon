@@ -14,6 +14,11 @@ const PREFETCH_CODE             = false
 const USE_PREDICTORS            = false
 const USE_STORAGE_PREFETCH_FILE = false
 
+const PREDICTOR_CACHE_SIZE      = 256
+const PREDICTOR_INITIAL_GAZ     = 10000
+const PREDICTOR_RESERVE_GAZ_DIV = 4
+const PREDICTOR_CALL_GAZ_BONUS  = 0
+
 // if CODE_DUMPING {
 var CONTRACT_CODE       = map[Hash][]byte{}
 var CONTRACT_CODE_COUNT = map[Hash]uint{}

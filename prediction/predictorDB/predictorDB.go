@@ -30,7 +30,7 @@ func Init() error {
 	var err error
 	pdb.DB, err  = openPredictorDB()
 	if err != nil { return err }
-	pdb.Cache, _ = simplelru.NewLRU(2048, nil)
+	pdb.Cache, _ = simplelru.NewLRU(common.PREDICTOR_CACHE_SIZE, nil)
 	return nil
 }
 func Close() {

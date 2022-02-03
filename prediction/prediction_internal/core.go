@@ -117,7 +117,7 @@ func PredictTX(
 	state.caller    = ctx.Origin
 	state.callvalue.Set(callvalue)
 	state.calldata  = calldata
-	state.gaz       = 10000
+	state.gaz       = common.PREDICTOR_INITIAL_GAZ
 	bench.Tick(202)
 	predictCall(state, address)
 	bench.Tick(203)

@@ -662,8 +662,8 @@ func opCallCommon(state *State, t CallOpType) {
 		default:                 ns.callvalue.Clear()
 	}
 	//
-	reservedGaz := state.gaz / 4
-	ns.gaz       = state.gaz - reservedGaz
+	reservedGaz := state.gaz / common.PREDICTOR_RESERVE_GAZ_DIV
+	ns.gaz       = state.gaz - reservedGaz + common.PREDICTOR_CALL_GAZ_BONUS
 	//
 	res, known  := predictCall(ns, ca)
 	//
