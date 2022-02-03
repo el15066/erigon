@@ -14,7 +14,7 @@ import (
 	bench "github.com/ledgerwatch/erigon/bench"
 )
 
-var ctx internal.Ctx
+var ctx *internal.Ctx
 
 func Init() {
 	var err error
@@ -25,7 +25,7 @@ func Close() {
 }
 
 func InitCtx(db kvDB.Getter) {
-	ctx = *internal.NewCtx(db)
+	ctx = internal.NewCtx(db)
 }
 
 func SetBlockVars(
@@ -55,6 +55,6 @@ func PredictTX(
 	ctx.Origin   = origin
 	ctx.GasPrice = gasPrice
 	bench.Tick(151)
-	internal.PredictTX(&ctx, to_addr, callvalue, calldata)
+	internal.PredictTX(ctx, to_addr, callvalue, calldata)
 	bench.Tick(152)
 }
