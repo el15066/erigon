@@ -145,7 +145,7 @@ func opCaller(state *State) {
 }
 func opCallValue(state *State) {
 	d := zerOpArgVs(state)
-	d.Set(state.callvalue)
+	d.Set(&state.callvalue)
 	return
 }
 func opCallDataSize(state *State) {
@@ -656,7 +656,7 @@ func opCallCommon(state *State, t CallOpType) {
 	} else                { ns.caller  = state.address }
 	//
 	switch {
-		case t == CALL_DELEGATE: ns.callvalue.Set(state.callvalue)
+		case t == CALL_DELEGATE: ns.callvalue.Set(&state.callvalue)
 		case t == CALL_STATIC:   ns.callvalue.Clear()
 		case v2 != nil:          ns.callvalue.Set(v2)
 		default:                 ns.callvalue.Clear()

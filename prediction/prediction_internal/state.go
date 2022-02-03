@@ -21,7 +21,7 @@ type State struct {
 	caller    common.Address
 	blockTbl  types.BlockTable
 	code      []byte
-	callvalue *uint256.Int
+	callvalue uint256.Int
 	calldata  []byte
 	gaz       int
 	regs      Regs
