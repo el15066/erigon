@@ -7,10 +7,11 @@ const       TX_DUMPING = false
 const     CODE_DUMPING = false
 const     JUMP_TRACING = false
 
-const BLOCK_READAHEAD           = 100 + 1
-const PREFETCH_ACCOUNTS         = true
-const PREFETCH_CODE             = true
-const USE_PREDICTORS            = true
+const PREFETCH_BLOCKS           = false
+const BLOCK_READAHEAD           = 10 + 1
+const PREFETCH_ACCOUNTS         = false
+const PREFETCH_CODE             = false
+const USE_PREDICTORS            = false
 const USE_STORAGE_PREFETCH_FILE = false
 
 // if CODE_DUMPING {

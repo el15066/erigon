@@ -471,6 +471,19 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 	errChan <- err
 }
 
+func read_or_fetch_block(blockNum uint64, tx kv.Tx, blockChan chan *types.Block) (*types.Block) {
+	if common.PREFETCH_BLOCKS {
+		block := <-blockChan
+		return block
+	} else {
+		block, err := readBlock(blockNum, tx)
+		if err != nil {
+			return nil
+		}
+		return block
+	}
+}
+
 func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint64, ctx context.Context, cfg ExecuteBlockCfg, initialCycle bool) (err error) {
 	bench.Reset()
 	quit := ctx.Done()
@@ -527,15 +540,24 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	errChan   := make(chan error)
 	quitChan  := make(chan int)
 
-	blockNum := stageProgress
-	go fetchBlocks(blockChan, errChan, quitChan, cfg, blockNum+1, to)
-	defer state.FlushStateReaderTracefile()
+	if common.PREFETCH_BLOCKS {
+		go fetchBlocks(blockChan, errChan, quitChan, cfg, stageProgress + 1, to)
+	}
+
+	if common.STORAGE_TRACING {
+		defer state.FlushStateReaderTracefile()
+	}
 
 	var stoppedErr error
-	bench.Tick(0)
-	for block := range blockChan {
-		blockNum++
+
+	for blockNum := stageProgress + 1; blockNum <= to; blockNum++ {
+
+		bench.Tick(0)
+
+		block := read_or_fetch_block(blockNum, tx, blockChan)
+
 		bench.Tick(1)
+
 		if stoppedErr = common.Stopped(quit); stoppedErr != nil {
 			break
 		}
@@ -602,12 +624,15 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			tx.CollectMetrics()
 			syncMetrics[stages.Execution].Set(blockNum)
 		}
-		bench.Tick(0)
+
+		bench.Tick(6)
 	}
 
-	close(quitChan)
-	err2 := <-errChan
-	if err == nil { err = err2 }
+	if common.PREFETCH_BLOCKS {
+		close(quitChan)
+		err2 := <-errChan
+		if err == nil { err = err2 }
+	}
 
 	// HERE
 	bench.PrintAll()
