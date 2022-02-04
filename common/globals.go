@@ -14,6 +14,8 @@ const PREFETCH_CODE             = false
 const USE_PREDICTORS            = false
 const USE_STORAGE_PREFETCH_FILE = false
 
+const TRACE_PREDICTED  = true
+
 const PREDICTOR_CACHE_SIZE      = 256
 const PREDICTOR_INITIAL_GAZ     = 10000
 const PREDICTOR_RESERVE_GAZ_DIV = 4

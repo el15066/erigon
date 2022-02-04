@@ -83,6 +83,8 @@ type Ctx struct {
 	//
 	Origin      common.Address
 	GasPrice    *uint256.Int
+	//
+	Predicted   []common.Hash
 }
 func NewCtx(db kvDB.Getter) *Ctx {
 	ctx := &Ctx{

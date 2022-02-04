@@ -2,6 +2,11 @@
 package prediction
 
 import (
+	"fmt"
+	"os"
+	"sort"
+	"bytes"
+	"bufio"
 	"math/big"
 
 	uint256 "github.com/holiman/uint256"
@@ -14,18 +19,37 @@ import (
 	bench "github.com/ledgerwatch/erigon/bench"
 )
 
-var ctx *internal.Ctx
+const PREDICTED_CAP = 1024
+
+var ctx       *internal.Ctx
+var tracefile *bufio.Writer
 
 func Init() {
 	var err error
 	err = predictorDB.Init(); if err != nil { panic(err) }
+	//
+	if common.TRACE_PREDICTED {
+		_f, _err := os.OpenFile("logz/predicted.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+		if  _err == nil {
+			tracefile = bufio.NewWriterSize(_f, 1024*1024)
+		} else {
+			Close()
+			panic(_err)
+		}
+	}
 }
 func Close() {
 	predictorDB.Close()
+	if common.TRACE_PREDICTED && tracefile != nil {
+		tracefile.Flush()
+	}
 }
 
 func InitCtx(db kvDB.Getter) {
 	ctx = internal.NewCtx(db)
+	if common.TRACE_PREDICTED {
+		ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
+	}
 }
 
 func SetBlockVars(
@@ -43,6 +67,7 @@ func SetBlockVars(
 }
 
 func PredictTX(
+	txIndex   int,
 	to_addr   common.Address,
 	//
 	origin    common.Address,
@@ -57,4 +82,29 @@ func PredictTX(
 	bench.Tick(151)
 	internal.PredictTX(ctx, to_addr, callvalue, calldata)
 	bench.Tick(152)
+
+	if common.TRACE_PREDICTED && tracefile != nil {
+		//
+		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.BlockNumber, txIndex, to_addr))
+		//
+		if len(ctx.Predicted) > 0 {
+			sort.Slice(ctx.Predicted, func(a, b int) bool {
+				return bytes.Compare(ctx.Predicted[a][:], ctx.Predicted[b][:]) < 0
+			})
+			var prev []byte // nil is not equal to the zero hash (32 zeros)
+			for i := range ctx.Predicted {
+				p :=       ctx.Predicted[i][:]
+				if bytes.Equal(p, prev) { continue }
+				prev = p
+				tracefile.WriteString(fmt.Sprintf("%x\n", ctx.Predicted[i])) // can't use p which is a slice
+			}
+		}
+		ctx.Predicted = ctx.Predicted[:0]
+		//
+		if cap(ctx.Predicted) != PREDICTED_CAP {
+			fmt.Println("Note", ctx.BlockNumber, txIndex, "ctx.Predicted len cap", len(ctx.Predicted), cap(ctx.Predicted))
+			ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
+		}
+	}
+	bench.Tick(153)
 }

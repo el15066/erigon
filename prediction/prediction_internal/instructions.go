@@ -253,10 +253,11 @@ func opSload(state *State) {
 	_,  d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := state.address
-	// k := (*common.Hash)(v0) // hash is []byte :(
-	k := &state.ctx.buf
+	// k := (*common.Hash)(v0) // hash is [32]byte :(
+	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	state.ctx.ibs.GetState(a, (*common.Hash)(k), d)
+	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
+	state.ctx.ibs.GetState(a, k, d)
 	return
 }
 func opCallDataLoad(state *State) {
@@ -309,9 +310,11 @@ func opStouch(state *State) {
 	v0 := uniNVOpArgVs(state)
 	if v0 == nil { return }
 	a := state.address
-	k := &state.ctx.buf
+	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	state.ctx.ibs.PrefetchState(a, (*common.Hash)(k))
+	// fmt.Println("STOUCH",          k)
+	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
+	state.ctx.ibs.PrefetchState(a, k)
 	return
 }
 
@@ -486,11 +489,12 @@ func opSstore(state *State) {
 	v0, v1 := binNVOpOptArgVs(state)
 	if v0 == nil { return }
 	a := state.address
-	k := &state.ctx.buf
+	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
 	// state.ctx.ibs.PrefetchState(a, k)
-	if v1 == nil { state.ctx.ibs.PrefetchState(a, (*common.Hash)(k))
-	} else       { state.ctx.ibs.SetDirtyState(a, (*common.Hash)(k), *v1) }
+	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
+	if v1 == nil { state.ctx.ibs.PrefetchState(a, k)
+	} else       { state.ctx.ibs.SetDirtyState(a, k, *v1) }
 	return
 }
 

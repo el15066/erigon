@@ -380,6 +380,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 									from_acc.DecodeForStorage(from_data)
 									//
 									prediction.PredictTX(
+										i,
 										*to_addr,
 										//
 										from_addr,
@@ -531,6 +532,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		"PREFETCH_CODE",             common.PREFETCH_CODE,
 		"USE_PREDICTORS",            common.USE_PREDICTORS,
 		"USE_STORAGE_PREFETCH_FILE", common.USE_STORAGE_PREFETCH_FILE,
+		"TRACE_PREDICTED",           common.TRACE_PREDICTED,
 		"PREDICTOR_CACHE_SIZE",      common.PREDICTOR_CACHE_SIZE,
 		"PREDICTOR_INITIAL_GAZ",     common.PREDICTOR_INITIAL_GAZ,
 		"PREDICTOR_RESERVE_GAZ_DIV", common.PREDICTOR_RESERVE_GAZ_DIV,
