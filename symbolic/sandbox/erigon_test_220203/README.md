@@ -64,7 +64,7 @@ no prefetch     |    275  | 1.00
 block           |    268  | 1.03
 block+accs      |    234  | 1.18
 block+accs+code |    233  | 1.18
-* + pred        |    218  | 1.26
+\* + pred       |    218  | 1.26
 hot             |    186  | 1.48
 hot+blocks      |    185  | 1.49
-hot + * + pred  |    188  | 1.46
+hot + \* + pred |    188  | 1.46
