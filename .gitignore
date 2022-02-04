@@ -72,6 +72,7 @@ libmdbx/build/*
 
 *.bin
 logz/reads.txt
+logz/predicted.txt
 logz/prefetches.txt
 logz/tx_dump.txt
 logz/reads_addresses_by_tx.txt
