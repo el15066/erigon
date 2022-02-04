@@ -1,0 +1,61 @@
+3
+Building Erigon
+rm -f /home/route/el15066/erigon/build/bin/tg # Remove old binary to prevent confusion where users still use it because of the scripts
+env GO111MODULE=on go build -trimpath -ldflags "-X github.com/ledgerwatch/erigon/params.GitCommit=bb1b86f0a6f39406960873a9d7d29ed3e8c311b5 -X github.com/ledgerwatch/erigon/params.GitBranch=from_2021_08_05 -X github.com/ledgerwatch/erigon/params.GitTag=v2021.08.05-101-gbb1b86f0a" -o /home/route/el15066/erigon/build/bin/erigon ./cmd/erigon
+Done building.
+Run "/home/route/el15066/erigon/build/bin/erigon" to launch Erigon.
+INFO[02-04|10:16:21.602] Build info                               git_branch=from_2021_08_05 git_tag=v2021.08.05-101-gbb1b86f0a git_commit=bb1b86f0a6f39406960873a9d7d29ed3e8c311b5
+INFO[02-04|10:16:21.603] Starting Erigon on Ethereum mainnet... 
+INFO[02-04|10:16:21.605] Maximum peer count                       ETH=100 total=100
+INFO[02-04|10:16:21.605] Set global gas cap                       cap=50000000
+INFO[02-04|10:16:21.670] Opening Database                         label=chaindata path=/media/route/sx8200/erigon/data/chaindata
+INFO[02-04|10:16:21.673] database closed                          label=chaindata
+INFO[02-04|10:16:21.674] Opening Database                         label=chaindata path=/media/route/sx8200/erigon/data/chaindata
+INFO[02-04|10:16:21.677] Initialised chain configuration          config="{ChainID: 1 Homestead: 1150000 DAO: 1920000 DAOSupport: true EIP150: 2463000 EIP155: 2675000 EIP158: 2675000 Byzantium: 4370000 Constantinople: 7280000 Petersburg: 7280000 Istanbul: 9069000, Muir Glacier: 9200000, Berlin: 12244000, London: 12965000, Engine: ethash}"
+INFO[02-04|10:16:21.677] Disk storage enabled for ethash DAGs     dir=/media/route/sx8200/erigon/ethash count=2
+INFO[02-04|10:16:21.677] Initialising Ethereum protocol           network=1
+INFO[02-04|10:16:21.677] Effective                                prune="--prune="
+INFO[02-04|10:16:21.677] Starting private RPC server              on=127.0.0.1:9090
+INFO[02-04|10:16:23.443] Stage Headers                   (Download headers) 
+INFO[02-04|10:16:23.443] Stage Headers                   Done 
+INFO[02-04|10:16:23.443] Stage BlockHashes               (Write block hashes) 
+INFO[02-04|10:16:23.443] Stage BlockHashes               Done 
+INFO[02-04|10:16:23.443] Stage CreateHeadersSnapshot     disabled. Enable by --snapshot.layout 
+INFO[02-04|10:16:23.443] Stage Bodies                    (Download block bodies) 
+INFO[02-04|10:16:23.444] Stage Bodies                    Done 
+INFO[02-04|10:16:23.444] Stage CreateBodiesSnapshot      disabled. Enable by --snapshot.layout 
+INFO[02-04|10:16:23.444] Stage Senders                   (Recover senders from tx signatures) 
+INFO[02-04|10:16:23.444] Stage Senders                   Done 
+INFO[02-04|10:16:23.444] Stage Execution                 (Execute blocks w/o hash checks) 
+INFO[02-04|10:16:23.444] [7/18 Execution] Blocks execution        from=7499999 to=7509999
+INFO[02-04|10:16:23.444] Globals                                  STORAGE_TRACING=false PREFETCH_TRACING=false TX_DUMPING=false CODE_DUMPING=false JUMP_TRACING=false PREFETCH_BLOCKS=false BLOCK_READAHEAD=11 PREFETCH_ACCOUNTS=false PREFETCH_CODE=false USE_PREDICTORS=false USE_STORAGE_PREFETCH_FILE=false PREDICTOR_CACHE_SIZE=256 PREDICTOR_INITIAL_GAZ=10000 PREDICTOR_RESERVE_GAZ_DIV=4 PREDICTOR_CALL_GAZ_BONUS=0
+INFO[02-04|10:16:23.524] Started P2P networking                   version=65 self=enode://cf90152aad373d1608af933850566e82f8ad78089ffe361b9f94664a081ba07596b6dbf4b38dfdde9f4a7470414f76c803b66ad56e4920db7bb09fa445d3c458@127.0.0.1:30304 name=erigon/v2021.08.5-alpha-bb1b86f0/linux-amd64/go1.16.3
+INFO[02-04|10:16:23.529] Started P2P networking                   version=66 self=enode://cf90152aad373d1608af933850566e82f8ad78089ffe361b9f94664a081ba07596b6dbf4b38dfdde9f4a7470414f76c803b66ad56e4920db7bb09fa445d3c458@127.0.0.1:30303 name=erigon/v2021.08.5-alpha-bb1b86f0/linux-amd64/go1.16.3
+INFO[02-04|10:16:26.412] Mapped network port                      proto=tcp extport=30303 intport=30303 interface="UPNP IGDv1-IP1"
+INFO[02-04|10:16:27.266] Mapped network port                      proto=tcp extport=30304 intport=30304 interface="UPNP IGDv1-IP1"
+INFO[02-04|10:16:27.500] Mapped network port                      proto=udp extport=30303 intport=30303 interface="UPNP IGDv1-IP1"
+INFO[02-04|10:16:27.734] Mapped network port                      proto=udp extport=30304 intport=30304 interface="UPNP IGDv1-IP1"
+INFO[02-04|10:16:53.456] [7/18 Execution] Executed blocks         number=7500760 blk/s=25.357 tx/s=3384.936 Mgas/s=179.250 batch="9.65 MiB" alloc="103.36 MiB" sys="275.92 MiB"
+INFO[02-04|10:17:23.446] [7/18 Execution] Executed blocks         number=7501756 blk/s=33.212 tx/s=3913.376 Mgas/s=216.246 batch="20.55 MiB" alloc="140.74 MiB" sys="343.22 MiB"
+INFO[02-04|10:17:53.457] [7/18 Execution] Executed blocks         number=7502863 blk/s=36.886 tx/s=3971.257 Mgas/s=251.655 batch="32.26 MiB" alloc="281.22 MiB" sys="344.59 MiB"
+INFO[02-04|10:18:21.678] [p2p] GoodPeers                          eth66=0 eth65=0
+INFO[02-04|10:18:23.459] [7/18 Execution] Executed blocks         number=7504037 blk/s=39.130 tx/s=3301.374 Mgas/s=253.326 batch="45.46 MiB" alloc="214.77 MiB" sys="412.38 MiB"
+INFO[02-04|10:18:53.472] [7/18 Execution] Executed blocks         number=7505193 blk/s=38.517 tx/s=3242.981 Mgas/s=230.732 batch="55.20 MiB" alloc="220.84 MiB" sys="479.51 MiB"
+INFO[02-04|10:19:23.468] [7/18 Execution] Executed blocks         number=7506306 blk/s=37.104 tx/s=3769.612 Mgas/s=230.896 batch="63.58 MiB" alloc="372.84 MiB" sys="547.01 MiB"
+INFO[02-04|10:19:53.453] [7/18 Execution] Executed blocks         number=7507490 blk/s=39.488 tx/s=4350.196 Mgas/s=252.993 batch="72.17 MiB" alloc="397.44 MiB" sys="614.39 MiB"
+INFO[02-04|10:20:21.678] [p2p] GoodPeers                          eth66=2 eth65=0
+INFO[02-04|10:20:23.445] [7/18 Execution] Executed blocks         number=7508630 blk/s=38.009 tx/s=4383.421 Mgas/s=257.501 batch="81.37 MiB" alloc="294.70 MiB" sys="615.75 MiB"
+INFO[02-04|10:20:53.445] [7/18 Execution] Executed blocks         number=7509840 blk/s=40.333 tx/s=3722.918 Mgas/s=231.579 batch="89.84 MiB" alloc="394.77 MiB" sys="682.88 MiB"
+__TO-FROM ___AVERAGE_ns_ _______COUNT__ _____TOTAL_us_
+   1-   0         636446          10000        6364461
+   2-   1            618          10000           6183
+   3-   2            135          10000           1358
+   4-   3       26722738          10000      267227384
+   5-   4            271          10000           2712
+   6-   5            632          10000           6322
+INFO[02-04|10:20:57.054] Got interrupt, shutting down... 
+INFO[02-04|10:20:57.321] Successfully update p2p node database    path=/media/route/sx8200/erigon/data/nodes/eth66 updated=0 deleted=341
+INFO[02-04|10:20:57.322] database closed                          label=sentry
+INFO[02-04|10:20:57.898] Successfully update p2p node database    path=/media/route/sx8200/erigon/data/nodes/eth65 updated=0 deleted=327
+INFO[02-04|10:20:57.898] database closed                          label=sentry
+INFO[02-04|10:20:58.067] database closed                          label=chaindata

@@ -1,0 +1,52 @@
+INFO[02-04|10:38:47.427] Build info                               git_branch=from_2021_08_05 git_tag=v2021.08.05-101-gbb1b86f0a git_commit=bb1b86f0a6f39406960873a9d7d29ed3e8c311b5
+INFO[02-04|10:38:47.427] Starting Erigon on Ethereum mainnet... 
+INFO[02-04|10:38:47.429] Maximum peer count                       ETH=100 total=100
+INFO[02-04|10:38:47.430] Set global gas cap                       cap=50000000
+INFO[02-04|10:38:47.500] Opening Database                         label=chaindata path=/media/route/sx8200/erigon/data/chaindata
+INFO[02-04|10:38:47.502] database closed                          label=chaindata
+INFO[02-04|10:38:47.502] Opening Database                         label=chaindata path=/media/route/sx8200/erigon/data/chaindata
+INFO[02-04|10:38:47.503] Initialised chain configuration          config="{ChainID: 1 Homestead: 1150000 DAO: 1920000 DAOSupport: true EIP150: 2463000 EIP155: 2675000 EIP158: 2675000 Byzantium: 4370000 Constantinople: 7280000 Petersburg: 7280000 Istanbul: 9069000, Muir Glacier: 9200000, Berlin: 12244000, London: 12965000, Engine: ethash}"
+INFO[02-04|10:38:47.503] Disk storage enabled for ethash DAGs     dir=/media/route/sx8200/erigon/ethash count=2
+INFO[02-04|10:38:47.504] Initialising Ethereum protocol           network=1
+INFO[02-04|10:38:47.504] Effective                                prune="--prune="
+INFO[02-04|10:38:47.504] Starting private RPC server              on=127.0.0.1:9090
+INFO[02-04|10:38:48.161] Stage Headers                   (Download headers) 
+INFO[02-04|10:38:48.161] Stage Headers                   Done 
+INFO[02-04|10:38:48.161] Stage BlockHashes               (Write block hashes) 
+INFO[02-04|10:38:48.162] Stage BlockHashes               Done 
+INFO[02-04|10:38:48.162] Stage CreateHeadersSnapshot     disabled. Enable by --snapshot.layout 
+INFO[02-04|10:38:48.162] Stage Bodies                    (Download block bodies) 
+INFO[02-04|10:38:48.162] Stage Bodies                    Done 
+INFO[02-04|10:38:48.162] Stage CreateBodiesSnapshot      disabled. Enable by --snapshot.layout 
+INFO[02-04|10:38:48.162] Stage Senders                   (Recover senders from tx signatures) 
+INFO[02-04|10:38:48.162] Stage Senders                   Done 
+INFO[02-04|10:38:48.162] Stage Execution                 (Execute blocks w/o hash checks) 
+INFO[02-04|10:38:48.162] [7/18 Execution] Blocks execution        from=7499999 to=7509999
+INFO[02-04|10:38:48.162] Globals                                  STORAGE_TRACING=false PREFETCH_TRACING=false TX_DUMPING=false CODE_DUMPING=false JUMP_TRACING=false PREFETCH_BLOCKS=true BLOCK_READAHEAD=11 PREFETCH_ACCOUNTS=false PREFETCH_CODE=false USE_PREDICTORS=false USE_STORAGE_PREFETCH_FILE=false PREDICTOR_CACHE_SIZE=256 PREDICTOR_INITIAL_GAZ=10000 PREDICTOR_RESERVE_GAZ_DIV=4 PREDICTOR_CALL_GAZ_BONUS=0
+INFO[02-04|10:38:48.193] Started P2P networking                   version=65 self=enode://cf90152aad373d1608af933850566e82f8ad78089ffe361b9f94664a081ba07596b6dbf4b38dfdde9f4a7470414f76c803b66ad56e4920db7bb09fa445d3c458@127.0.0.1:30304 name=erigon/v2021.08.5-alpha-bb1b86f0/linux-amd64/go1.16.3
+INFO[02-04|10:38:48.201] Started P2P networking                   version=66 self=enode://cf90152aad373d1608af933850566e82f8ad78089ffe361b9f94664a081ba07596b6dbf4b38dfdde9f4a7470414f76c803b66ad56e4920db7bb09fa445d3c458@127.0.0.1:30303 name=erigon/v2021.08.5-alpha-bb1b86f0/linux-amd64/go1.16.3
+INFO[02-04|10:38:51.132] Mapped network port                      proto=tcp extport=30304 intport=30304 interface="UPNP IGDv1-IP1"
+INFO[02-04|10:38:51.984] Mapped network port                      proto=udp extport=30304 intport=30304 interface="UPNP IGDv1-IP1"
+INFO[02-04|10:38:52.217] Mapped network port                      proto=tcp extport=30303 intport=30303 interface="UPNP IGDv1-IP1"
+INFO[02-04|10:38:52.451] Mapped network port                      proto=udp extport=30303 intport=30303 interface="UPNP IGDv1-IP1"
+INFO[02-04|10:39:18.171] [7/18 Execution] Executed blocks         number=7501735 blk/s=57.850 tx/s=7219.507 Mgas/s=390.259 batch="20.29 MiB" alloc="219.91 MiB" sys="343.16 MiB"
+INFO[02-04|10:39:48.170] [7/18 Execution] Executed blocks         number=7503425 blk/s=56.335 tx/s=5757.747 Mgas/s=382.121 batch="38.58 MiB" alloc="227.90 MiB" sys="411.10 MiB"
+INFO[02-04|10:40:18.177] [7/18 Execution] Executed blocks         number=7505065 blk/s=54.654 tx/s=4422.951 Mgas/s=332.494 batch="54.14 MiB" alloc="216.03 MiB" sys="479.63 MiB"
+INFO[02-04|10:40:47.504] [p2p] GoodPeers                          eth66=1 eth65=0
+INFO[02-04|10:40:48.171] [7/18 Execution] Executed blocks         number=7506636 blk/s=52.377 tx/s=5365.151 Mgas/s=332.368 batch="66.03 MiB" alloc="347.73 MiB" sys="547.39 MiB"
+INFO[02-04|10:41:18.165] [7/18 Execution] Executed blocks         number=7508187 blk/s=51.711 tx/s=5982.683 Mgas/s=336.197 batch="78.05 MiB" alloc="363.81 MiB" sys="615.50 MiB"
+INFO[02-04|10:41:48.171] [7/18 Execution] Executed blocks         number=7509731 blk/s=51.456 tx/s=4967.238 Mgas/s=309.797 batch="89.09 MiB" alloc="358.60 MiB" sys="682.44 MiB"
+INFO[02-04|10:41:52.790] Prefetch thread exiting                  error=nil
+__TO-FROM ___AVERAGE_ns_ _______COUNT__ _____TOTAL_us_
+   1-   0           7898          10000          78988
+   2-   1            492          10000           4923
+   3-   2            237          10000           2370
+   4-   3       18473303          10000      184733034
+   5-   4            256          10000           2567
+   6-   5            541          10000           5419
+INFO[02-04|10:41:52.990] Got interrupt, shutting down... 
+INFO[02-04|10:41:53.578] Successfully update p2p node database    path=/media/route/sx8200/erigon/data/nodes/eth66 updated=0 deleted=235
+INFO[02-04|10:41:53.578] database closed                          label=sentry
+INFO[02-04|10:41:53.581] Successfully update p2p node database    path=/media/route/sx8200/erigon/data/nodes/eth65 updated=0 deleted=183
+INFO[02-04|10:41:53.582] database closed                          label=sentry
+INFO[02-04|10:41:53.996] database closed                          label=chaindata
