@@ -23,6 +23,7 @@ import (
 const BLOCK_ID_SHIFTS = 0
 const BLOCK_ID_MAX    = uint64(65536 << BLOCK_ID_SHIFTS) - 1
 const INVALID_TARGET  = int(math.MaxInt64)
+const ZEROS32         = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
 var UNKNOWN_U256 = uint256.Int{
 	random_u256_part_0,
@@ -41,12 +42,25 @@ type Known [65536]bool
 type Mem struct {
 	data  [65536]byte
 	msize uint64
+	modified bool
 }
 func (mem *Mem) Init() {
 	mem.msize    = 0
+	mem.modified = false
 }
 func (mem *Mem) Msize() uint64 {
 	return mem.msize
+}
+func (mem *Mem) debug() {
+	if mem.modified {
+		mem.modified = false
+		for j := uint64(0); j < mem.msize; j += 0x20 {
+			w := mem.data[j:j+0x20]
+			if string(w) != ZEROS32 {
+				fmt.Println(fmt.Sprintf("  mem %4x  %s", j, hex.EncodeToString(w)))
+			}
+		}
+	}
 }
 func (mem *Mem) updateMsize(i1 uint64) {
 	m1 := mem.msize
@@ -66,17 +80,20 @@ func (mem *Mem) set(i0, s uint64, data []byte) {
 	i1 := i0 + s
 	if i1 > uint64(len(mem.data)) || i0 > i1 { return }
 	mem.updateMsize(i1)
+	mem.modified = true
 	copy(mem.data[i0:i1], data)
 }
 func (mem *Mem) setUnknown(i0, s uint64) {
 	i1 := i0 + s
 	if i1 > uint64(len(mem.data)) || i0 > i1 { return }
 	mem.updateMsize(i1)
+	mem.modified = true
 	copy(mem.data[i0:i1], random_byte_string)
 }
 func (mem *Mem) setByte(i uint64, b byte) {
 	if i >= uint64(len(mem.data))            { return }
 	mem.updateMsize(i + 1)
+	mem.modified = true
 	mem.data[i]  = b
 }
 func (mem *Mem) getByte(i uint64) byte {
@@ -169,6 +186,7 @@ var inside = false
 func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if common.DEBUG_TX && state.ctx.Debug {
 		fmt.Println("predictCall",
+			codeAddress,
 			state.address,
 			state.caller,
 			state.callvalue,
@@ -183,6 +201,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	ch := state.ctx.ibs.GetCodeHash(codeAddress)
 	p  := predictorDB.GetPredictor(ch)
 	bench.Tick(211)
+	if     common.DEBUG_TX && state.ctx.Debug { fmt.Println("  code hash", ch, "have?", p.Code != nil) }
 	if p.Code == nil { return 0, false }
 	state.blockTbl = p.BlockTbl
 	state.code     = p.Code
@@ -212,6 +231,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 		JumpTable[op](state)
 		//
 		if common.DEBUG_TX && state.ctx.Debug { fmt.Print(fmt.Sprintf("\n%5d| %4d = %20s \n", state.gaz, rd, _enc_reg(state, rd))) }
+		if common.DEBUG_TX && state.ctx.Debug { state.mem.debug() }
 	}
 	if me {
 		bench.Tick(213)
