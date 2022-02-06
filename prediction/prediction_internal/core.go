@@ -29,29 +29,44 @@ func init() { JumpTable = jumpTable } // go doesn't like circle with opCallCommo
 
 type Regs  [65536]uint256.Int
 type Known [65536]bool
-type Mem   [65536]byte
 
-func (mem *Mem) msize() uint64 {
-	return 2048 // TODO: keep track of this
+type Mem struct {
+	data  [65536]byte
+	msize uint64
+}
+func (mem *Mem) Init() {
+	mem.msize = 0
+}
+func (mem *Mem) Msize() uint64 {
+	return mem.msize
 }
 func (mem *Mem) get(i0, s uint64) []byte {
 	i1 := i0 + s
-	if i1 > uint64(len(mem)) || i0 > i1 { return nil }
-	return mem[i0:i1]
+	if i1 > uint64(len(mem.data)) || i0 > i1 { return nil }
+	return mem.data[i0:i1]
 }
 func (mem *Mem) set(i0, s uint64, data []byte) {
 	i1 := i0 + s
-	if i1 > uint64(len(mem)) || i0 > i1 { return }
-	copy(mem[i0:i1], data)
+	if i1 > uint64(len(mem.data)) || i0 > i1 { return }
+	m2 := (i1 + 31) * ^uint64(31)
+	if m2 > mem.msize {
+		for i := mem.msize; i < i0; i += 1 { mem.data[i] = 0 }
+		mem.msize = m2
+	}
+	copy(mem.data[i0:i1], data)
 }
 func (mem *Mem) setUnknown(i0, s uint64) {
 	i1 := i0 + s
-	if i1 > uint64(len(mem)) || i0 > i1 { return }
-	copy(mem[i0:i1], random_byte_string)
+	if i1 > uint64(len(mem.data)) || i0 > i1 { return }
+	copy(mem.data[i0:i1], random_byte_string)
 }
 func (mem *Mem) setByte(i uint64, b byte) {
-	if i >= uint64(len(mem))            { return }
-	mem[i] = b
+	if i >= uint64(len(mem.data))            { return }
+	mem.data[i] = b
+}
+func (mem *Mem) getByte(i uint64) byte {
+	if i >= uint64(len(mem.data))            { return 0 }
+	return mem.data[i]
 }
 func (mem *Mem) get32(i0 uint64)        []byte  { return mem.get(i0, 32)          }
 func (mem *Mem) set32(i0 uint64, data [32]byte) {        mem.set(i0, 32, data[:]) }
@@ -142,6 +157,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	state.curBlock = 0
 	state.i        = 0
 	i_max         := len(state.code)
+	state.mem.Init()
 	//
 	me := false
 	if !inside {

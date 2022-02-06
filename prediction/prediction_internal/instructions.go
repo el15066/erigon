@@ -180,7 +180,7 @@ func opDifficulty(state *State) {
 }
 func opMsize(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.mem.msize())
+	d.SetUint64(state.mem.Msize())
 	return
 }
 func opGas(state *State) {
