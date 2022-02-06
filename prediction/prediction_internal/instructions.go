@@ -133,76 +133,77 @@ func opCodeSize(state *State) {
 	return
 }
 
-func zerOpArgVs(state *State) *uint256.Int {
+func zerOpArgVs(state *State) (uint16, *uint256.Int) {
 	i      := state.i + 1
 	i, rd  := getArg(state.code, i)
 	state.i = i
 	state.known[rd] = true
 	d  := &state.regs[rd]
-	return d
+	return rd, d
 }
 func opAddress(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetBytes(state.address.Bytes())
 	return
 }
 func opOrigin(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetBytes(state.ctx.Origin.Bytes())
 	return
 }
 func opCaller(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetBytes(state.caller.Bytes())
 	return
 }
 func opCallValue(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.Set(&state.callvalue)
 	return
 }
 func opCallDataSize(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetUint64(uint64(len(state.calldata)))
 	return
 }
 func opGasprice(state *State) {
-	d := zerOpArgVs(state)
-	d.Set(state.ctx.GasPrice)
+	rd, _ := zerOpArgVs(state)
+	// d.Set(state.ctx.GasPrice)
+	state.known[rd] = false // set to unknown, to continue predicting even if it wouldn't
 	return
 }
 func opCoinbase(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetBytes(state.ctx.Coinbase.Bytes())
 	return
 }
 func opTimestamp(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetUint64(state.ctx.Timestamp)
 	return
 }
 func opNumber(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetUint64(state.ctx.BlockNumber)
 	return
 }
 func opDifficulty(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetFromBig(state.ctx.Difficulty)
 	return
 }
 func opMsize(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetUint64(state.mem.Msize())
 	return
 }
 func opGas(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetUint64(state.ctx.GasLimit) // we don't track gas usage, so return max
 	return
 }
 func opGasLimit(state *State) {
-	d := zerOpArgVs(state)
+	_,  d := zerOpArgVs(state)
 	d.SetUint64(state.ctx.GasLimit)
 	return
 }
@@ -238,14 +239,15 @@ func uniOpArgVs(state *State) (uint16, *uint256.Int, *uint256.Int) {
 	return rd, d, v0
 }
 func opBalance(state *State) {
-	_,  d, v0 := uniOpArgVs(state)
+	rd, d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := common.Address(v0.Bytes20())
 	d.Set(state.ctx.ibs.GetBalance(a))
+	state.known[rd] = false // TEMP
 	return
 }
 func opExtCodeSize(state *State) {
-	rd,  d, v0 := uniOpArgVs(state)
+	rd, d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	state.known[rd] = false // set to unknown, to continue predicting even if it wouldn't
 	_ = v0
@@ -267,7 +269,7 @@ func opExtCodeHash(state *State) {
 	return
 }
 func opSload(state *State) {
-	rd,  d, v0 := uniOpArgVs(state)
+	rd, d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := state.address
 	// k := (*common.Hash)(v0) // hash is [32]byte :(
@@ -279,6 +281,7 @@ func opSload(state *State) {
 	if d.Eq(&UNKNOWN_U256) {
 		state.known[rd] = false
 	}
+	state.known[rd] = false // TEMP
 	return
 }
 func opCallDataLoad(state *State) {
