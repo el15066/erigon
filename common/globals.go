@@ -1,6 +1,8 @@
 
 package common
 
+const MAX_BLOCK = 7_500_000 - 1 + 4546
+
 const  STORAGE_TRACING = false
 const PREFETCH_TRACING = false
 const       TX_DUMPING = false
