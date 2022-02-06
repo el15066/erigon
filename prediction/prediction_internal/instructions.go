@@ -232,21 +232,25 @@ func opBalance(state *State) {
 	return
 }
 func opExtCodeSize(state *State) {
-	_,  d, v0 := uniOpArgVs(state)
+	rd,  d, v0 := uniOpArgVs(state)
 	if d == nil { return }
-	a := common.Address(v0.Bytes20())
-	d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(a)))
+	state.known[rd] = false // set to unknown, to continue predicting even if it wouldn't
+	_ = v0
+	// a := common.Address(v0.Bytes20())
+	// d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(a)))
 	return
 }
 func opExtCodeHash(state *State) {
-	_,  d, v0 := uniOpArgVs(state)
+	rd,  d, v0 := uniOpArgVs(state)
 	if d == nil { return }
-	a := common.Address(v0.Bytes20())
-	if state.ctx.ibs.Empty(a) { // TODO: maybe speculatively skip check ?
-		d.Clear()
-	} else {
-		d.SetBytes(state.ctx.ibs.GetCodeHash(a).Bytes())
-	}
+	state.known[rd] = false // set to unknown, to continue predicting even if it wouldn't
+	_ = v0
+	// a := common.Address(v0.Bytes20())
+	// if state.ctx.ibs.Empty(a) { // TODO: maybe speculatively skip check ?
+	// 	d.Clear()
+	// } else {
+	// 	d.SetBytes(state.ctx.ibs.GetCodeHash(a).Bytes())
+	// }
 	return
 }
 func opSload(state *State) {
