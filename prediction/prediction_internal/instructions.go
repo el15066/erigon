@@ -309,6 +309,10 @@ func opBlockhash(state *State) {
 func opMload(state *State) {
 	rd, d, v0 := uniOpArgVs(state)
 	if d == nil { return }
+	if !v0.IsUint64() {
+		state.known[rd] = false
+		return
+	}
 	i    := v0.Uint64()
 	data := state.mem.get32(i)
 	if data == nil {
