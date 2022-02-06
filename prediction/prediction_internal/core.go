@@ -23,6 +23,13 @@ const BLOCK_ID_SHIFTS = 0
 const BLOCK_ID_MAX    = uint64(65536 << BLOCK_ID_SHIFTS) - 1
 const INVALID_TARGET  = int(math.MaxInt64)
 
+var UNKNOWN_U256 = uint256.Int{
+	random_u256_part_0,
+	random_u256_part_1,
+	random_u256_part_2,
+	random_u256_part_3,
+}
+
 var JumpTable [256]func(*State)
 
 func init() { JumpTable = jumpTable } // go doesn't like circle with opCallCommon
