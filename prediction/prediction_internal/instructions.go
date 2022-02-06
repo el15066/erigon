@@ -2,10 +2,22 @@
 package prediction_internal
 
 import (
+	"fmt"
+	"encoding/hex"
+
 	"github.com/holiman/uint256"
 
 	"github.com/ledgerwatch/erigon/common"
 )
+
+func _enc(v *uint256.Int) string {
+	if v == nil { return " ?"
+	} else      { return " #" + hex.EncodeToString(v.Bytes()) }
+}
+func _enc_reg(state *State, r uint16) string {
+	if state.known[r] { return _enc(&state.regs[r])
+	} else            { return _enc(nil) }
+}
 
 // from core/vm/common.go
 func getData(data []byte, start uint64, size uint64) []byte {
@@ -97,6 +109,7 @@ func opJumpi(state *State) {
 	} else  {
 		state.i = i
 	}
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(_enc_reg(state, rc)) }
 	return
 }
 
@@ -260,6 +273,7 @@ func opSload(state *State) {
 	// k := (*common.Hash)(v0) // hash is [32]byte :(
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("SLOAD ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	state.ctx.ibs.GetState(a, k, d)
 	if d.Eq(&UNKNOWN_U256) {
@@ -276,6 +290,7 @@ func opCallDataLoad(state *State) {
 	}
 	i := v0.Uint64()
 	d.SetBytes(getData(state.calldata, i, 32))
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(_enc(v0)) }
 	return
 }
 func opBlockhash(state *State) {
@@ -319,7 +334,7 @@ func opStouch(state *State) {
 	a := state.address
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	// fmt.Println("STOUCH",          k)
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("STOUCH ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	// state.ctx.ibs.PrefetchState(a, k)
 	state.ctx.ibs.SetDirtyState(a, k, UNKNOWN_U256)
@@ -339,6 +354,7 @@ func binOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int) *uin
 	v0 := &state.regs[r0]
 	v1 := &state.regs[r1]
 	op(d, v0, v1)
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(_enc(v0), _enc(v1), " [", r0, r1, "]") }
 	return
 }
 func opAdd( state *State) { binOp(state, (*uint256.Int).Add)  }
@@ -475,6 +491,7 @@ func binNVOpOptArgVs(state *State) (*uint256.Int, *uint256.Int) {
 	var v0, v1 *uint256.Int
 	if state.known[r0] { v0 = &state.regs[r0] }
 	if state.known[r1] { v1 = &state.regs[r1] }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(_enc(v0), _enc(v1), " [", r0, r1, "]") }
 	return v0, v1
 }
 func opMstore(state *State) {
@@ -499,6 +516,7 @@ func opSstore(state *State) {
 	a := state.address
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("SSTORE ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	if v1 == nil { v1 = &UNKNOWN_U256 }
 	state.ctx.ibs.SetDirtyState(a, k, *v1)
@@ -645,6 +663,8 @@ func opCallCommon(state *State, t CallOpType) {
 	if state.known[r5] { v5 = &state.regs[r5] }
 	if state.known[r6] { v6 = &state.regs[r6] }
 	//
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("CALL type ", t, " r ", r0,r1,r2,r3,r4,r5,r6, " v ", _enc(v0),_enc(v1),_enc(v2),_enc(v3),_enc(v4),_enc(v5),_enc(v6)) }
+	//
 	_ = v0 // ignore gas
 	//
 	ca    := common.Address(v1.Bytes20())
@@ -657,14 +677,19 @@ func opCallCommon(state *State, t CallOpType) {
 		return
 	}
 	//
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" NewState ") }
 	ns := state.ctx.sp.NewState()
 	ns.calldata = idata
+	//
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" calldata ", hex.EncodeToString(ns.calldata)) }
 	//
 	if t == CALL_REGULAR  { ns.address = ca
 	} else                { ns.address = state.address }
 	//
 	if t == CALL_DELEGATE { ns.caller  = state.caller
 	} else                { ns.caller  = state.address }
+	//
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" ns.address ", ns.address, " ns.caller ", ns.caller) }
 	//
 	switch {
 		case t == CALL_DELEGATE: ns.callvalue.Set(&state.callvalue)
@@ -673,10 +698,17 @@ func opCallCommon(state *State, t CallOpType) {
 		default:                 ns.callvalue.Clear()
 	}
 	//
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" ns.callvalue", _enc(&ns.callvalue)) }
+	//
 	reservedGaz := state.gaz / common.PREDICTOR_RESERVE_GAZ_DIV
 	ns.gaz       = state.gaz - reservedGaz + common.PREDICTOR_CALL_GAZ_BONUS
 	//
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Println(" ns.gaz ", ns.gaz) }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Println("---> call start") }
+	//
 	res, known  := predictCall(ns, ca)
+	//
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("<---  call result ", res, known) }
 	//
 	state.gaz    =    ns.gaz + reservedGaz
 	state.ctx.sp.FreeState(ns)
@@ -686,7 +718,7 @@ func opCallCommon(state *State, t CallOpType) {
 			o0 := v5.Uint64()
 			oS := v6.Uint64()
 			// clear resulting mem, since we don't currently support return value
-			// fmt.Println("setUnknown odata")
+			if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" setUnknown odata") }
 			state.mem.setUnknown(o0, oS)
 		}
 	}

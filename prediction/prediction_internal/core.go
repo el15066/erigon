@@ -2,9 +2,10 @@
 package prediction_internal
 
 import (
-	// "fmt"
+	"fmt"
 	"math"
 	"math/big"
+	"encoding/hex"
 	"encoding/binary"
 
 	uint256 "github.com/holiman/uint256"
@@ -107,6 +108,7 @@ type Ctx struct {
 	GasPrice    *uint256.Int
 	//
 	Predicted   []common.Hash
+	Debug       bool
 }
 func NewCtx(db kvDB.Getter) *Ctx {
 	ctx := &Ctx{
@@ -120,6 +122,11 @@ func (ctx *Ctx) SHA3(data []byte) []byte {
 	ctx.hasher.Reset()
 	ctx.hasher.Write(data)
 	ctx.hasher.Read(ctx.buf[:])
+	//
+	if common.DEBUG_TX && ctx.Debug {
+		fmt.Print(hex.EncodeToString(data), " ", hex.EncodeToString(ctx.buf[:]))
+	}
+	//
 	return ctx.buf[:]
 }
 func (ctx *Ctx) getHashBytes(i uint64) []byte {
@@ -152,6 +159,16 @@ func PredictTX(
 var inside = false
 
 func predictCall(state *State, codeAddress common.Address) (byte, bool) {
+	if common.DEBUG_TX && state.ctx.Debug {
+		fmt.Println("predictCall",
+			state.address,
+			state.caller,
+			state.callvalue,
+			hex.EncodeToString(state.calldata),
+			state.gaz,
+		)
+	}
+	//
 	if isPrecompile(codeAddress) { return 1, true }
 	//
 	bench.Tick(210)
@@ -163,26 +180,38 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	state.code     = p.Code
 	state.curBlock = 0
 	state.i        = 0
-	i_max         := len(state.code)
 	state.mem.Init()
+	code          := state.code
+	i_max         := len(code)
 	//
 	me := false
 	if !inside {
 		inside = true
 		me = true
 		bench.Tick(212)
+		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("\n\n---- tx @", state.ctx.BlockNumber) }
 	}
+	if     common.DEBUG_TX && state.ctx.Debug { fmt.Println("  call", codeAddress) }
+	//
 	for state.i < i_max && state.gaz > 0 {
 		state.gaz -= 1
-		op := state.code[state.i]
+		op := code[state.i]
+		//
+		var rd uint16
+		if common.DEBUG_TX && state.ctx.Debug { _, rd = getArg(code, state.i + 1) }
+		if common.DEBUG_TX && state.ctx.Debug { fmt.Print(fmt.Sprintf(  "%5d| %4d = %20s ", state.gaz, rd, jumpTableNames[op])) }
+		//
 		JumpTable[op](state)
+		//
+		if common.DEBUG_TX && state.ctx.Debug { fmt.Print(fmt.Sprintf("\n%5d| %4d = %20s \n", state.gaz, rd, _enc_reg(state, rd))) }
 	}
 	if me {
 		bench.Tick(213)
 		inside = false
+		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("\n\n---- end") }
 	}
 	if state.gaz <= 0 {
-		// fmt.Println("Call out of gaz, ca:", codeAddress)
+		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("Call out of gaz, ca:", codeAddress) }
 	}
 	return 1, true
 }

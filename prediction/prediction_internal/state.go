@@ -2,6 +2,7 @@
 package prediction_internal
 
 import (
+	"fmt"
 	"sync"
 	"math/bits"
 
@@ -59,6 +60,7 @@ func (state *State) changeBlock(bid uint16) {
 	} else {
 		state.i = INVALID_TARGET
 	}
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Printf(" ~%x", bid) }
 }
 
 // To avoid actual state copying (can be 100x more expensive than actual call)

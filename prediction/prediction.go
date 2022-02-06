@@ -19,7 +19,7 @@ import (
 	bench "github.com/ledgerwatch/erigon/bench"
 )
 
-const PREDICTED_CAP = 1024
+const PREDICTED_CAP = 2048
 
 var ctx       *internal.Ctx
 var tracefile *bufio.Writer
@@ -64,6 +64,16 @@ func SetBlockVars(
 	ctx.BlockNumber = blockNumber
 	ctx.Timestamp   = timestamp
 	ctx.GasLimit    = gasLimit
+	//
+	if common.DEBUG_TX && blockNumber == common.DEBUG_TX_BLOCK {
+		fmt.Println("SetBlockVars",
+			ctx.Coinbase,
+			ctx.Difficulty,
+			ctx.BlockNumber,
+			ctx.Timestamp,
+			ctx.GasLimit,
+		)
+	}
 }
 
 func PredictTX(
@@ -79,6 +89,18 @@ func PredictTX(
 	bench.Tick(150)
 	ctx.Origin   = origin
 	ctx.GasPrice = gasPrice
+	if common.DEBUG_TX {
+		if ctx.BlockNumber == common.DEBUG_TX_BLOCK && txIndex == common.DEBUG_TX_INDEX {
+			fmt.Println("PredictTX",
+				txIndex,
+				ctx.Origin,
+				ctx.GasPrice,
+			)
+			ctx.Debug = true
+		} else {
+			ctx.Debug = false
+		}
+	}
 	bench.Tick(151)
 	internal.PredictTX(ctx, to_addr, callvalue, calldata)
 	bench.Tick(152)

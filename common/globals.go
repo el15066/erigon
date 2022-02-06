@@ -7,19 +7,23 @@ const       TX_DUMPING = false
 const     CODE_DUMPING = false
 const     JUMP_TRACING = false
 
-const PREFETCH_BLOCKS           = false
+const PREFETCH_BLOCKS           = true
 const BLOCK_READAHEAD           = 10 + 1
-const PREFETCH_ACCOUNTS         = false
-const PREFETCH_CODE             = false
-const USE_PREDICTORS            = false
+const PREFETCH_ACCOUNTS         = true
+const PREFETCH_CODE             = true
+const USE_PREDICTORS            = true
 const USE_STORAGE_PREFETCH_FILE = false
 
-const TRACE_PREDICTED  = true
+const TRACE_PREDICTED = false
 
 const PREDICTOR_CACHE_SIZE      = 256
 const PREDICTOR_INITIAL_GAZ     = 10000
 const PREDICTOR_RESERVE_GAZ_DIV = 4
 const PREDICTOR_CALL_GAZ_BONUS  = 0
+
+const DEBUG_TX       = true
+const DEBUG_TX_BLOCK = 7500003
+const DEBUG_TX_INDEX = 104
 
 // if CODE_DUMPING {
 var CONTRACT_CODE       = map[Hash][]byte{}
