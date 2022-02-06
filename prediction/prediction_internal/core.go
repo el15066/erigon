@@ -43,37 +43,45 @@ type Mem struct {
 	msize uint64
 }
 func (mem *Mem) Init() {
-	mem.msize = 0
+	mem.msize    = 0
 }
 func (mem *Mem) Msize() uint64 {
 	return mem.msize
 }
+func (mem *Mem) updateMsize(i1 uint64) {
+	m1 := mem.msize
+	m2 := (i1 + 31) & ^uint64(31)
+	if m2 > m1 {
+		for i := m1; i < m2; i += 1 { mem.data[i] = 0 }
+		mem.msize = m2
+	}
+}
 func (mem *Mem) get(i0, s uint64) []byte {
 	i1 := i0 + s
 	if i1 > uint64(len(mem.data)) || i0 > i1 { return nil }
+	mem.updateMsize(i1)
 	return mem.data[i0:i1]
 }
 func (mem *Mem) set(i0, s uint64, data []byte) {
 	i1 := i0 + s
 	if i1 > uint64(len(mem.data)) || i0 > i1 { return }
-	m2 := (i1 + 31) * ^uint64(31)
-	if m2 > mem.msize {
-		for i := mem.msize; i < i0; i += 1 { mem.data[i] = 0 }
-		mem.msize = m2
-	}
+	mem.updateMsize(i1)
 	copy(mem.data[i0:i1], data)
 }
 func (mem *Mem) setUnknown(i0, s uint64) {
 	i1 := i0 + s
 	if i1 > uint64(len(mem.data)) || i0 > i1 { return }
+	mem.updateMsize(i1)
 	copy(mem.data[i0:i1], random_byte_string)
 }
 func (mem *Mem) setByte(i uint64, b byte) {
 	if i >= uint64(len(mem.data))            { return }
-	mem.data[i] = b
+	mem.updateMsize(i + 1)
+	mem.data[i]  = b
 }
 func (mem *Mem) getByte(i uint64) byte {
 	if i >= uint64(len(mem.data))            { return 0 }
+	mem.updateMsize(i + 1)
 	return mem.data[i]
 }
 func (mem *Mem) get32(i0 uint64)        []byte  { return mem.get(i0, 32)          }
