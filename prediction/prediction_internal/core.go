@@ -13,7 +13,7 @@ import (
 	common  "github.com/ledgerwatch/erigon/common"
 	crypto  "github.com/ledgerwatch/erigon/crypto"
 	stateDB "github.com/ledgerwatch/erigon/core/state"
-	kvDB    "github.com/ledgerwatch/erigon-lib/kv"
+	kv      "github.com/ledgerwatch/erigon-lib/kv"
 
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 
@@ -135,7 +135,7 @@ type Ctx struct {
 	Predicted   []common.Hash
 	Debug       bool
 }
-func NewCtx(db kvDB.Getter) *Ctx {
+func NewCtx(db kv.Getter) *Ctx {
 	ctx := &Ctx{
 		hasher: crypto.NewKeccakState(),
 		ibs:    stateDB.New(stateDB.NewPlainStateReader(db)),

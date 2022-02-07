@@ -11,7 +11,7 @@ import (
 
 	uint256 "github.com/holiman/uint256"
 	common  "github.com/ledgerwatch/erigon/common"
-	kvDB    "github.com/ledgerwatch/erigon-lib/kv"
+	kv      "github.com/ledgerwatch/erigon-lib/kv"
 
 	internal    "github.com/ledgerwatch/erigon/prediction/prediction_internal"
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
@@ -45,7 +45,7 @@ func Close() {
 	}
 }
 
-func InitCtx(db kvDB.Getter) {
+func InitCtx(db kv.Getter) {
 	ctx = internal.NewCtx(db)
 	if common.TRACE_PREDICTED {
 		ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
