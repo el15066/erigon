@@ -247,7 +247,7 @@ type tx_dump struct {
     // GasPrice   string
 }
 
-func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan int, cfg ExecuteBlockCfg, from uint64, to uint64) {
+func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
 	var ENC = hex.EncodeToString
 	var tracefile *bufio.Writer
 	if common.PREFETCH_TRACING {
@@ -287,15 +287,16 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 	// var err   error
 	// var block *types.Block
 	// var db    kv.Tx
-	db, err := cfg.db.BeginRo(context.Background())
+	rodb, err := cfg.db.BeginRo(context.Background())
 	if err == nil {
-		defer db.Rollback()
+		defer rodb.Rollback()
+		db := batch.UsingRoDB(rodb)
 		//
 		if common.USE_PREDICTORS {
 			prediction.InitCtx(db)
 		}
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
-			block, err := readBlock(blockNum, db)
+			block, err := readBlock(blockNum, rodb)
 			if err != nil {
 				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
 				break Loop
@@ -349,7 +350,7 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 									tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(to_acc.CodeHash.Bytes())))
 								}
 								bench.Tick(111)
-								db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
+								rodb.GetOne(kv.Code, to_acc.CodeHash.Bytes()) // if we use its value, remember to change rodb to db
 								if dumpfile != nil {
 									t, _ := json.Marshal(&tx_dump{
 										Block:      blockNum,
@@ -550,8 +551,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		"DEBUG_TX_INDEX",            common.DEBUG_TX_INDEX,
 	)
 
-	var batch ethdb.DbWithPendingMutations
-	batch = olddb.NewBatch(tx, quit)
+	batch := olddb.NewBatch(tx, quit)
 	defer batch.Rollback()
 
 	logEvery := time.NewTicker(logInterval)
@@ -572,7 +572,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	quitChan  := make(chan int)
 
 	if common.PREFETCH_BLOCKS {
-		go fetchBlocks(blockChan, errChan, quitChan, cfg, stageProgress + 1, to)
+		go fetchBlocks(cfg, batch, blockChan, errChan, quitChan, stageProgress + 1, to)
 	}
 
 	if common.STORAGE_TRACING {
