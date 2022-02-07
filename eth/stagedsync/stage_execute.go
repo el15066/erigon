@@ -440,6 +440,9 @@ func fetchBlocks(blockChan chan *types.Block, errChan chan error, quitChan chan 
 					bench.Tick(103)
 				}
 			}
+			if common.USE_PREDICTORS {
+				prediction.BlockEnded()
+			}
 			select {
 				case blockChan <- block:
 				case <-quitChan:

@@ -143,6 +143,9 @@ func NewCtx(db kv.Getter) *Ctx {
 	ctx.sp.Init(ctx)
 	return ctx
 }
+func (ctx *Ctx) BlockEnded() {
+	ctx.ibs.Reset()
+}
 func (ctx *Ctx) SHA3(data []byte) []byte {
 	ctx.hasher.Reset()
 	ctx.hasher.Write(data)

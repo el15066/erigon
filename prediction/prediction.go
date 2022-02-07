@@ -75,6 +75,7 @@ func SetBlockVars(
 		)
 	}
 }
+func BlockEnded() { ctx.BlockEnded() }
 
 func PredictTX(
 	txIndex   int,
