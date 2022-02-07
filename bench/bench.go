@@ -3,6 +3,7 @@ package bench
 import (
 	"fmt"
 	"time"
+	"sync/atomic"
 )
 
 var all_ticks      [1000]int64
@@ -18,9 +19,17 @@ func Reset() {
 }
 
 func Tick(index int) {
-	all_ticks_prev[index] = all_ticks[index]
-	all_ticks[index]     += time.Now().UnixNano()
-	all_counts[index]    += 1
+	all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
+	atomic.AddInt64(&all_counts[index], 1)
+	t := time.Now().UnixNano()
+	atomic.AddInt64(&all_ticks[ index], t)
+}
+
+func TiCk(index int) {
+	t := time.Now().UnixNano()
+	all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
+	atomic.AddInt64(&all_counts[index], 1)
+	atomic.AddInt64(&all_ticks[ index], t)
 }
 
 func Get(index int, isPrev bool) (int64, int64) {
