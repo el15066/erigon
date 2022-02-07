@@ -239,11 +239,10 @@ func uniOpArgVs(state *State) (uint16, *uint256.Int, *uint256.Int) {
 	return rd, d, v0
 }
 func opBalance(state *State) {
-	rd, d, v0 := uniOpArgVs(state)
+	_,  d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := common.Address(v0.Bytes20())
 	d.Set(state.ctx.ibs.GetBalance(a))
-	state.known[rd] = false // TEMP
 	return
 }
 func opExtCodeSize(state *State) {
@@ -256,7 +255,7 @@ func opExtCodeSize(state *State) {
 	return
 }
 func opExtCodeHash(state *State) {
-	rd,  d, v0 := uniOpArgVs(state)
+	rd, d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	state.known[rd] = false // set to unknown, to continue predicting even if it wouldn't
 	_ = v0
@@ -281,7 +280,6 @@ func opSload(state *State) {
 	if d.Eq(&UNKNOWN_U256) {
 		state.known[rd] = false
 	}
-	state.known[rd] = false // TEMP
 	return
 }
 func opCallDataLoad(state *State) {
