@@ -233,18 +233,18 @@ func newStateReaderWriter(
 }
 
 type tx_dump struct {
-    Block      uint64
+	Block      uint64
 	Index      int
-    Coinbase   string
-    Timestamp  uint64
-    Difficulty uint64
-    Gaslimit   uint64
-    // Chainid    uint64
-    Address    string
-    Origin     string
-    Callvalue  *uint256.Int
-    Calldata   string
-    // GasPrice   string
+	Coinbase   string
+	Timestamp  uint64
+	Difficulty uint64
+	Gaslimit   uint64
+	// Chainid    uint64
+	Address    string
+	Origin     string
+	Callvalue  *uint256.Int
+	Calldata   string
+	// GasPrice   string
 }
 
 func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
