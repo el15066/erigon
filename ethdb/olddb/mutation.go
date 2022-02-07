@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"strings"
-	"sync"
+	// "sync"
 	"time"
 	"unsafe"
 
@@ -22,7 +22,8 @@ type mutation struct {
 	db         kv.RwTx
 	quit       <-chan struct{}
 	clean      func()
-	mu         sync.RWMutex
+	// mu         sync.RWMutex
+	mu         common.RWSpinlock
 	size       int
 }
 
