@@ -351,3 +351,44 @@ func (m *Mutation) panicOnEmptyDB() {
 func (m *Mutation) SetRwKV(kv kv.RwDB) {
 	m.db.(ethdb.HasRwKV).SetRwKV(kv)
 }
+
+// Read-only sub-interfaces
+
+type RoMutation struct {
+	m    *Mutation
+	rodb kv.Tx
+}
+
+// func (m *Mutation) addRoDB(rodb *kv.Tx) int {
+// 	m.mu.Lock()
+// 	defer m.mu.Unlock()
+// 	//
+// 	i := len(m.rodbs)
+// 	m.rodbs = append(m.rodbs, rodb)
+// 	return i
+// }
+func (m *Mutation) UsingRoDB(rodb kv.Tx) *RoMutation {
+	return &RoMutation{ m, rodb }
+}
+
+func (rom *RoMutation) GetOne(table string, key []byte) ([]byte, error) {
+	if value, ok := rom.m.getMem(table, key); ok {
+		return value, nil
+	}
+	return rom.rodb.GetOne(table, key)
+}
+func (rom *RoMutation) Has(table string, key []byte) (bool, error) {
+	if rom.m.hasMem(table, key) {
+		return true, nil
+	}
+	return rom.rodb.Has(table, key)
+}
+func (rom *RoMutation) ForEach(bucket string, fromPrefix []byte, walker func(k, v []byte) error) error {
+	return rom.rodb.ForEach(bucket, fromPrefix, walker)
+}
+func (rom *RoMutation) ForPrefix(bucket string, prefix []byte, walker func(k, v []byte) error) error {
+	return rom.rodb.ForPrefix(bucket, prefix, walker)
+}
+func (rom *RoMutation) ForAmount(bucket string, prefix []byte, amount uint32, walker func(k, v []byte) error) error {
+	return rom.rodb.ForAmount(bucket, prefix, amount, walker)
+}
