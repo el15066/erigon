@@ -338,8 +338,8 @@ func (m *Mutation) Close() {
 	m.Rollback()
 }
 
-	panic("mutation can't start transaction, because doesn't own it")
 func (m *Mutation) Begin(ctx context.Context, flags ethdb.TxFlags) (ethdb.DbWithPendingMutations, error) {
+	panic("mutation can't start transaction, because doesn't own it")
 }
 
 func (m *Mutation) panicOnEmptyDB() {
