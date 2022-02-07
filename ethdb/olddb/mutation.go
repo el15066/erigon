@@ -15,6 +15,8 @@ import (
 	"github.com/ledgerwatch/erigon/common"
 	"github.com/ledgerwatch/erigon/ethdb"
 	"github.com/ledgerwatch/log/v3"
+
+	// bench "github.com/ledgerwatch/erigon/bench"
 )
 
 type mutation struct {
@@ -73,7 +75,9 @@ func (m *mutation) RwKV() kv.RwDB {
 }
 
 func (m *mutation) getMem(table string, key []byte) ([]byte, bool) {
+	// bench.Tick(500) // expensive !
 	m.mu.RLock()
+	// bench.TiCk(501)
 	defer m.mu.RUnlock()
 	t := MutationItem{ table, key, nil }
 	i := m.puts.Get(&t)
@@ -165,7 +169,9 @@ func (m *mutation) Last(table string) ([]byte, []byte, error) {
 }
 
 func (m *mutation) hasMem(table string, key []byte) bool {
+	// bench.Tick(502)
 	m.mu.RLock()
+	// bench.TiCk(503)
 	defer m.mu.RUnlock()
 	t := MutationItem{ table, key, nil }
 	return m.puts.Has(&t)
