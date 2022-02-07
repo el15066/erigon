@@ -234,6 +234,8 @@ func (m *Mutation) Delete(table string, k, v []byte) error {
 	if v != nil {
 		return m.db.Delete(table, k, v) // TODO: mutation to support DupSort deletes
 	}
+	//m.mu.Lock()
+	//defer m.mu.Unlock()
 	//m.puts.Delete(table, k)
 	return m.Put(table, k, nil)
 }
