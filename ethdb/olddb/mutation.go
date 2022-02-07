@@ -22,7 +22,6 @@ type mutation struct {
 	db         kv.RwTx
 	quit       <-chan struct{}
 	clean      func()
-	searchItem MutationItem
 	mu         sync.RWMutex
 	size       int
 }
@@ -75,9 +74,8 @@ func (m *mutation) RwKV() kv.RwDB {
 func (m *mutation) getMem(table string, key []byte) ([]byte, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	m.searchItem.table = table
-	m.searchItem.key = key
-	i := m.puts.Get(&m.searchItem)
+	t := MutationItem{ table, key, nil }
+	i := m.puts.Get(&t)
 	if i == nil {
 		return nil, false
 	}
@@ -168,9 +166,8 @@ func (m *mutation) Last(table string) ([]byte, []byte, error) {
 func (m *mutation) hasMem(table string, key []byte) bool {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
-	m.searchItem.table = table
-	m.searchItem.key = key
-	return m.puts.Has(&m.searchItem)
+	t := MutationItem{ table, key, nil }
+	return m.puts.Has(&t)
 }
 
 func (m *mutation) Has(table string, key []byte) (bool, error) {
