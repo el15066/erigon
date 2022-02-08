@@ -87,7 +87,6 @@ func PredictTX(
 	callvalue *uint256.Int,
 	calldata  []byte,
 ) {
-	bench.Tick(150)
 	ctx.Origin   = origin
 	ctx.GasPrice = gasPrice
 	if common.DEBUG_TX {
@@ -102,9 +101,9 @@ func PredictTX(
 			ctx.Debug = false
 		}
 	}
-	bench.Tick(151)
+	bench.Tick(150)
 	internal.PredictTX(ctx, to_addr, callvalue, calldata)
-	bench.Tick(152)
+	bench.Tick(151)
 
 	if common.TRACE_PREDICTED && tracefile != nil {
 		//
@@ -128,6 +127,6 @@ func PredictTX(
 			fmt.Println("Note", ctx.BlockNumber, txIndex, "ctx.Predicted len cap", len(ctx.Predicted), cap(ctx.Predicted))
 			ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
 		}
+		bench.Tick(152)
 	}
-	bench.Tick(153)
 }

@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	logInterval = 30 * time.Second
+	logInterval = 10 * time.Second
 )
 
 type HasChangeSetWriter interface {
@@ -324,7 +324,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 						log.Error("Sender not in tx", "block_number", blockNum, "tx_index", i)
 						break Loop
 					}
-					if tracefile != nil {
+					if common.PREFETCH_TRACING && tracefile != nil {
 						tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(from_addr.Bytes())))
 					}
 					from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
@@ -334,7 +334,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 					to_addr := tx.GetTo()
 					if to_addr != nil && *to_addr != from_addr {
 						bench.Tick(105)
-						if tracefile != nil {
+						if common.PREFETCH_TRACING && tracefile != nil {
 							tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(to_addr.Bytes())))
 						}
 						to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
@@ -345,15 +345,16 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 							var to_acc accounts.Account
 							to_acc.DecodeForStorage(to_data)
 							// 
-							bench.Tick(107)
 							if !to_acc.IsEmptyCodeHash() {
-								bench.Tick(110)
-								if tracefile != nil {
+								//
+								if common.PREFETCH_TRACING && tracefile != nil {
 									tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(to_acc.CodeHash.Bytes())))
 								}
-								bench.Tick(111)
+								bench.Tick(110)
 								rodb.GetOne(kv.Code, to_acc.CodeHash.Bytes()) // if we use its value, remember to change rodb to db
-								if dumpfile != nil {
+								bench.Tick(111)
+								//
+								if common.TX_DUMPING && dumpfile != nil {
 									t, _ := json.Marshal(&tx_dump{
 										Block:      blockNum,
 										Index:      i,
@@ -377,7 +378,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 									})
 									dumpfile.Write(append(t, byte('\n')))
 								}
-								bench.Tick(112)
+								//
 								if common.USE_PREDICTORS {
 									var from_acc accounts.Account
 									from_acc.DecodeForStorage(from_data)
@@ -392,11 +393,11 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 										tx.GetValue(),
 										tx.GetData(),
 									)
+									bench.Tick(112)
 								}
-								bench.Tick(113)
 							}
+							bench.Tick(107)
 						}
-						bench.Tick(108)
 					}
 					bench.Tick(102)
 					//
@@ -588,7 +589,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		if stoppedErr = common.Stopped(quit); stoppedErr != nil {
 			break
 		}
-		bench.Tick(2)
+		// bench.Tick(2)
 
 		var err error
 
@@ -641,7 +642,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 
 		gas = gas + block.GasUsed()
 
-		bench.Tick(5)
+		// bench.Tick(5)
 
 		select {
 		default:
@@ -650,9 +651,10 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			gas = 0
 			tx.CollectMetrics()
 			syncMetrics[stages.Execution].Set(blockNum)
+			bench.PrintAll()
 		}
 
-		bench.Tick(6)
+		// bench.Tick(6)
 	}
 
 	if common.PREFETCH_BLOCKS {

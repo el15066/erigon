@@ -169,19 +169,14 @@ func PredictTX(
 	callvalue *uint256.Int,
 	calldata  []byte,
 ) {
-	bench.Tick(200)
 	state := ctx.sp.NewState()
-	bench.Tick(201)
 	state.address   = address
 	state.caller    = ctx.Origin
 	state.callvalue.Set(callvalue)
 	state.calldata  = calldata
 	state.gaz       = common.PREDICTOR_INITIAL_GAZ
-	bench.Tick(202)
 	predictCall(state, address)
-	bench.Tick(203)
 	ctx.sp.FreeState(state)
-	bench.Tick(204)
 }
 
 var inside = false
@@ -202,10 +197,13 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	//
 	bench.Tick(210)
 	ch := state.ctx.ibs.GetCodeHash(codeAddress)
-	p  := predictorDB.GetPredictor(ch)
 	bench.Tick(211)
+	p  := predictorDB.GetPredictor(ch)
+	bench.Tick(212)
 	if     common.DEBUG_TX && state.ctx.Debug { fmt.Println("  code hash", ch, "have?", p.Code != nil) }
 	if p.Code == nil { return 0, false }
+	bench.Tick(215)
+	bench.Tick(216)
 	state.blockTbl = p.BlockTbl
 	state.code     = p.Code
 	state.curBlock = 0
@@ -218,7 +216,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if !inside {
 		inside = true
 		me = true
-		bench.Tick(212)
+		bench.Tick(220)
 		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("\n\n---- tx @", state.ctx.BlockNumber) }
 	}
 	if     common.DEBUG_TX && state.ctx.Debug { fmt.Println("  call", codeAddress) }
@@ -237,7 +235,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 		if common.DEBUG_TX && state.ctx.Debug { state.mem.debug() }
 	}
 	if me {
-		bench.Tick(213)
+		bench.Tick(221)
 		inside = false
 		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("\n\n---- end") }
 	}

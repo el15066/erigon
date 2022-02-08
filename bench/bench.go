@@ -6,9 +6,9 @@ import (
 	"sync/atomic"
 )
 
-var all_ticks      [1000]int64
-var all_ticks_prev [1000]int64
-var all_counts     [1000]int64
+var all_ticks      [300]int64
+var all_ticks_prev [300]int64
+var all_counts     [300]int64
 
 func Reset() {
 	for i := range all_ticks {
