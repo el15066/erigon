@@ -247,6 +247,8 @@ type tx_dump struct {
 	// GasPrice   string
 }
 
+var _buf = [64]byte{}
+
 func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
 	var ENC = hex.EncodeToString
 	var tracefile *bufio.Writer
@@ -398,47 +400,42 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 					}
 					bench.Tick(102)
 					//
-					// GET storage prefetch locations
-					// read 2 bytes
-					// if 0 -> update tx index
-					// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
-					// fetch all those addresses
-					// loop
-					// why loop? -> 1 tx can call many contracts
-					for i == storage_prefetch_i {
-						_count  := make([]byte, 2)
-						_, _err := io.ReadFull(storage_prefetch_file, _count)
-						if _err != nil {
-							log.Warn("Read from storage prefetch file", "error", _err)
-							storage_prefetch_i    = -1
-							storage_prefetch_file = nil
-							break
-						}
-						count := int(binary.BigEndian.Uint16(_count))
-						//
-						// fmt.Println(i, "count", count)
-						if count != 0 {
-							compositeKey := make([]byte, 60)
-							io.ReadFull(storage_prefetch_file, compositeKey[:28])
-							for j := 0; j < count; j++ {
-								io.ReadFull(storage_prefetch_file, compositeKey[28:])
-								db.GetOne(kv.PlainState, compositeKey)
-								// fmt.Println(i, ENC(compositeKey))
+					if common.USE_STORAGE_PREFETCH_FILE {
+						// GET storage prefetch locations
+						// read 2 bytes
+						// if 0 -> update tx index
+						// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
+						// fetch all those addresses
+						// loop
+						// why loop? -> 1 tx can call many contracts
+						for i == storage_prefetch_i {
+							_, _err := io.ReadFull(storage_prefetch_file, _buf[0:4])
+							if _err != nil {
+								log.Warn("Read from storage prefetch file", "error", _err)
+								storage_prefetch_i    = -1
+								storage_prefetch_file = nil
+								break
 							}
-						} else {
-							_diff := make([]byte, 2)
-							io.ReadFull(storage_prefetch_file, _diff)
-							diff  := int(binary.BigEndian.Uint16(_diff))
-							// fmt.Println(i, "diff", diff)
-							if diff != 0 {
-								storage_prefetch_i += diff
+							count := int(binary.BigEndian.Uint16(_buf[0:2]))
+							//
+							// fmt.Println(i, "count", count)
+							if count != 0 {
+								io.ReadFull(storage_prefetch_file, _buf[4:30])
+								for j := 0; j < count; j++ {
+									io.ReadFull(storage_prefetch_file, _buf[30:62])
+									db.GetOne(kv.PlainState, _buf[2:62])
+									// fmt.Println(i, ENC(_buf[2:62]))
+								}
 							} else {
-								storage_prefetch_i = -1
+								diff := int(binary.BigEndian.Uint16(_buf[2:4]))
+								// fmt.Println(i, "diff", diff)
+								if diff != 0 { storage_prefetch_i += diff
+								} else       { storage_prefetch_i  = -1   }
+								break
 							}
-							break
 						}
+						bench.Tick(103)
 					}
-					bench.Tick(103)
 				}
 			}
 			if common.USE_PREDICTORS {
@@ -449,12 +446,11 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				case <-quitChan:
 					break Loop
 			}
-			if storage_prefetch_file != nil {
+			if common.USE_STORAGE_PREFETCH_FILE && storage_prefetch_file != nil {
 				if storage_prefetch_i == -1 {
 					if blockNum == storage_prefetch_b {
-						_bdiff := make([]byte, 2)
-						io.ReadFull(storage_prefetch_file, _bdiff)
-						bdiff  := uint64(binary.BigEndian.Uint16(_bdiff))
+						io.ReadFull(storage_prefetch_file,      _buf[0:2])
+						bdiff := uint64(binary.BigEndian.Uint16(_buf[0:2]))
 						// fmt.Println("bdiff", storage_prefetch_b, "+", bdiff)
 						storage_prefetch_b += bdiff
 					}
