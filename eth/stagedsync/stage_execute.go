@@ -42,7 +42,7 @@ import (
 )
 
 const (
-	logInterval = 10 * time.Second
+	logInterval = 30 * time.Second
 )
 
 type HasChangeSetWriter interface {
@@ -471,6 +471,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 	close(blockChan)
 	<-quitChan
 	errChan <- err
+	log.Info("Prefetch thread exited")
 }
 
 func read_or_fetch_block(blockNum uint64, tx kv.Tx, blockChan chan *types.Block) (*types.Block) {
@@ -520,6 +521,8 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	if to > s.BlockNumber+16 {
 		log.Info(fmt.Sprintf("[%s] Blocks execution", logPrefix), "from", s.BlockNumber, "to", to)
 	}
+
+	// <-quit
 
 	log.Info("Globals",
 		//
@@ -655,6 +658,11 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		}
 
 		// bench.Tick(6)
+
+		bench.Tick(9)
+		bench.Tick(10)
+		bench.Tick(12)
+		bench.TiCk(11)
 	}
 
 	if common.PREFETCH_BLOCKS {

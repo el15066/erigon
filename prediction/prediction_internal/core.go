@@ -204,7 +204,6 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if     common.DEBUG_TX && state.ctx.Debug { fmt.Println("  code hash", ch, "have?", p.Code != nil) }
 	if p.Code == nil { return 0, false }
 	bench.Tick(215)
-	bench.Tick(216)
 	state.blockTbl = p.BlockTbl
 	state.code     = p.Code
 	state.curBlock = 0
@@ -243,6 +242,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if state.gaz <= 0 {
 		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("Call out of gaz, ca:", codeAddress) }
 	}
+	bench.Tick(216)
 	return 1, true
 }
 // Not exact, only for prediction
