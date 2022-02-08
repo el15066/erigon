@@ -76,7 +76,7 @@ print('Verified')
 
 print('Transforming')
 
-MIN_CALLS = 10
+MIN_CALLS = 50
 
 # callsn = {}
 

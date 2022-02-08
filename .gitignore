@@ -74,6 +74,8 @@ libmdbx/build/*
 logz/reads.txt
 logz/predicted.txt
 logz/prefetches.txt
+logz/code_alias.txt
+logz/jump_edges.json
 logz/tx_dump.txt
 logz/reads_addresses_by_tx.txt
 logz/jump_counts.txt
