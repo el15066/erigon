@@ -564,15 +564,16 @@ func triNVOpArgVs(state *State) (*uint256.Int, *uint256.Int, *uint256.Int) {
 func opCallDataCopy(state *State) {
 	v0, v1, v2 := triNVOpArgVs(state)
 	if v0 == nil { return }
+	if v0.GtUint64(65535) || v2.GtUint64(65535) { return }
 	o := v0.Uint64()
 	i := v1.Uint64()
 	s := v2.Uint64()
-	// if i < 65536 {
+	if v1.GtUint64(65535) {
+		state.mem.setUnknown(o, s)
+		return
+	}
 	data := getData(state.calldata, i, s)
 	state.mem.set(o, s, data)
-	// } else {
-	// 	state.mem.setUnknown(o, s)
-	// }
 	return
 }
 func opReturnDataCopy(state *State) {
