@@ -19,7 +19,7 @@ func Reset() {
 }
 
 func Tick(index int) {
-	all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
+	// all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
 	atomic.AddInt64(&all_counts[index], 1)
 	t := time.Now().UnixNano()
 	atomic.AddInt64(&all_ticks[ index], t)
@@ -27,9 +27,9 @@ func Tick(index int) {
 
 func TiCk(index int) {
 	t := time.Now().UnixNano()
-	all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
-	atomic.AddInt64(&all_counts[index], 1)
+	// all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
 	atomic.AddInt64(&all_ticks[ index], t)
+	atomic.AddInt64(&all_counts[index], 1)
 }
 
 func Get(index int, isPrev bool) (int64, int64) {
@@ -70,9 +70,10 @@ func DiffStr(indexA int, isPrevA bool, indexB int, isPrevB bool) string {
 }
 
 func DiffStrAuto(indexA int, indexB int) string {
-	if        all_counts[indexA] > all_counts[indexB] { return DiffStr(indexA,  true, indexB, false)
-	} else if all_counts[indexA] < all_counts[indexB] { return DiffStr(indexA, false, indexB,  true)
-	} else                                            { return DiffStr(indexA, false, indexB, false) }
+	// if        all_counts[indexA] > all_counts[indexB] { return DiffStr(indexA,  true, indexB, false)
+	// } else if all_counts[indexA] < all_counts[indexB] { return DiffStr(indexA, false, indexB,  true)
+	// } else                                            { return DiffStr(indexA, false, indexB, false) }
+	return DiffStr(indexA, false, indexB, false)
 }
 
 func PrintAll() {
