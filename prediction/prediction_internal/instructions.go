@@ -684,6 +684,10 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" NewState ") }
 	ns := state.ctx.sp.NewState()
+	if ns == nil {
+		state.known[rd] = false
+		return
+	}
 	ns.calldata = idata
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" calldata ", hex.EncodeToString(ns.calldata)) }

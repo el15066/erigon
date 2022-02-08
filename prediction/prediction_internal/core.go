@@ -170,6 +170,7 @@ func PredictTX(
 	calldata  []byte,
 ) {
 	state := ctx.sp.NewState()
+	if state == nil { return }
 	state.address   = address
 	state.caller    = ctx.Origin
 	state.callvalue.Set(callvalue)
