@@ -626,6 +626,7 @@ func opJumpi(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]b
 		if common.JUMP_TRACING { traceJump(callContext.contract.CodeHash, *pc, pos.Uint64()) }
 		*pc = pos.Uint64()
 	} else {
+		if common.JUMP_TRACING { traceJump(callContext.contract.CodeHash, *pc, *pc + 1) }
 		*pc++
 	}
 	return nil, nil
