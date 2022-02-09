@@ -1,7 +1,7 @@
 
 package common
 
-const MAX_BLOCK = 7_500_000 - 1 + 4546
+const MAX_BLOCK = 7_500_000 - 1 + 100_000 //4546
 
 const  STORAGE_TRACING = false
 const PREFETCH_TRACING = false
@@ -10,7 +10,7 @@ const     CODE_DUMPING = false
 const     JUMP_TRACING = false
 
 const PREFETCH_BLOCKS           = true
-const BLOCK_READAHEAD           = 10 + 1
+const BLOCK_READAHEAD           = 1 + 1
 const PREFETCH_ACCOUNTS         = true
 const PREFETCH_CODE             = true
 const USE_PREDICTORS            = true
@@ -23,9 +23,9 @@ const PREDICTOR_INITIAL_GAZ     = 10000
 const PREDICTOR_RESERVE_GAZ_DIV = 4
 const PREDICTOR_CALL_GAZ_BONUS  = 0
 
-const DEBUG_TX       = true
-const DEBUG_TX_BLOCK = 7500003
-const DEBUG_TX_INDEX = 104
+const DEBUG_TX       = false
+const DEBUG_TX_BLOCK = 7504466
+const DEBUG_TX_INDEX = 62
 
 // if CODE_DUMPING {
 var CONTRACT_CODE       = map[Hash][]byte{}
