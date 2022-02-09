@@ -303,6 +303,11 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
 				break Loop
 			}
+			select {
+				case blockChan <- block:
+				case <-quitChan:
+					break Loop
+			}
 			if common.USE_PREDICTORS {
 				prediction.SetBlockVars(
 					block.Coinbase(),
@@ -441,11 +446,6 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 			}
 			if common.USE_PREDICTORS {
 				prediction.BlockEnded()
-			}
-			select {
-				case blockChan <- block:
-				case <-quitChan:
-					break Loop
 			}
 			if common.USE_STORAGE_PREFETCH_FILE && storage_prefetch_file != nil {
 				if storage_prefetch_i == -1 {
