@@ -20,7 +20,7 @@
   Count:     119044  txs:        311
 
 --- Totals ---
-  Coverage:  55.0 %  missed: 1080252
-  Overhead:     4 %  added:    95036
+  Coverage:  55.0 %  missed: 1080269
+  Overhead:     4 %  added:    95070
   Count:    2398539  txs:     285115
 
