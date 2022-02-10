@@ -13,6 +13,8 @@ import (
 	types   "github.com/ledgerwatch/erigon/prediction/types"
 )
 
+type Regs [65536]uint256.Int
+
 // State changes during the execution of a TX, and is 'copied' during calls
 type State struct {
 	spIndex   byte              // readonly
@@ -26,7 +28,6 @@ type State struct {
 	calldata  []byte
 	gaz       int
 	regs      Regs
-	known     Known
 	mem       Mem
 	curBlock  uint16
 	phiindex  int

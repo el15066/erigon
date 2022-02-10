@@ -27,17 +27,14 @@ const ZEROS32         = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0
 
 var UNKNOWN_U256 = uint256.Int{
 	random_u256_part_0,
-	random_u256_part_1,
-	random_u256_part_2,
-	random_u256_part_3,
+	random_u256_part_0,
+	random_u256_part_0,
+	random_u256_part_0,
 }
 
 var JumpTable [256]func(*State)
 
 func init() { JumpTable = jumpTable } // go doesn't like circle with opCallCommon
-
-type Regs  [65536]uint256.Int
-type Known [65536]bool
 
 type Mem struct {
 	data  [65536]byte
@@ -89,6 +86,7 @@ func (mem *Mem) setUnknown(i0, s uint64) {
 	mem.updateMsize(i1)
 	mem.modified = true
 	copy(mem.data[i0:i1], random_byte_string)
+	// copy(mem.data[i0:i1], random_byte_string[i0&0x3:])
 }
 func (mem *Mem) setByte(i uint64, b byte) {
 	if i >= uint64(len(mem.data))            { return }
@@ -103,8 +101,6 @@ func (mem *Mem) getByte(i uint64) byte {
 }
 func (mem *Mem) get32(i0 uint64)        []byte  { return mem.get(i0, 32)          }
 func (mem *Mem) set32(i0 uint64, data [32]byte) {        mem.set(i0, 32, data[:]) }
-func (mem *Mem) setUnknown1( i uint64) { mem.setUnknown(i, 1 ) }
-func (mem *Mem) setUnknown32(i uint64) { mem.setUnknown(i, 32) }
 
 
 // ibs.Empty(a)
