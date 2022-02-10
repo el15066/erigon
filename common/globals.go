@@ -1,7 +1,8 @@
 
 package common
 
-const MAX_BLOCK = 7_500_000 - 1 + 100_000 //4546
+const MAX_BLOCK = 7_500_000 - 1 + 4546
+// const MAX_BLOCK = 7_500_000 - 1 + 100_000
 
 const  STORAGE_TRACING = false
 const PREFETCH_TRACING = false
@@ -16,7 +17,7 @@ const PREFETCH_CODE             = true
 const USE_PREDICTORS            = true
 const USE_STORAGE_PREFETCH_FILE = false
 
-const TRACE_PREDICTED = false
+const TRACE_PREDICTED = true
 
 const PREDICTOR_CACHE_SIZE      = 256
 const PREDICTOR_INITIAL_GAZ     = 10000
@@ -27,7 +28,7 @@ const DEBUG_TX       = false
 const DEBUG_TX_BLOCK = 7504466
 const DEBUG_TX_INDEX = 62
 
-const PREDICTOR_DB_PATH = "predictorDB_new"
+const PREDICTOR_DB_PATH = "dbdir/predictorDB_new"
 
 // if CODE_DUMPING {
 var CONTRACT_CODE       = map[Hash][]byte{}

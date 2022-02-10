@@ -3,6 +3,8 @@ package predictorDB
 
 import (
 	"context"
+	"strings"
+	"unicode"
 
 	common "github.com/ledgerwatch/erigon/common"
 
@@ -46,8 +48,19 @@ func openPredictorDB() (PredictorDB, error) {
 		db.Close()
 		return PredictorDB{}, nil
 	}
-	res  := PredictorDB{ u: db, t: tx }
-	info := res.get(([]byte)("info"))
+	res   := PredictorDB{ u: db, t: tx }
+	_info := res.get(([]byte)("info"))
+	var info string
+	if _info == nil {
+		info = "nil"
+	} else {
+		info = strings.Map(func(r rune) rune {
+			if unicode.IsPrint(r) {
+				return r
+			}
+			return '?'
+		}, string(_info))
+	}
 	log.Info("Opened database", "info", string(info))
 	return res, nil
 }
