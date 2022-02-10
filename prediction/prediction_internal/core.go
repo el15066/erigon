@@ -85,8 +85,8 @@ func (mem *Mem) setUnknown(i0, s uint64) {
 	if i1 > uint64(len(mem.data)) || i0 > i1 { return }
 	mem.updateMsize(i1)
 	mem.modified = true
-	copy(mem.data[i0:i1], random_byte_string)
-	// copy(mem.data[i0:i1], random_byte_string[i0&0x3:])
+	// copy(mem.data[i0:i1], random_byte_string)
+	copy(mem.data[i0:i1], random_byte_string[i0&0x3:])
 }
 func (mem *Mem) setByte(i uint64, b byte) {
 	if i >= uint64(len(mem.data))            { return }
