@@ -658,29 +658,23 @@ func opCallCommon(state *State, t CallOpType) {
 	v4     := &state.regs[r4]
 	v5     := &state.regs[r5]
 	v6     := &state.regs[r6]
-	ok     := is_known(v1) // && is_known(v3) && is_known(v4) // checked later at idata != nil
-	if !ok {
-		d.Set(&UNKNOWN_U256)
-		return
-	}
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("CALL type ", t, " r ", r0,r1,r2,r3,r4,r5,r6, " v ", _enc(v0),_enc(v1),_enc(v2),_enc(v3),_enc(v4),_enc(v5),_enc(v6)) }
 	//
 	_ = v0 // ignore gas
 	//
 	ca    := common.Address(v1.Bytes20())
-	//
 	i0    := v3.Uint64()
 	iS    := v4.Uint64()
 	idata := state.mem.get(i0, iS)
-	if !(v3.IsUint64() && v4.IsUint64() && idata != nil) {
+	if !(is_known(v1) && v3.IsUint64() && v4.IsUint64() && idata != nil) {
 		d.Set(&UNKNOWN_U256)
 		return
 	}
 	//
-	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" NewState ") }
-	ns := state.ctx.sp.NewState()
-	if ns == nil {
+	ns := state.ctx.sp.NewState() // Careful: we can't return without FreeState() from now on
+	                              //          we won't use defer for now
+	if ns == nil {                // this must be checked on its own
 		d.Set(&UNKNOWN_U256)
 		return
 	}
@@ -704,7 +698,7 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" ns.callvalue", _enc(&ns.callvalue)) }
 	//
-	reservedGaz := state.gaz / common.PREDICTOR_RESERVE_GAZ_DIV
+	reservedGaz := state.gaz /               common.PREDICTOR_RESERVE_GAZ_DIV
 	ns.gaz       = state.gaz - reservedGaz + common.PREDICTOR_CALL_GAZ_BONUS
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println(" ns.gaz ", ns.gaz) }
@@ -714,7 +708,7 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("<---  call result ", res, known) }
 	//
-	state.gaz    =    ns.gaz + reservedGaz
+	state.gaz    = ns.gaz + reservedGaz
 	state.ctx.sp.FreeState(ns)
 	//
 	if v5.IsUint64() && v6.IsUint64() {
