@@ -112,12 +112,16 @@ func (mem *Mem) set32(i0 uint64, data [32]byte) {        mem.set(i0, 32, data[:]
 // ibs.PrefetchState(a, k)
 // ibs.SetDirtyState(a, k, v)
 
-// Ctx can't change during execution of a TX, only between TXs, should not be copied and is unique to each thread
+// Ctx can't change* during execution of a TX, only between TXs, should not be copied and is unique to each thread
+// *except for returnData/Size and Predicted
 type Ctx struct {
 	sp          StatePool
 	hasher      crypto.KeccakState
 	buf         [32]byte
 	ibs         *stateDB.IntraBlockState
+	//
+	returnData  Mem    // needed here to keep alive after FreeState()
+	returnSize  uint64
 	//
 	Coinbase    common.Address
 	Difficulty  *big.Int
@@ -199,7 +203,10 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	bench.Tick(212)
 	if     common.DEBUG_TX && state.ctx.Debug { fmt.Println("  code hash", ch, "have?", p.Code != nil) }
 	if p.Code == nil { return 0, false }
+	//
 	bench.Tick(215)
+	state.ctx.returnData.Init()
+	state.ctx.returnSize = 0
 	state.blockTbl = p.BlockTbl
 	state.code     = p.Code
 	state.curBlock = 0

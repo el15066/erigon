@@ -126,7 +126,7 @@ func zerOpArgVs(state *State) *uint256.Int {
 }
 func opReturnDataSize(state *State) {
 	d := zerOpArgVs(state)
-	d.Set(&UNKNOWN_U256)
+	d.SetUint64(state.ctx.returnSize)
 	return
 }
 func opCodeSize(state *State) {
@@ -519,6 +519,21 @@ func opSstore(state *State) {
 	state.ctx.ibs.SetDirtyState(a, k, *v1)
 	return
 }
+func opReturn(state *State) {
+	v0, v1 := binNVOpOptArgVs(state)
+	if !is_known(v0) || !is_known(v1) { return }
+	i := v0.Uint64()
+	s := v1.Uint64()
+	data := state.mem.get(i, s)
+	if data != nil {
+		state.ctx.returnData.set(0, s, data)
+		state.ctx.returnSize = s
+	} else {
+		state.ctx.returnData.setUnknown(0, s)
+		state.ctx.returnSize = random_u256_part_0
+	}
+	return
+}
 
 func triOp(state *State, op func (*uint256.Int, *uint256.Int, *uint256.Int, *uint256.Int) *uint256.Int) {
 	i      := state.i + 1
@@ -572,10 +587,11 @@ func opReturnDataCopy(state *State) {
 	v0, v1, v2 := triNVOpArgVs(state)
 	if v0 == nil { return }
 	o := v0.Uint64()
-	// i := v1.Uint64()
-	_ = v1
+	i := v1.Uint64()
 	s := v2.Uint64()
-	state.mem.setUnknown(o, s)
+	data := state.ctx.returnData.get(i, s)
+	if data != nil { state.mem.set(o, s, data)
+	} else         { state.mem.setUnknown(o, s) }
 	return
 }
 func opCodeCopy(state *State) {
@@ -714,9 +730,17 @@ func opCallCommon(state *State, t CallOpType) {
 	if v5.IsUint64() && v6.IsUint64() {
 		o0 := v5.Uint64()
 		oS := v6.Uint64()
-		// clear resulting mem, since we don't currently support return value
-		if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" setUnknown odata") }
-		state.mem.setUnknown(o0, oS)
+		if  oS > state.ctx.returnSize {
+			oS = state.ctx.returnSize
+		}
+		odata := state.ctx.returnData.get(0, oS)
+		if odata != nil {
+			state.mem.set(o0, oS, odata)
+			if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" returnData ", hex.EncodeToString(odata)) }
+		} else {
+			state.mem.setUnknown(o0, oS)
+			if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" returnData unknown, size", oS) }
+		}
 	}
 	//
 	if known { d.SetUint64(uint64(res))
