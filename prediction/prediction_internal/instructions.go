@@ -12,7 +12,7 @@ import (
 
 func is_known(v *uint256.Int) bool {
 	return v.Uint64() != random_u256_part_0
-	// return uint32(v.Uint64()) != random_u256_lsu32
+	// return uint32(v.Uint64()) != random_u256_lsu32 // tiny 0.001% worse
 }
 
 func _enc(v *uint256.Int) string {
