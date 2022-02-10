@@ -44,7 +44,7 @@ var jumpTable = [256]func(state *State){
 	 34:    opBlockId,
 	 35:    opJump,
 	 36:    opJumpi,
-	 37:    _op,
+	 37:    opReturn,
 	 38:    _op,
 	 39:    _op,
 	 40:    opCodeSize,

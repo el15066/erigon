@@ -44,7 +44,7 @@ var jumpTableNames = [256]string{
      34:    "BLOCKID",
      35:    "JUMP",
      36:    "JUMPI",
-     37:    "INVALID",
+     37:    "RETURN",
      38:    "INVALID",
      39:    "INVALID",
      40:    "CODESIZE",

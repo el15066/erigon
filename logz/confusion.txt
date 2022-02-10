@@ -1,7 +1,7 @@
 
 --- Contract 2a0c0dbecc7e4d658f48e01e3fa353f44050c208
-  Coverage:  26.6 %  missed:   75102
-  Overhead:     0 %  added:       86
+  Coverage:  26.6 %  missed:   75082
+  Overhead:     0 %  added:       83
   Count:     102258  txs:       8827
 
 --- Contract 196301b5673714fa91640fe2df34b5c05be7ab19
@@ -20,7 +20,7 @@
   Count:     119044  txs:        311
 
 --- Totals ---
-  Coverage:  55.0 %  missed: 1080225
-  Overhead:     4 %  added:    95011
+  Coverage:  57.7 %  missed: 1015221
+  Overhead:     4 %  added:    89395
   Count:    2398539  txs:     285115
 
