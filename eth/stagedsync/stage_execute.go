@@ -549,6 +549,8 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		"DEBUG_TX",                  common.DEBUG_TX,
 		"DEBUG_TX_BLOCK",            common.DEBUG_TX_BLOCK,
 		"DEBUG_TX_INDEX",            common.DEBUG_TX_INDEX,
+		//
+		"PREDICTOR_DB_PATH",         common.PREDICTOR_DB_PATH,
 	)
 
 	batch := olddb.NewBatch(tx, quit)

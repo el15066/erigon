@@ -4,6 +4,8 @@ package predictorDB
 import (
 	"context"
 
+	common "github.com/ledgerwatch/erigon/common"
+
 	kv   "github.com/ledgerwatch/erigon-lib/kv"
 	mdbx "github.com/ledgerwatch/erigon-lib/kv/mdbx"
 )
@@ -35,7 +37,7 @@ func (db PredictorDB) Get(k []byte) ([]byte, []byte) {
 }
 
 func openPredictorDB() (PredictorDB, error) {
-	db, err := openMDBX("predictorDB")
+	db, err := openMDBX(common.PREDICTOR_DB_PATH)
 	if err != nil {
 		return PredictorDB{}, nil
 	}
@@ -44,7 +46,10 @@ func openPredictorDB() (PredictorDB, error) {
 		db.Close()
 		return PredictorDB{}, nil
 	}
-	return PredictorDB{ u: db, t: tx }, err
+	res  := PredictorDB{ u: db, t: tx }
+	info := res.get(([]byte)("info"))
+	log.Info("Opened database", "info", string(info))
+	return res, nil
 }
 
 // https://github.com/ledgerwatch/erigon-lib/blob/main/kv/tables.go#L460

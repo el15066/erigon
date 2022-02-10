@@ -27,6 +27,8 @@ const DEBUG_TX       = false
 const DEBUG_TX_BLOCK = 7504466
 const DEBUG_TX_INDEX = 62
 
+const PREDICTOR_DB_PATH = "predictorDB_new"
+
 // if CODE_DUMPING {
 var CONTRACT_CODE       = map[Hash][]byte{}
 var CONTRACT_CODE_COUNT = map[Hash]uint{}
