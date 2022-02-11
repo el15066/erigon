@@ -2,9 +2,19 @@ package bench
 
 import (
 	"fmt"
-	"time"
+	// "time"
 	"sync/atomic"
+
+	// mclock "github.com/ledgerwatch/erigon/common/mclock"
+
+	_ "unsafe" // for go:linkname
+
+	// tsc "github.com/dterei/gotsc"
 )
+
+//go:noescape
+//go:linkname Nanotime runtime.nanotime
+func Nanotime() int64 // on linux: __vdso_clock_gettime
 
 var all_ticks      [300]int64
 var all_ticks_prev [300]int64
@@ -21,13 +31,22 @@ func Reset() {
 func Tick(index int) {
 	// all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
 	atomic.AddInt64(&all_counts[index], 1)
-	atomic.AddInt64(&all_ticks[ index], time.Now().UnixNano())
+	// t := time.Now().UnixNano()
+	// t := int64(mclock.Now())
+	t := Nanotime()
+	// t := int64(tsc.BenchStart())
+	atomic.AddInt64(&all_ticks[ index], t) // atomic.* have mem barriers, so order matters
 }
+
+// func TiCk(index int) { Tick(index) }
 
 func TiCk(index int) {
 	// t := time.Now().UnixNano()
+	// t := int64(mclock.Now())
+	t := Nanotime()
+	// t := int64(tsc.BenchEnd())
 	// all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
-	atomic.AddInt64(&all_ticks[ index], time.Now().UnixNano())
+	atomic.AddInt64(&all_ticks[ index], t)
 	atomic.AddInt64(&all_counts[index], 1)
 }
 
