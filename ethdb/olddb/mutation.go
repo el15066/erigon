@@ -16,7 +16,7 @@ import (
 	"github.com/ledgerwatch/erigon/ethdb"
 	"github.com/ledgerwatch/log/v3"
 
-	// bench "github.com/ledgerwatch/erigon/bench"
+	"github.com/ledgerwatch/erigon/bench"
 )
 
 type Mutation struct {
@@ -135,11 +135,14 @@ func (m *Mutation) GetOne(table string, key []byte) ([]byte, error) {
 	}
 	if m.db != nil {
 		// TODO: simplify when tx can no longer be parent of Mutation
+		bench.Tick(70)
 		value, err := m.db.GetOne(table, key)
 		if err != nil {
+			bench.TiCk(71)
 			return nil, err
 		}
 
+		bench.TiCk(71)
 		return value, nil
 	}
 	return nil, nil
@@ -182,7 +185,10 @@ func (m *Mutation) Has(table string, key []byte) (bool, error) {
 		return true, nil
 	}
 	if m.db != nil {
-		return m.db.Has(table, key)
+		bench.Tick(72)
+		res, err := m.db.Has(table, key)
+		bench.TiCk(73)
+		return res, err
 	}
 	return false, nil
 }
