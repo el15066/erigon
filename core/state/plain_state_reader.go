@@ -33,7 +33,7 @@ type PlainStateReader struct {
 }
 
 func NewPlainStateReader(db kv.Getter) *PlainStateReader {
-	if tracefile == nil && common.STORAGE_TRACING == true && notrace == false {
+	if common.STORAGE_TRACING && tracefile == nil && !notrace {
 		_f, _err := os.OpenFile("logz/reads.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
 		if _err == nil {
 			tracefile = bufio.NewWriterSize(_f, 128*1024)
@@ -50,7 +50,7 @@ func NewPlainStateReader(db kv.Getter) *PlainStateReader {
 }
 
 func FlushStateReaderTracefile() {
-	if tracefile != nil {
+	if common.STORAGE_TRACING && tracefile != nil {
 		tracefile.Flush()
 	}
 }
@@ -63,7 +63,7 @@ func (r *PlainStateReader) ReadAccountData(address common.Address) (*accounts.Ac
 	enc, err := r.db.GetOne(kv.PlainState, address.Bytes())
 
 	// HERE
-	if tracefile != nil {
+	if common.STORAGE_TRACING && tracefile != nil {
 		tracefile.WriteString(fmt.Sprintf("A %8d %3d %s %s\n", r.blockID, r.txID, ENC(address.Bytes()), ENC(enc)))
 	}
 
@@ -86,7 +86,7 @@ func (r *PlainStateReader) ReadAccountStorage(address common.Address, incarnatio
 	enc, err := r.db.GetOne(kv.PlainState, compositeKey)
 
 	// HERE
-	if tracefile != nil {
+	if common.STORAGE_TRACING && tracefile != nil {
 		tracefile.WriteString(fmt.Sprintf("S %8d %3d %s %s\n", r.blockID, r.txID, ENC(compositeKey), ENC(enc)))
 	}
 
@@ -105,7 +105,7 @@ func (r *PlainStateReader) ReadAccountCode(address common.Address, incarnation u
 	}
 
 	// HERE
-	if tracefile != nil {
+	if common.STORAGE_TRACING && tracefile != nil {
 		tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", r.blockID, r.txID, ENC(codeHash.Bytes())))
 	}
 
@@ -124,7 +124,7 @@ func (r *PlainStateReader) ReadAccountCodeSize(address common.Address, incarnati
 func (r *PlainStateReader) ReadAccountIncarnation(address common.Address) (uint64, error) {
 
 	// HERE
-	if tracefile != nil {
+	if common.STORAGE_TRACING && tracefile != nil {
 		tracefile.WriteString(fmt.Sprintf("I %8d %3d %s\n", r.blockID, r.txID, ENC(address.Bytes())))
 	}
 
