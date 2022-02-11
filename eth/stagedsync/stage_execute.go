@@ -253,7 +253,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 	var ENC = hex.EncodeToString
 	var tracefile *bufio.Writer
 	if common.PREFETCH_TRACING {
-		_f, _err := os.OpenFile("logz/prefetches.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
+		_f, _err := os.OpenFile("logz/prefetches.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 		if _err == nil {
 			defer _f.Close()
 			tracefile = bufio.NewWriterSize(_f, 128*1024)
@@ -264,7 +264,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 	}
 	var dumpfile *bufio.Writer
 	if common.TX_DUMPING {
-		_f, _err := os.OpenFile("logz/tx_dump.txt", os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0664)
+		_f, _err := os.OpenFile("logz/tx_dump.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 		if _err == nil {
 			defer _f.Close()
 			dumpfile = bufio.NewWriterSize(_f, 128*1024)
