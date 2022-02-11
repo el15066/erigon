@@ -245,7 +245,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 	steps := 0
 	for {
 		steps++
-		if steps%1000 == 0 && atomic.LoadInt32(&in.evm.abort) != 0 {
+		if steps & 0xFFFF == 0 && atomic.LoadInt32(&in.evm.abort) != 0 {
 			break
 		}
 		if in.cfg.Debug {
