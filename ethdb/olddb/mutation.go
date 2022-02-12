@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/binary"
-	"fmt"
+	// "fmt"
 	// "strings"
 	// "sync"
-	"time"
+	// "time"
 	"unsafe"
 
 	"github.com/google/btree"
 	"github.com/ledgerwatch/erigon-lib/kv"
 	"github.com/ledgerwatch/erigon/common"
 	"github.com/ledgerwatch/erigon/ethdb"
-	"github.com/ledgerwatch/log/v3"
+	// "github.com/ledgerwatch/log/v3"
 
 	"github.com/ledgerwatch/erigon/bench"
 )
@@ -267,90 +267,90 @@ func (m *Mutation) Delete(table string, k, v []byte) error {
 	return m.Put(table, k, nil)
 }
 
-func (m *Mutation) doCommit(tx kv.RwTx) error {
-	var prevTable int
-	var c kv.RwCursor
-	var innerErr error
-	var isEndOfBucket bool
-	logEvery := time.NewTicker(30 * time.Second)
-	defer logEvery.Stop()
-	count := 0
-	total := float64(m.puts.Len())
+// func (m *Mutation) doCommit(tx kv.RwTx) error {
+// 	var prevTable int
+// 	var c kv.RwCursor
+// 	var innerErr error
+// 	var isEndOfBucket bool
+// 	logEvery := time.NewTicker(30 * time.Second)
+// 	defer logEvery.Stop()
+// 	count := 0
+// 	total := float64(m.puts.Len())
 
-	m.puts.Ascend(func(i btree.Item) bool {
-		mi := i.(*MutationItem)
-		if mi.table != prevTable {
-			if c != nil {
-				c.Close()
-			}
-			var err error
-			c, err = tx.RwCursor(tableIDToName(mi.table))
-			if err != nil {
-				innerErr = err
-				return false
-			}
-			prevTable = mi.table
-			firstKey, _, err := c.Seek(mi.key)
-			if err != nil {
-				innerErr = err
-				return false
-			}
-			isEndOfBucket = firstKey == nil
-		}
-		if isEndOfBucket {
-			if len(mi.value) > 0 {
-				if err := c.Append(mi.key, mi.value); err != nil {
-					innerErr = err
-					return false
-				}
-			}
-		} else if len(mi.value) == 0 {
-			if err := c.Delete(mi.key, nil); err != nil {
-				innerErr = err
-				return false
-			}
-		} else {
-			if err := c.Put(mi.key, mi.value); err != nil {
-				innerErr = err
-				return false
-			}
-		}
+// 	m.puts.Ascend(func(i btree.Item) bool {
+// 		mi := i.(*MutationItem)
+// 		if mi.table != prevTable {
+// 			if c != nil {
+// 				c.Close()
+// 			}
+// 			var err error
+// 			c, err = tx.RwCursor(tableIDToName(mi.table))
+// 			if err != nil {
+// 				innerErr = err
+// 				return false
+// 			}
+// 			prevTable = mi.table
+// 			firstKey, _, err := c.Seek(mi.key)
+// 			if err != nil {
+// 				innerErr = err
+// 				return false
+// 			}
+// 			isEndOfBucket = firstKey == nil
+// 		}
+// 		if isEndOfBucket {
+// 			if len(mi.value) > 0 {
+// 				if err := c.Append(mi.key, mi.value); err != nil {
+// 					innerErr = err
+// 					return false
+// 				}
+// 			}
+// 		} else if len(mi.value) == 0 {
+// 			if err := c.Delete(mi.key, nil); err != nil {
+// 				innerErr = err
+// 				return false
+// 			}
+// 		} else {
+// 			if err := c.Put(mi.key, mi.value); err != nil {
+// 				innerErr = err
+// 				return false
+// 			}
+// 		}
 
-		count++
+// 		count++
 
-		select {
-		default:
-		case <-logEvery.C:
-			progress := fmt.Sprintf("%.1fM/%.1fM", float64(count)/1_000_000, total/1_000_000)
-			log.Info("Write to db", "progress", progress, "current table", tableIDToName(mi.table))
-			tx.CollectMetrics()
-		case <-m.quit:
-			innerErr = common.ErrStopped
-			return false
-		}
-		return true
-	})
-	tx.CollectMetrics()
-	return innerErr
-}
+// 		select {
+// 		default:
+// 		case <-logEvery.C:
+// 			progress := fmt.Sprintf("%.1fM/%.1fM", float64(count)/1_000_000, total/1_000_000)
+// 			log.Info("Write to db", "progress", progress, "current table", tableIDToName(mi.table))
+// 			tx.CollectMetrics()
+// 		case <-m.quit:
+// 			innerErr = common.ErrStopped
+// 			return false
+// 		}
+// 		return true
+// 	})
+// 	tx.CollectMetrics()
+// 	return innerErr
+// }
 
 func (m *Mutation) Commit() error {
 
 	return nil // -readonly
 
-	if m.db == nil {
-		return nil
-	}
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	if err := m.doCommit(m.db); err != nil {
-		return err
-	}
+	// if m.db == nil {
+	// 	return nil
+	// }
+	// m.mu.Lock()
+	// defer m.mu.Unlock()
+	// if err := m.doCommit(m.db); err != nil {
+	// 	return err
+	// }
 
-	m.puts.Clear(false /* addNodesToFreelist */)
-	m.size = 0
-	m.clean()
-	return nil
+	// m.puts.Clear(false /* addNodesToFreelist */)
+	// m.size = 0
+	// m.clean()
+	// return nil
 }
 
 func (m *Mutation) Rollback() {
