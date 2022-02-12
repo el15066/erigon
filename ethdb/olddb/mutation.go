@@ -236,8 +236,9 @@ func (m *Mutation) AppendDup(table string, key []byte, value []byte) error {
 }
 
 func (m *Mutation) BatchSize() int {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+	// no need to lock, if we reeeealy need precision, use atomic load
+	// m.mu.RLock()
+	// defer m.mu.RUnlock()
 	return m.size
 }
 
