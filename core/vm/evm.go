@@ -61,20 +61,20 @@ func (evm *EVM) precompile(addr common.Address) (PrecompiledContract, bool) {
 
 // run runs the given contract and takes care of running precompiles with a fallback to the byte code interpreter.
 func run(evm *EVM, contract *Contract, input []byte, readOnly bool) ([]byte, error) {
-	callback, err := selectInterpreter(evm, contract)
-	if err != nil {
-		return nil, err
+	// callback, err := selectInterpreter(evm, contract)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// defer callback()
+
+	if common.JUMP_TRACING {
+		t := common.CALLID
+		common.CALLID = common.CALLID_COUNTER
+		common.CALLID_COUNTER += 1
+		defer func() { common.CALLID = t }()
 	}
-
-	defer callback()
-
-	t := common.CALLID
-	common.CALLID = common.CALLID_COUNTER
-	common.CALLID_COUNTER += 1
-	// defer func() { common.CALLID = t }()
-	res, err := evm.interpreter.Run(contract, input, readOnly)
-	common.CALLID = t
-	return res, err
+	return evm.interpreter.Run(contract, input, readOnly)
 }
 
 func selectInterpreter(evm *EVM, contract *Contract) (func(), error) {
