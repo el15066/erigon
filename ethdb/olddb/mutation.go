@@ -1,7 +1,7 @@
 package olddb
 
 import (
-	"bytes"
+	// "bytes"
 	"context"
 	"encoding/binary"
 	// "fmt"
@@ -86,8 +86,8 @@ func (mi *MutationItem) Less(than btree.Item) bool {
 	// if c != 0 {
 	// 	return c < 0
 	// }
-	return bytes.Compare(mi.key, i.key) < 0
-	// return string(mi.key) < string(i.key) // TODO
+	// return bytes.Compare(mi.key, i.key) < 0
+	return string(mi.key) < string(i.key) // TODO
 }
 
 func (m *Mutation) RwKV() kv.RwDB {
