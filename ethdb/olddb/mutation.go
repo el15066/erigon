@@ -1,11 +1,11 @@
 package olddb
 
 import (
-	"bytes"
+	// "bytes"
 	"context"
 	"encoding/binary"
 	"fmt"
-	"strings"
+	// "strings"
 	// "sync"
 	"time"
 	"unsafe"
@@ -60,11 +60,12 @@ func NewBatch(tx kv.RwTx, quit <-chan struct{}) *Mutation {
 
 func (mi *MutationItem) Less(than btree.Item) bool {
 	i := than.(*MutationItem)
-	c := strings.Compare(mi.table, i.table)
-	if c != 0 {
-		return c < 0
-	}
-	return bytes.Compare(mi.key, i.key) < 0
+	return mi.table + string(mi.key) < i.table + string(i.key)
+	// c := strings.Compare(mi.table, i.table)
+	// if c != 0 {
+	// 	return c < 0
+	// }
+	// return bytes.Compare(mi.key, i.key) < 0
 }
 
 func (m *Mutation) RwKV() kv.RwDB {
