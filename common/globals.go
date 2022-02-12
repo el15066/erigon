@@ -3,7 +3,7 @@ package common
 
 // const MAX_BLOCK = 7_500_000 - 1 + 4546
 // const MAX_BLOCK = 10_500_000 - 1 + 60_000
-const MAX_BLOCK = 10_500_000 - 1 + 30_000
+const MAX_BLOCK = 10_500_000 - 1 + 5_000
 
 const  STORAGE_TRACING = false
 const PREFETCH_TRACING = false
