@@ -25,7 +25,7 @@ import (
 
 var stackPool = sync.Pool{
 	New: func() interface{} {
-		return &Stack{Data: make([]uint256.Int, 0, 16)}
+		return &Stack{Data: make([]uint256.Int, 0, 64)} // up to 128 to fit in 4KiB page
 	},
 }
 
@@ -44,10 +44,18 @@ func (st *Stack) Push(d *uint256.Int) {
 	// NOTE push limit (1024) is checked in baseCheck
 	st.Data = append(st.Data, *d)
 }
+func (st *Stack) PushEmpty() *uint256.Int {
+	st.Data = append(st.Data, uint256.Int{})
+	return st.Peek()
+}
 
 func (st *Stack) PushN(ds ...uint256.Int) {
 	// FIXME: Is there a way to pass args by pointers.
 	st.Data = append(st.Data, ds...)
+}
+func (st *Stack) PushEmptyN(n int) []uint256.Int {
+	st.Data = append(st.Data, make([]uint256.Int, n)...) // https://github.com/golang/go/wiki/SliceTricks#extend
+	return st.Data[len(st.Data)-n:]
 }
 
 func (st *Stack) Pop() (ret uint256.Int) {
@@ -66,6 +74,7 @@ func (st *Stack) Swap(n int) {
 
 func (st *Stack) Dup(n int) {
 	st.Push(&st.Data[st.Len()-n])
+	// st.PushEmpty().Set(&st.Data[len(st.Data)-n-1]) // TODO: check perf
 }
 
 func (st *Stack) Peek() *uint256.Int {

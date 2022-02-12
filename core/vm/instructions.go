@@ -904,37 +904,41 @@ func makeLog(size int) executionFunc {
 
 // opPush1 is a specialized version of pushN
 func opPush1(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
-	var (
-		codeLen = uint64(len(callContext.contract.Code))
-		integer = new(uint256.Int)
-	)
+	// var (
+	// 	codeLen = uint64(len(callContext.contract.Code))
+	// 	// integer = new(uint256.Int)
+	// )
 	*pc++
-	if *pc < codeLen {
-		callContext.stack.Push(integer.SetUint64(uint64(callContext.contract.Code[*pc])))
-	} else {
-		callContext.stack.Push(integer.Clear())
-	}
+	// if *pc < codeLen {
+		// callContext.stack.Push(integer.SetUint64(uint64(callContext.contract.Code[*pc])))
+	callContext.stack.PushEmpty().SetUint64(uint64(callContext.contract.Code[*pc]))
+	// } else {
+	// 	// callContext.stack.Push(integer.Clear())
+	// 	callContext.stack.PushEmpty().Clear()
+	// }
 	return nil, nil
 }
 
 // make push instruction function
 func makePush(size uint64, pushByteSize int) executionFunc {
 	return func(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
-		codeLen := len(callContext.contract.Code)
+		// codeLen := len(callContext.contract.Code)
 
 		startMin := int(*pc + 1)
-		if startMin >= codeLen {
-			startMin = codeLen
-		}
+		// if startMin >= codeLen {
+		// 	startMin = codeLen
+		// }
 		endMin := startMin + pushByteSize
-		if startMin+pushByteSize >= codeLen {
-			endMin = codeLen
-		}
+		// if startMin+pushByteSize >= codeLen {
+		// 	endMin = codeLen
+		// }
 
-		integer := new(uint256.Int)
-		callContext.stack.Push(integer.SetBytes(common.RightPadBytes(
+		// integer := new(uint256.Int)
+		// callContext.stack.Push(integer.SetBytes(common.RightPadBytes(
+		callContext.stack.PushEmpty().SetBytes(
 			// So it doesn't matter what we push onto the stack.
-			callContext.contract.Code[startMin:endMin], pushByteSize)))
+			callContext.contract.Code[startMin:endMin])
+			// callContext.contract.Code[startMin:endMin], pushByteSize)))
 
 		*pc += size
 		return nil, nil
