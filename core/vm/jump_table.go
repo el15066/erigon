@@ -710,7 +710,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       1,
 		},
 		PUSH2: {
-			execute:     makePush(2, 2),
+			execute:     opPush2,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -720,7 +720,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       2,
 		},
 		PUSH3: {
-			execute:     makePush(3, 3),
+			execute:     opPush3,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -730,7 +730,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       3,
 		},
 		PUSH4: {
-			execute:     makePush(4, 4),
+			execute:     opPush4,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -740,7 +740,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       4,
 		},
 		PUSH5: {
-			execute:     makePush(5, 5),
+			execute:     opPush5,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -750,7 +750,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       5,
 		},
 		PUSH6: {
-			execute:     makePush(6, 6),
+			execute:     opPush6,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -760,7 +760,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       6,
 		},
 		PUSH7: {
-			execute:     makePush(7, 7),
+			execute:     opPush7,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -770,7 +770,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       7,
 		},
 		PUSH8: {
-			execute:     makePush(8, 8),
+			execute:     opPush8,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -780,7 +780,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       8,
 		},
 		PUSH9: {
-			execute:     makePush(9, 9),
+			execute:     opPush9,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -790,7 +790,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       9,
 		},
 		PUSH10: {
-			execute:     makePush(10, 10),
+			execute:     opPush10,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -800,7 +800,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       10,
 		},
 		PUSH11: {
-			execute:     makePush(11, 11),
+			execute:     opPush11,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -810,7 +810,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       11,
 		},
 		PUSH12: {
-			execute:     makePush(12, 12),
+			execute:     opPush12,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -820,7 +820,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       12,
 		},
 		PUSH13: {
-			execute:     makePush(13, 13),
+			execute:     opPush13,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -830,7 +830,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       13,
 		},
 		PUSH14: {
-			execute:     makePush(14, 14),
+			execute:     opPush14,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -840,7 +840,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       14,
 		},
 		PUSH15: {
-			execute:     makePush(15, 15),
+			execute:     opPush15,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -850,7 +850,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       15,
 		},
 		PUSH16: {
-			execute:     makePush(16, 16),
+			execute:     opPush16,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -860,7 +860,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       16,
 		},
 		PUSH17: {
-			execute:     makePush(17, 17),
+			execute:     opPush17,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -870,7 +870,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       17,
 		},
 		PUSH18: {
-			execute:     makePush(18, 18),
+			execute:     opPush18,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -880,7 +880,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       18,
 		},
 		PUSH19: {
-			execute:     makePush(19, 19),
+			execute:     opPush19,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -890,7 +890,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       19,
 		},
 		PUSH20: {
-			execute:     makePush(20, 20),
+			execute:     opPush20,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -900,7 +900,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       20,
 		},
 		PUSH21: {
-			execute:     makePush(21, 21),
+			execute:     opPush21,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -910,7 +910,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       21,
 		},
 		PUSH22: {
-			execute:     makePush(22, 22),
+			execute:     opPush22,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -920,7 +920,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       22,
 		},
 		PUSH23: {
-			execute:     makePush(23, 23),
+			execute:     opPush23,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -930,7 +930,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       23,
 		},
 		PUSH24: {
-			execute:     makePush(24, 24),
+			execute:     opPush24,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -940,7 +940,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       24,
 		},
 		PUSH25: {
-			execute:     makePush(25, 25),
+			execute:     opPush25,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -950,7 +950,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       25,
 		},
 		PUSH26: {
-			execute:     makePush(26, 26),
+			execute:     opPush26,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -960,7 +960,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       26,
 		},
 		PUSH27: {
-			execute:     makePush(27, 27),
+			execute:     opPush27,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -970,7 +970,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       27,
 		},
 		PUSH28: {
-			execute:     makePush(28, 28),
+			execute:     opPush28,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -980,7 +980,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       28,
 		},
 		PUSH29: {
-			execute:     makePush(29, 29),
+			execute:     opPush29,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -990,7 +990,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       29,
 		},
 		PUSH30: {
-			execute:     makePush(30, 30),
+			execute:     opPush30,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -1000,7 +1000,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       30,
 		},
 		PUSH31: {
-			execute:     makePush(31, 31),
+			execute:     opPush31,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -1010,7 +1010,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       31,
 		},
 		PUSH32: {
-			execute:     makePush(32, 32),
+			execute:     opPush32,
 			constantGas: GasFastestStep,
 			minStack:    minStack(0, 1),
 			maxStack:    maxStack(0, 1),
@@ -1020,7 +1020,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       32,
 		},
 		DUP1: {
-			execute:     makeDup(1),
+			execute:     opDup1,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(1),
 			maxStack:    maxDupStack(1),
@@ -1030,7 +1030,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       1,
 		},
 		DUP2: {
-			execute:     makeDup(2),
+			execute:     opDup2,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(2),
 			maxStack:    maxDupStack(2),
@@ -1040,7 +1040,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       2,
 		},
 		DUP3: {
-			execute:     makeDup(3),
+			execute:     opDup3,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(3),
 			maxStack:    maxDupStack(3),
@@ -1050,7 +1050,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       3,
 		},
 		DUP4: {
-			execute:     makeDup(4),
+			execute:     opDup4,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(4),
 			maxStack:    maxDupStack(4),
@@ -1060,7 +1060,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       4,
 		},
 		DUP5: {
-			execute:     makeDup(5),
+			execute:     opDup5,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(5),
 			maxStack:    maxDupStack(5),
@@ -1070,7 +1070,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       5,
 		},
 		DUP6: {
-			execute:     makeDup(6),
+			execute:     opDup6,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(6),
 			maxStack:    maxDupStack(6),
@@ -1080,7 +1080,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       6,
 		},
 		DUP7: {
-			execute:     makeDup(7),
+			execute:     opDup7,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(7),
 			maxStack:    maxDupStack(7),
@@ -1090,7 +1090,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       7,
 		},
 		DUP8: {
-			execute:     makeDup(8),
+			execute:     opDup8,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(8),
 			maxStack:    maxDupStack(8),
@@ -1100,7 +1100,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       8,
 		},
 		DUP9: {
-			execute:     makeDup(9),
+			execute:     opDup9,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(9),
 			maxStack:    maxDupStack(9),
@@ -1110,7 +1110,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       9,
 		},
 		DUP10: {
-			execute:     makeDup(10),
+			execute:     opDup10,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(10),
 			maxStack:    maxDupStack(10),
@@ -1120,7 +1120,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       10,
 		},
 		DUP11: {
-			execute:     makeDup(11),
+			execute:     opDup11,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(11),
 			maxStack:    maxDupStack(11),
@@ -1130,7 +1130,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       11,
 		},
 		DUP12: {
-			execute:     makeDup(12),
+			execute:     opDup12,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(12),
 			maxStack:    maxDupStack(12),
@@ -1140,7 +1140,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       12,
 		},
 		DUP13: {
-			execute:     makeDup(13),
+			execute:     opDup13,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(13),
 			maxStack:    maxDupStack(13),
@@ -1150,7 +1150,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       13,
 		},
 		DUP14: {
-			execute:     makeDup(14),
+			execute:     opDup14,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(14),
 			maxStack:    maxDupStack(14),
@@ -1160,7 +1160,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       14,
 		},
 		DUP15: {
-			execute:     makeDup(15),
+			execute:     opDup15,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(15),
 			maxStack:    maxDupStack(15),
@@ -1170,7 +1170,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       15,
 		},
 		DUP16: {
-			execute:     makeDup(16),
+			execute:     opDup16,
 			constantGas: GasFastestStep,
 			minStack:    minDupStack(16),
 			maxStack:    maxDupStack(16),
@@ -1180,7 +1180,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       16,
 		},
 		SWAP1: {
-			execute:     makeSwap(1),
+			execute:     opSwap1,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(2),
 			maxStack:    maxSwapStack(2),
@@ -1190,7 +1190,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       1,
 		},
 		SWAP2: {
-			execute:     makeSwap(2),
+			execute:     opSwap2,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(3),
 			maxStack:    maxSwapStack(3),
@@ -1200,7 +1200,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       2,
 		},
 		SWAP3: {
-			execute:     makeSwap(3),
+			execute:     opSwap3,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(4),
 			maxStack:    maxSwapStack(4),
@@ -1210,7 +1210,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       3,
 		},
 		SWAP4: {
-			execute:     makeSwap(4),
+			execute:     opSwap4,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(5),
 			maxStack:    maxSwapStack(5),
@@ -1220,7 +1220,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       4,
 		},
 		SWAP5: {
-			execute:     makeSwap(5),
+			execute:     opSwap5,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(6),
 			maxStack:    maxSwapStack(6),
@@ -1230,7 +1230,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       5,
 		},
 		SWAP6: {
-			execute:     makeSwap(6),
+			execute:     opSwap6,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(7),
 			maxStack:    maxSwapStack(7),
@@ -1240,7 +1240,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       6,
 		},
 		SWAP7: {
-			execute:     makeSwap(7),
+			execute:     opSwap7,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(8),
 			maxStack:    maxSwapStack(8),
@@ -1250,7 +1250,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       7,
 		},
 		SWAP8: {
-			execute:     makeSwap(8),
+			execute:     opSwap8,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(9),
 			maxStack:    maxSwapStack(9),
@@ -1260,7 +1260,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       8,
 		},
 		SWAP9: {
-			execute:     makeSwap(9),
+			execute:     opSwap9,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(10),
 			maxStack:    maxSwapStack(10),
@@ -1270,7 +1270,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       9,
 		},
 		SWAP10: {
-			execute:     makeSwap(10),
+			execute:     opSwap10,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(11),
 			maxStack:    maxSwapStack(11),
@@ -1280,7 +1280,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       10,
 		},
 		SWAP11: {
-			execute:     makeSwap(11),
+			execute:     opSwap11,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(12),
 			maxStack:    maxSwapStack(12),
@@ -1290,7 +1290,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       11,
 		},
 		SWAP12: {
-			execute:     makeSwap(12),
+			execute:     opSwap12,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(13),
 			maxStack:    maxSwapStack(13),
@@ -1300,7 +1300,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       12,
 		},
 		SWAP13: {
-			execute:     makeSwap(13),
+			execute:     opSwap13,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(14),
 			maxStack:    maxSwapStack(14),
@@ -1310,7 +1310,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       13,
 		},
 		SWAP14: {
-			execute:     makeSwap(14),
+			execute:     opSwap14,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(15),
 			maxStack:    maxSwapStack(15),
@@ -1320,7 +1320,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       14,
 		},
 		SWAP15: {
-			execute:     makeSwap(15),
+			execute:     opSwap15,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(16),
 			maxStack:    maxSwapStack(16),
@@ -1330,7 +1330,7 @@ func newFrontierInstructionSet() JumpTable {
 			opNum:       15,
 		},
 		SWAP16: {
-			execute:     makeSwap(16),
+			execute:     opSwap16,
 			constantGas: GasFastestStep,
 			minStack:    minSwapStack(17),
 			maxStack:    maxSwapStack(17),

@@ -902,63 +902,90 @@ func makeLog(size int) executionFunc {
 	}
 }
 
-// opPush1 is a specialized version of pushN
-func opPush1(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
-	// var (
-	// 	codeLen = uint64(len(callContext.contract.Code))
-	// 	// integer = new(uint256.Int)
-	// )
-	*pc++
-	// if *pc < codeLen {
-		// callContext.stack.Push(integer.SetUint64(uint64(callContext.contract.Code[*pc])))
-	callContext.stack.PushEmpty().SetUint64(uint64(callContext.contract.Code[*pc]))
-	// } else {
-	// 	// callContext.stack.Push(integer.Clear())
-	// 	callContext.stack.PushEmpty().Clear()
-	// }
-	return nil, nil
-}
+// IMPORTANT: contract code should always be padded with 0s as we don't check here
 
-// make push instruction function
-func makePush(size uint64, pushByteSize int) executionFunc {
-	return func(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
-		// codeLen := len(callContext.contract.Code)
+// // opPush1 is a specialized version of pushN
+// func opPush1(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
+// 	// var (
+// 	// 	codeLen = uint64(len(callContext.contract.Code))
+// 	// 	// integer = new(uint256.Int)
+// 	// )
+// 	*pc++
+// 	// if *pc < codeLen {
+// 		// callContext.stack.Push(integer.SetUint64(uint64(callContext.contract.Code[*pc])))
+// 	callContext.stack.PushEmpty().SetUint64(uint64(callContext.contract.Code[*pc]))
+// 	// } else {
+// 	// 	// callContext.stack.Push(integer.Clear())
+// 	// 	callContext.stack.PushEmpty().Clear()
+// 	// }
+// 	return nil, nil
+// }
 
-		startMin := int(*pc + 1)
-		// if startMin >= codeLen {
-		// 	startMin = codeLen
-		// }
-		endMin := startMin + pushByteSize
-		// if startMin+pushByteSize >= codeLen {
-		// 	endMin = codeLen
-		// }
+// A piece of art :)
 
-		// integer := new(uint256.Int)
-		// callContext.stack.Push(integer.SetBytes(common.RightPadBytes(
-		callContext.stack.PushEmpty().SetBytes(
-			// So it doesn't matter what we push onto the stack.
-			callContext.contract.Code[startMin:endMin])
-			// callContext.contract.Code[startMin:endMin], pushByteSize)))
+func opPush1( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+1  ]); *pc += 1;  return nil, nil }
+func opPush2( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+2  ]); *pc += 2;  return nil, nil }
+func opPush3( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+3  ]); *pc += 3;  return nil, nil }
+func opPush4( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+4  ]); *pc += 4;  return nil, nil }
+func opPush5( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+5  ]); *pc += 5;  return nil, nil }
+func opPush6( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+6  ]); *pc += 6;  return nil, nil }
+func opPush7( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+7  ]); *pc += 7;  return nil, nil }
+func opPush8( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+8  ]); *pc += 8;  return nil, nil }
+func opPush9( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+9  ]); *pc += 9;  return nil, nil }
+func opPush10(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+10 ]); *pc += 10; return nil, nil }
+func opPush11(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+11 ]); *pc += 11; return nil, nil }
+func opPush12(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+12 ]); *pc += 12; return nil, nil }
+func opPush13(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+13 ]); *pc += 13; return nil, nil }
+func opPush14(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+14 ]); *pc += 14; return nil, nil }
+func opPush15(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+15 ]); *pc += 15; return nil, nil }
+func opPush16(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+16 ]); *pc += 16; return nil, nil }
+func opPush17(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+17 ]); *pc += 17; return nil, nil }
+func opPush18(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+18 ]); *pc += 18; return nil, nil }
+func opPush19(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+19 ]); *pc += 19; return nil, nil }
+func opPush20(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+20 ]); *pc += 20; return nil, nil }
+func opPush21(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+21 ]); *pc += 21; return nil, nil }
+func opPush22(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+22 ]); *pc += 22; return nil, nil }
+func opPush23(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+23 ]); *pc += 23; return nil, nil }
+func opPush24(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+24 ]); *pc += 24; return nil, nil }
+func opPush25(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+25 ]); *pc += 25; return nil, nil }
+func opPush26(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+26 ]); *pc += 26; return nil, nil }
+func opPush27(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+27 ]); *pc += 27; return nil, nil }
+func opPush28(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+28 ]); *pc += 28; return nil, nil }
+func opPush29(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+29 ]); *pc += 29; return nil, nil }
+func opPush30(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+30 ]); *pc += 30; return nil, nil }
+func opPush31(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+31 ]); *pc += 31; return nil, nil }
+func opPush32(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.PushEmpty().SetBytes(callContext.contract.Code[ *pc+1 : *pc+1+32 ]); *pc += 32; return nil, nil }
 
-		*pc += size
-		return nil, nil
-	}
-}
+func opDup1( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(1 ); return nil, nil }
+func opDup2( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(2 ); return nil, nil }
+func opDup3( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(3 ); return nil, nil }
+func opDup4( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(4 ); return nil, nil }
+func opDup5( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(5 ); return nil, nil }
+func opDup6( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(6 ); return nil, nil }
+func opDup7( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(7 ); return nil, nil }
+func opDup8( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(8 ); return nil, nil }
+func opDup9( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(9 ); return nil, nil }
+func opDup10(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(10); return nil, nil }
+func opDup11(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(11); return nil, nil }
+func opDup12(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(12); return nil, nil }
+func opDup13(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(13); return nil, nil }
+func opDup14(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(14); return nil, nil }
+func opDup15(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(15); return nil, nil }
+func opDup16(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Dup(16); return nil, nil }
 
-// make dup instruction function
-func makeDup(size int64) executionFunc {
-	return func(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
-		callContext.stack.Dup(int(size))
-		return nil, nil
-	}
-}
-
-// make swap instruction function
-func makeSwap(size int64) executionFunc {
-	// switch n + 1 otherwise n would be swapped with n
-	size++
-	return func(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
-		callContext.stack.Swap(int(size))
-		return nil, nil
-	}
-}
+func opSwap1( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+1 ); return nil, nil }
+func opSwap2( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+2 ); return nil, nil }
+func opSwap3( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+3 ); return nil, nil }
+func opSwap4( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+4 ); return nil, nil }
+func opSwap5( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+5 ); return nil, nil }
+func opSwap6( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+6 ); return nil, nil }
+func opSwap7( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+7 ); return nil, nil }
+func opSwap8( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+8 ); return nil, nil }
+func opSwap9( pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+9 ); return nil, nil }
+func opSwap10(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+10); return nil, nil }
+func opSwap11(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+11); return nil, nil }
+func opSwap12(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+12); return nil, nil }
+func opSwap13(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+13); return nil, nil }
+func opSwap14(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+14); return nil, nil }
+func opSwap15(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+15); return nil, nil }
+func opSwap16(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) { callContext.stack.Swap(1+16); return nil, nil }
