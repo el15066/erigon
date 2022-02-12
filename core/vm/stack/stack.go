@@ -25,7 +25,7 @@ import (
 
 var stackPool = sync.Pool{
 	New: func() interface{} {
-		return &Stack{Data: make([]uint256.Int, 0, 64)} // up to 128 to fit in 4KiB page
+		return &Stack{Data: make([]uint256.Int, 0, 128)} // up to 128 to fit in 4KiB page
 	},
 }
 
