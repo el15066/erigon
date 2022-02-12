@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"strings"
+	// "strings"
 	// "sync"
 	"time"
 	"unsafe"
@@ -19,6 +19,20 @@ import (
 	"github.com/ledgerwatch/erigon/bench"
 )
 
+var BucketsMap  = map[string]int{}
+var BucketNames = []string{} // should be the same as kv.ChaindataTables
+
+func tableNameToID(name string) int {
+	i, ok := BucketsMap[name]
+	if !ok {
+		panic("Bucket name not in BucketsMap")
+	}
+	return i
+}
+func tableIDToName(i int) string {
+	return BucketNames[i]
+}
+
 type Mutation struct {
 	puts       *btree.BTree
 	db         kv.RwTx
@@ -30,7 +44,7 @@ type Mutation struct {
 }
 
 type MutationItem struct {
-	table string
+	table int
 	key   []byte
 	value []byte
 }
@@ -44,6 +58,12 @@ type MutationItem struct {
 // ... some calculations on `batch`
 // batch.Commit()
 func NewBatch(tx kv.RwTx, quit <-chan struct{}) *Mutation {
+	if len(BucketsMap) == 0 {
+		for i, v := range kv.ChaindataTables {
+			BucketsMap[v] = i
+			BucketNames   = append(BucketNames, v)
+		}
+	}
 	clean := func() {}
 	if quit == nil {
 		ch := make(chan struct{})
@@ -60,7 +80,7 @@ func NewBatch(tx kv.RwTx, quit <-chan struct{}) *Mutation {
 
 func (mi *MutationItem) Less(than btree.Item) bool {
 	i := than.(*MutationItem)
-	c := strings.Compare(mi.table, i.table)
+	c := mi.table - i.table
 	if c != 0 {
 		return c < 0
 	}
@@ -79,7 +99,7 @@ func (m *Mutation) getMem(table string, key []byte) ([]byte, bool) {
 	m.mu.RLock()
 	// bench.TiCk(501)
 	defer m.mu.RUnlock()
-	t := MutationItem{ table, key, nil }
+	t := MutationItem{ tableNameToID(table), key, nil }
 	i := m.puts.Get(&t)
 	if i == nil {
 		return nil, false
@@ -176,7 +196,7 @@ func (m *Mutation) hasMem(table string, key []byte) bool {
 	m.mu.RLock()
 	// bench.TiCk(503)
 	defer m.mu.RUnlock()
-	t := MutationItem{ table, key, nil }
+	t := MutationItem{ tableNameToID(table), key, nil }
 	return m.puts.Has(&t)
 }
 
@@ -197,7 +217,7 @@ func (m *Mutation) Put(table string, key []byte, value []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	newMi := &MutationItem{table: table, key: key, value: value}
+	newMi := &MutationItem{table: tableNameToID(table), key: key, value: value}
 	i := m.puts.ReplaceOrInsert(newMi)
 	m.size += int(unsafe.Sizeof(newMi)) + len(key) + len(value)
 	if i != nil {
@@ -247,7 +267,7 @@ func (m *Mutation) Delete(table string, k, v []byte) error {
 }
 
 func (m *Mutation) doCommit(tx kv.RwTx) error {
-	var prevTable string
+	var prevTable int
 	var c kv.RwCursor
 	var innerErr error
 	var isEndOfBucket bool
@@ -263,7 +283,7 @@ func (m *Mutation) doCommit(tx kv.RwTx) error {
 				c.Close()
 			}
 			var err error
-			c, err = tx.RwCursor(mi.table)
+			c, err = tx.RwCursor(tableIDToName(mi.table))
 			if err != nil {
 				innerErr = err
 				return false
@@ -301,7 +321,7 @@ func (m *Mutation) doCommit(tx kv.RwTx) error {
 		default:
 		case <-logEvery.C:
 			progress := fmt.Sprintf("%.1fM/%.1fM", float64(count)/1_000_000, total/1_000_000)
-			log.Info("Write to db", "progress", progress, "current table", mi.table)
+			log.Info("Write to db", "progress", progress, "current table", tableIDToName(mi.table))
 			tx.CollectMetrics()
 		case <-m.quit:
 			innerErr = common.ErrStopped
