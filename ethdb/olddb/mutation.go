@@ -34,7 +34,7 @@ func tableIDToName(i int) string {
 }
 
 type Mutation struct {
-	puts       *btree.BTree
+	trees      []*btree.BTree
 	db         kv.RwTx
 	quit       <-chan struct{}
 	clean      func()
@@ -44,7 +44,6 @@ type Mutation struct {
 }
 
 type MutationItem struct {
-	table int
 	key   []byte
 	value []byte
 }
@@ -70,21 +69,25 @@ func NewBatch(tx kv.RwTx, quit <-chan struct{}) *Mutation {
 		clean = func() { close(ch) }
 		quit = ch
 	}
-	return &Mutation{
+	m := &Mutation{
 		db:    tx,
-		puts:  btree.New(32),
 		quit:  quit,
 		clean: clean,
 	}
+	for range kv.ChaindataTables {
+		m.trees = append(m.trees, btree.New(32))
+	}
+	return m
 }
 
 func (mi *MutationItem) Less(than btree.Item) bool {
 	i := than.(*MutationItem)
-	c := mi.table - i.table
-	if c != 0 {
-		return c < 0
-	}
+	// c := mi.table - i.table
+	// if c != 0 {
+	// 	return c < 0
+	// }
 	return bytes.Compare(mi.key, i.key) < 0
+	// return string(mi.key) < string(i.key) // TODO
 }
 
 func (m *Mutation) RwKV() kv.RwDB {
@@ -99,8 +102,8 @@ func (m *Mutation) getMem(table string, key []byte) ([]byte, bool) {
 	m.mu.RLock()
 	// bench.TiCk(501)
 	defer m.mu.RUnlock()
-	t := MutationItem{ tableNameToID(table), key, nil }
-	i := m.puts.Get(&t)
+	t := MutationItem{ key, nil }
+	i := m.trees[tableNameToID(table)].Get(&t)
 	if i == nil {
 		return nil, false
 	}
@@ -196,8 +199,8 @@ func (m *Mutation) hasMem(table string, key []byte) bool {
 	m.mu.RLock()
 	// bench.TiCk(503)
 	defer m.mu.RUnlock()
-	t := MutationItem{ tableNameToID(table), key, nil }
-	return m.puts.Has(&t)
+	t := MutationItem{ key, nil }
+	return m.trees[tableNameToID(table)].Has(&t)
 }
 
 func (m *Mutation) Has(table string, key []byte) (bool, error) {
@@ -217,8 +220,8 @@ func (m *Mutation) Put(table string, key []byte, value []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	newMi := &MutationItem{table: tableNameToID(table), key: key, value: value}
-	i := m.puts.ReplaceOrInsert(newMi)
+	newMi := &MutationItem{ key: key, value: value }
+	i := m.trees[tableNameToID(table)].ReplaceOrInsert(newMi)
 	m.size += int(unsafe.Sizeof(newMi)) + len(key) + len(value)
 	if i != nil {
 		oldMi := i.(*MutationItem)
@@ -356,7 +359,9 @@ func (m *Mutation) Commit() error {
 func (m *Mutation) Rollback() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	m.puts.Clear(false /* addNodesToFreelist */)
+	for _, t := range m.trees {
+		t.Clear(false /* addNodesToFreelist */)
+	}
 	m.size = 0
 	m.clean()
 }
