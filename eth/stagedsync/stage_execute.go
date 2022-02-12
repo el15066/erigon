@@ -13,6 +13,8 @@ import (
 	"sort"
 	"time"
 
+	"golang.org/x/sys/unix"
+
 	"github.com/holiman/uint256"
 	"github.com/c2h5oh/datasize"
 	"github.com/ledgerwatch/erigon-lib/kv"
@@ -249,7 +251,17 @@ type tx_dump struct {
 
 var _buf = [64]byte{}
 
+func lockThreadAndCPU(cpu int) {
+	runtime.LockOSThread() // Needed for unique PID, for perf-utils
+	t := unix.CPUSet{}
+	t.Set(cpu)
+	unix.SchedSetaffinity(0, &t)
+}
+
 func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
+
+	lockThreadAndCPU(4)
+
 	var ENC = hex.EncodeToString
 	var tracefile *bufio.Writer
 	if common.PREFETCH_TRACING {
@@ -488,6 +500,9 @@ func read_or_fetch_block(blockNum uint64, tx kv.Tx, blockChan chan *types.Block)
 }
 
 func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint64, ctx context.Context, cfg ExecuteBlockCfg, initialCycle bool) (err error) {
+
+	lockThreadAndCPU(3)
+
 	bench.Reset()
 	quit := ctx.Done()
 	useExternalTx := tx != nil
