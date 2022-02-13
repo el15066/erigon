@@ -25,7 +25,7 @@ import (
 
 var stackPool = sync.Pool{
 	New: func() interface{} {
-		return &Stack{Data: make([]uint256.Int, 0, 256)} // up to 128 to fit in 4KiB page
+		return &Stack{Data: make([]uint256.Int, 0, 1024)} // up to 128 will fit in a 4KiB page, 1024 is max by spec
 	},
 }
 
@@ -46,11 +46,11 @@ func (st *Stack) Push(d *uint256.Int) {
 }
 func (st *Stack) PushEmpty() *uint256.Int {
 	l := len(st.Data)
-	if cap(st.Data) > l {
-		st.Data = st.Data[:l+1]
-	} else {
-		st.Data = append(st.Data, uint256.Int{})
-	}
+	// if cap(st.Data) > l { // no check needed if default cap is 1024
+	st.Data = st.Data[:l+1]
+	// } else {
+	// 	st.Data = append(st.Data, uint256.Int{})
+	// }
 	return st.Peek()
 }
 
@@ -59,8 +59,10 @@ func (st *Stack) PushN(ds ...uint256.Int) {
 	st.Data = append(st.Data, ds...)
 }
 func (st *Stack) PushEmptyN(n int) []uint256.Int {
-	st.Data = append(st.Data, make([]uint256.Int, n)...) // https://github.com/golang/go/wiki/SliceTricks#extend
-	return st.Data[len(st.Data)-n:]
+	// st.Data = append(st.Data, make([]uint256.Int, n)...) // https://github.com/golang/go/wiki/SliceTricks#extend
+	l :=  len(st.Data)
+	st.Data = st.Data[ :l+n]
+	return    st.Data[l:]
 }
 
 func (st *Stack) Pop() (ret uint256.Int) {
