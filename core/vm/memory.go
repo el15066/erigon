@@ -18,6 +18,7 @@ package vm
 
 import (
 	"fmt"
+	"encoding/binary"
 
 	"github.com/holiman/uint256"
 )
@@ -52,8 +53,13 @@ func (m *Memory) Set(offset, size uint64, value []byte) {
 func (m *Memory) Set32(offset uint64, val *uint256.Int) {
 	// length of store may never be less than offset + size.
 	// The store should be resized PRIOR to setting the memory
-	t := val.Bytes32()
-	copy(m.store[offset:], t[:])
+	// t := val.Bytes32()
+	// copy(m.store[offset:], t[:])
+	_ = m.store[offset+31]
+	binary.BigEndian.PutUint64(m.store[offset +  0 : offset +  8], val[3])
+	binary.BigEndian.PutUint64(m.store[offset +  8 : offset + 16], val[2])
+	binary.BigEndian.PutUint64(m.store[offset + 16 : offset + 24], val[1])
+	binary.BigEndian.PutUint64(m.store[offset + 24 : offset + 32], val[0])
 }
 
 // Resize resizes the memory to size
