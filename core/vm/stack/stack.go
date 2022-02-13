@@ -89,7 +89,8 @@ func (st *Stack) Swap(n int) {
 func (st *Stack) Dup(n int) {
 	// st.Push(&st.Data[st.Len()-n])
 	// st.Data = append(st.Data, st.Data[len(st.Data)-n])
-	st.PushEmpty().Set(&st.Data[len(st.Data)-n-1]) // TODO: check perf
+	l := len(st.Data)
+	st.PushEmpty().Set(&st.Data[l-n])
 }
 
 func (st *Stack) Peek() *uint256.Int {
