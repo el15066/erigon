@@ -45,7 +45,12 @@ func (st *Stack) Push(d *uint256.Int) {
 	st.Data = append(st.Data, *d)
 }
 func (st *Stack) PushEmpty() *uint256.Int {
-	st.Data = append(st.Data, uint256.Int{})
+	l := len(st.Data)
+	if cap(st.Data) > l {
+		st.Data = st.Data[:l+1]
+	} else {
+		st.Data = append(st.Data, uint256.Int{})
+	}
 	return st.Peek()
 }
 
