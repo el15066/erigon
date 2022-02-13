@@ -70,6 +70,12 @@ func (st *Stack) Pop() (ret uint256.Int) {
 	st.Data = st.Data[:len(st.Data)-1]
 	return
 }
+func (st *Stack) PopPtr() (ret *uint256.Int) {
+	// Only works if the the stack won't shrink and the pointer isn't kept
+	ret = &st.Data[len(st.Data)-1]
+	st.Data = st.Data[:len(st.Data)-1]
+	return
+}
 func (st *Stack) PopDiscard() {
 	st.Data = st.Data[:len(st.Data)-1]
 }
@@ -79,7 +85,7 @@ func (st *Stack) Cap() int {
 }
 
 func (st *Stack) Swap(n int) {
-	t := uint256.Int{}
+	var t uint256.Int
 	l := len(st.Data)
 	t.Set(&st.Data[l-1])
 	st.Data[l-1].Set(&st.Data[l-n])
