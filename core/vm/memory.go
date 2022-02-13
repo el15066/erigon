@@ -55,7 +55,7 @@ func (m *Memory) Set32(offset uint64, val *uint256.Int) {
 	// The store should be resized PRIOR to setting the memory
 	// t := val.Bytes32()
 	// copy(m.store[offset:], t[:])
-	_ = m.store[offset+31]
+	// _ = m.store[offset+31]
 	binary.BigEndian.PutUint64(m.store[offset +  0 : offset +  8], val[3])
 	binary.BigEndian.PutUint64(m.store[offset +  8 : offset + 16], val[2])
 	binary.BigEndian.PutUint64(m.store[offset + 16 : offset + 24], val[1])
