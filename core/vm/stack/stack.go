@@ -78,10 +78,9 @@ func (st *Stack) Cap() int {
 	return cap(st.Data)
 }
 
-var tempU256 uint256.Int
-
 func (st *Stack) Swap(n int) {
 	// st.Data[st.Len()-n], st.Data[st.Len()-1] = st.Data[st.Len()-1], st.Data[st.Len()-n]
+	var tempU256 uint256.Int
 	l := len(st.Data)
 	tempU256.Set(&st.Data[l-1])
 	st.Data[l-1].Set(&st.Data[l-n])
