@@ -74,8 +74,8 @@ func (st *Stack) Cap() int {
 func (st *Stack) Swap(n int) {
 	// st.Data[st.Len()-n], st.Data[st.Len()-1] = st.Data[st.Len()-1], st.Data[st.Len()-n]
 	l := len(st.Data)
-	t := st.PushEmpty()
-	t.Set(&st.Data[l-1])
+	st.Push(&st.Data[l-1])
+	t := st.Peek()
 	st.Data[l-1].Set(&st.Data[l-n])
 	st.Data[l-n].Set(t)
 	st.PopDiscard()
