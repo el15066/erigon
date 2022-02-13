@@ -63,13 +63,22 @@ func (st *Stack) Pop() (ret uint256.Int) {
 	st.Data = st.Data[:len(st.Data)-1]
 	return
 }
+func (st *Stack) PopDiscard() {
+	st.Data = st.Data[:len(st.Data)-1]
+}
 
 func (st *Stack) Cap() int {
 	return cap(st.Data)
 }
 
 func (st *Stack) Swap(n int) {
-	st.Data[st.Len()-n], st.Data[st.Len()-1] = st.Data[st.Len()-1], st.Data[st.Len()-n]
+	// st.Data[st.Len()-n], st.Data[st.Len()-1] = st.Data[st.Len()-1], st.Data[st.Len()-n]
+	l := len(st.Data)
+	t := st.PushEmpty()
+	t.Set(&st.Data[l-1])
+	st.Data[l-1].Set(&st.Data[l-n])
+	st.Data[l-n].Set(t)
+	st.PopDiscard()
 }
 
 func (st *Stack) Dup(n int) {
