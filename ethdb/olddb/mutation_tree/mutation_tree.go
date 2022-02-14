@@ -29,7 +29,7 @@ type MutationItem struct {
 	Value []byte
 }
 
-func (mi *MutationItem) Less(i *MutationItem) bool {
+func (mi MutationItem) Less(i MutationItem) bool {
 	// Len will alsways be at least common.AddressLength (160b)
 	// so can we speed things up by comparing by 64-bit parts ?
 	// fun fact: works even with little endian if we don't plan on iterating
@@ -118,7 +118,7 @@ const (
 	MAX_ITEMS = DEGREE * 2 - 1
 )
 
-// var nilItems    = [DEGREE]*MutationItem{}
+// var nilItems    = [DEGREE]MutationItem{}
 // var nilChildren = [DEGREE]*node{}
 
 type FreeList struct {
@@ -135,7 +135,7 @@ func New() *BTree {
 type node struct {
 	items_len    int
 	children_len int
-	items        [MAX_ITEMS  ]*MutationItem
+	items        [MAX_ITEMS  ]MutationItem
 	children     [MAX_ITEMS+1]*node
 }
 
@@ -143,7 +143,7 @@ func newNode() (n *node) {
 	return new(node)
 }
 
-func (n *node) insertItemAt(i int, item *MutationItem) {
+func (n *node) insertItemAt(i int, item MutationItem) {
 	if i <= n.items_len {
 		copy(n.items[i+1:], n.items[i:])
 	}
@@ -154,10 +154,10 @@ func (n *node) insertItemAt(i int, item *MutationItem) {
 func (n *node) truncateItems() {
 	const i     = MAX_ITEMS / 2
 	n.items_len = i
-	for j := i; j < len(n.items); j += 1 { n.items[j] = nil }
+	for j := i; j < len(n.items); j += 1 { n.items[j].Key = nil; n.items[j].Value = nil }
 }
 
-func (n *node) findItem(item *MutationItem) (int, bool) {
+func (n *node) findItem(item MutationItem) (int, bool) {
 	i, j := 0, n.items_len
 	for i < j {
 		h := (i + j) >> 1
@@ -188,7 +188,7 @@ func (n *node) truncateChildren() {
 	for j := i; j < len(n.children); j += 1 { n.children[j] = nil }
 }
 
-func (n *node) split() (*MutationItem, *node) {
+func (n *node) split() (MutationItem, *node) {
 	const i = MAX_ITEMS / 2
 	item := n.items[i]
 	next := newNode()
@@ -216,7 +216,7 @@ func (n *node) maybeSplitChild(i int) bool {
 	return true
 }
 
-func (n *node) insert(item *MutationItem) *MutationItem {
+func (n *node) insert(item MutationItem) MutationItem {
 	i, found := n.findItem(item)
 	if found {
 		out := n.items[i]
@@ -225,7 +225,7 @@ func (n *node) insert(item *MutationItem) *MutationItem {
 	}
 	if n.children_len == 0 {
 		n.insertItemAt(i, item)
-		return nil
+		return MutationItem{}
 	}
 	if n.maybeSplitChild(i) {
 		inTree := n.items[i]
@@ -243,26 +243,26 @@ func (n *node) insert(item *MutationItem) *MutationItem {
 	return n.children[i].insert(item)
 }
 
-func (n *node) get(key *MutationItem) *MutationItem {
+func (n *node) get(key MutationItem) MutationItem {
 	i, found := n.findItem(key)
 	if found {
 		return n.items[i]
 	} else if n.children_len > 0 {
 		return n.children[i].get(key)
 	}
-	return nil
+	return MutationItem{}
 }
 
 type BTree struct {
 	root *node
 }
 
-func (t *BTree) ReplaceOrInsert(item *MutationItem) *MutationItem {
+func (t *BTree) ReplaceOrInsert(item MutationItem) MutationItem {
 	if t.root == nil {
 		t.root           = newNode()
 		t.root.items_len = 1
 		t.root.items[0]  = item
-		return nil
+		return MutationItem{}
 	} else {
 		if t.root.items_len >= MAX_ITEMS {
 			item2, second       := t.root.split()
@@ -278,15 +278,15 @@ func (t *BTree) ReplaceOrInsert(item *MutationItem) *MutationItem {
 	return t.root.insert(item)
 }
 
-func (t *BTree) Get(key *MutationItem) *MutationItem {
+func (t *BTree) Get(key MutationItem) MutationItem {
 	if t.root == nil {
-		return nil
+		return MutationItem{}
 	}
 	return t.root.get(key)
 }
 
-func (t *BTree) Has(key *MutationItem) bool {
-	return t.Get(key) != nil
+func (t *BTree) Has(key MutationItem) bool {
+	return t.Get(key).Key != nil
 }
 
 func (t *BTree) Clear() {

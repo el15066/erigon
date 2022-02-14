@@ -88,8 +88,8 @@ func (m *Mutation) getMem(table string, key []byte) ([]byte, bool) {
 	// bench.TiCk(501)
 	defer m.mu.RUnlock()
 	t := mtree.MutationItem{ key, nil }
-	i := m.trees[tableNameToID(table)].Get(&t)
-	if i == nil {
+	i := m.trees[tableNameToID(table)].Get(t)
+	if i.Key == nil {
 		return nil, false
 	}
 	return i.Value, true
@@ -185,7 +185,7 @@ func (m *Mutation) hasMem(table string, key []byte) bool {
 	// bench.TiCk(503)
 	defer m.mu.RUnlock()
 	t := mtree.MutationItem{ key, nil }
-	return m.trees[tableNameToID(table)].Has(&t)
+	return m.trees[tableNameToID(table)].Has(t)
 }
 
 func (m *Mutation) Has(table string, key []byte) (bool, error) {
@@ -205,10 +205,10 @@ func (m *Mutation) Put(table string, key []byte, value []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	newMi := &mtree.MutationItem{ key, value }
+	newMi := mtree.MutationItem{ key, value }
 	i := m.trees[tableNameToID(table)].ReplaceOrInsert(newMi)
 	m.size += int(unsafe.Sizeof(newMi)) + len(key) + len(value)
-	if i != nil {
+	if i.Key != nil {
 		m.size -= (int(unsafe.Sizeof(i)) + len(i.Key) + len(i.Value))
 	}
 	return nil
