@@ -20,6 +20,7 @@ package mutation_tree
 import (
 	"sort"
 	"bytes"
+	"encoding/binary"
 )
 
 type MutationItem struct {
@@ -28,7 +29,16 @@ type MutationItem struct {
 }
 
 func (mi *MutationItem) Less(i *MutationItem) bool {
-	return bytes.Compare(mi.Key, i.Key) < 0
+	// Len will alsways be at least common.AddressLength (160b)
+	// so can we speed things up by comparing by 64-bit parts ?
+	var a, b uint64
+	a = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
+	b = binary.LittleEndian.Uint64( i.Key[ 0: 8])
+	if a != b { return a < b }
+	a = binary.LittleEndian.Uint64(mi.Key[ 8:16])
+	b = binary.LittleEndian.Uint64( i.Key[ 8:16])
+	if a != b { return a < b }
+	return bytes.Compare(mi.Key[16:], i.Key[16:]) < 0
 }
 
 const (
