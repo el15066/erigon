@@ -66,6 +66,19 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 		d := binary.LittleEndian.Uint32( i.Key[56:60])
 		return c < d // Impossible for la != lb
 	//
+	case la == 20: // Will be 20 (addr)
+		if lb != 20 { return true } // The other is storage address, see above
+		//
+		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
+		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
+		b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
+		if a != b { return a < b }
+		c := binary.LittleEndian.Uint32(mi.Key[16:20])
+		d := binary.LittleEndian.Uint32( i.Key[16:20])
+		return c < d
+	//
 	case la == 32: // Will be 32 (code hash)
 		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
 		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
@@ -93,19 +106,6 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 		c := binary.LittleEndian.Uint32(mi.Key[24:28])
 		d := binary.LittleEndian.Uint32( i.Key[24:28])
 		return c < d // Impossible for la != lb
-	//
-	case la == 20: // Will be 20 (addr)
-		if lb != 20 { return true } // The other is storage address, see above
-		//
-		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
-		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
-		if a != b { return a < b }
-		a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
-		b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
-		if a != b { return a < b }
-		c := binary.LittleEndian.Uint32(mi.Key[16:20])
-		d := binary.LittleEndian.Uint32( i.Key[16:20])
-		return c < d
 	//
 	default:
 		panic(fmt.Sprintf("Unexpected key len combination %d %d", la, lb))
