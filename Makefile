@@ -2,6 +2,7 @@ GO = go
 GOBIN = $(CURDIR)/build/bin
 GOTEST = GODEBUG=cgocheck=0 $(GO) test ./... -p 2
 
+
 GIT_COMMIT ?= $(shell git rev-list -1 HEAD)
 GIT_BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 GIT_TAG    ?= $(shell git describe --tags)
