@@ -32,7 +32,7 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 }
 
 const (
-	DEGREE    = 128
+	DEGREE    = 64
 	MAX_ITEMS = DEGREE * 2 - 1
 )
 
