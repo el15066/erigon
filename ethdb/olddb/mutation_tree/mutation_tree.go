@@ -38,8 +38,8 @@ const (
 )
 
 var (
-	nilItems    = make(items,    DEGREE)
-	nilChildren = make(children, DEGREE)
+	nilItems    = make([]*MutationItem, DEGREE)
+	nilChildren = make([]*node,         DEGREE)
 )
 
 type FreeList struct {
@@ -54,56 +54,52 @@ func New() *BTree {
 	return &BTree{}
 }
 
-type items []*MutationItem
-
-func (s *items) insertItemAt(index int, item *MutationItem) {
-	*s = append(*s, nil)
-	if index < len(*s) {
-		copy((*s)[index+1:], (*s)[index:])
-	}
-	(*s)[index] = item
+// `node` must at all times maintain the invariant that either
+//   * len(children) == 0, len(items) unconstrained
+//   * len(children) == len(items) + 1
+type node struct {
+	items    []*MutationItem
+	children []*node
 }
 
-func (s *items) truncateItems() {
-	index   := MAX_ITEMS / 2
-	toClear := (*s)[index:]
-	*s       = (*s)[:index]
+func (n *node) insertItemAt(i int, item *MutationItem) {
+	n.items = append(n.items, nil)
+	if i < len(n.items) {
+		copy(n.items[i+1:], n.items[i:])
+	}
+	n.items[i] = item
+}
+
+func (n *node) truncateItems() {
+	i       := MAX_ITEMS / 2
+	toClear := n.items[i:]
+	n.items  = n.items[:i]
 	copy(toClear, nilItems)
 }
 
-func (s *items) findItem(item *MutationItem) (int, bool) {
-	i := sort.Search(len((*s)), func(i int) bool {
-		return item.Less((*s)[i])
+func (n *node) findItem(item *MutationItem) (int, bool) {
+	i := sort.Search(len(n.items), func(j int) bool {
+		return item.Less(n.items[j])
 	})
-	if i > 0 && !(*s)[i-1].Less(item) {
+	if i > 0 && !n.items[i-1].Less(item) {
 		return i - 1, true
 	}
 	return i, false
 }
 
-type children []*node
-
-func (s *children) insertChildAt(index int, n *node) {
-	*s = append(*s, nil)
-	if index < len(*s) {
-		copy((*s)[index+1:], (*s)[index:])
+func (n *node) insertChildAt(i int, child *node) {
+	n.children = append(n.children, nil)
+	if i < len(n.children) {
+		copy(n.children[i+1:], n.children[i:])
 	}
-	(*s)[index] = n
+	n.children[i] = child
 }
 
-func (s *children) truncateChildren() {
-	index   := MAX_ITEMS / 2 + 1
-	toClear := (*s)[index:]
-	*s       = (*s)[:index]
+func (n *node) truncateChildren() {
+	i          := MAX_ITEMS / 2 + 1
+	toClear    := n.children[i:]
+	n.children  = n.children[:i]
 	copy(toClear, nilChildren)
-}
-
-// `node` must at all times maintain the invariant that either
-//   * len(children) == 0, len(items) unconstrained
-//   * len(children) == len(items) + 1
-type node struct {
-	items    items
-	children children
 }
 
 func (n *node) split() (*MutationItem, *node) {
@@ -111,10 +107,10 @@ func (n *node) split() (*MutationItem, *node) {
 	item := n.items[i]
 	next := newNode()
 	next.items = append(next.items, n.items[i+1:]...)
-	n.items.truncateItems()
+	n.truncateItems()
 	if len(n.children) > 0 {
 		next.children = append(next.children, n.children[i+1:]...)
-		n.children.truncateChildren()
+		n.truncateChildren()
 	}
 	return item, next
 }
@@ -125,20 +121,20 @@ func (n *node) maybeSplitChild(i int) bool {
 	}
 	first := n.children[i]
 	item, second := first.split()
-	n.items.insertItemAt(i, item)
-	n.children.insertChildAt(i+1, second)
+	n.insertItemAt(i, item)
+	n.insertChildAt(i+1, second)
 	return true
 }
 
 func (n *node) insert(item *MutationItem) *MutationItem {
-	i, found := n.items.findItem(item)
+	i, found := n.findItem(item)
 	if found {
 		out := n.items[i]
 		n.items[i] = item
 		return out
 	}
 	if len(n.children) == 0 {
-		n.items.insertItemAt(i, item)
+		n.insertItemAt(i, item)
 		return nil
 	}
 	if n.maybeSplitChild(i) {
@@ -158,7 +154,7 @@ func (n *node) insert(item *MutationItem) *MutationItem {
 }
 
 func (n *node) get(key *MutationItem) *MutationItem {
-	i, found := n.items.findItem(key)
+	i, found := n.findItem(key)
 	if found {
 		return n.items[i]
 	} else if len(n.children) > 0 {
