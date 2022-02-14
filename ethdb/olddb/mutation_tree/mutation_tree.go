@@ -71,11 +71,11 @@ func (s *items) truncateItems() {
 	copy(toClear, nilItems)
 }
 
-func (s items) find(item *MutationItem) (int, bool) {
-	i := sort.Search(len(s), func(i int) bool {
-		return item.Less(s[i])
+func (s *items) findItem(item *MutationItem) (int, bool) {
+	i := sort.Search(len((*s)), func(i int) bool {
+		return item.Less((*s)[i])
 	})
-	if i > 0 && !s[i-1].Less(item) {
+	if i > 0 && !(*s)[i-1].Less(item) {
 		return i - 1, true
 	}
 	return i, false
@@ -131,7 +131,7 @@ func (n *node) maybeSplitChild(i int) bool {
 }
 
 func (n *node) insert(item *MutationItem) *MutationItem {
-	i, found := n.items.find(item)
+	i, found := n.items.findItem(item)
 	if found {
 		out := n.items[i]
 		n.items[i] = item
@@ -158,7 +158,7 @@ func (n *node) insert(item *MutationItem) *MutationItem {
 }
 
 func (n *node) get(key *MutationItem) *MutationItem {
-	i, found := n.items.find(key)
+	i, found := n.items.findItem(key)
 	if found {
 		return n.items[i]
 	} else if len(n.children) > 0 {
