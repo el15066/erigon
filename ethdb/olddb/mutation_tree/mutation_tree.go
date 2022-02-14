@@ -37,10 +37,10 @@ const (
 	MAX_ITEMS     = DEGREE * 2 - 1
 )
 
-var (
-	nilItems    = make([]*MutationItem, DEGREE)
-	nilChildren = make([]*node,         DEGREE)
-)
+// var (
+// 	nilItems    = make([]*MutationItem, DEGREE)
+// 	nilChildren = make([]*node,         DEGREE)
+// )
 
 type FreeList struct {
 	freelist []*node
@@ -78,9 +78,9 @@ func (n *node) insertItemAt(i int, item *MutationItem) {
 
 func (n *node) truncateItems() {
 	i       := MAX_ITEMS / 2
-	toClear := n.items[i:]
+	// toClear := n.items[i:]
 	n.items  = n.items[:i]
-	copy(toClear, nilItems)
+	// copy(toClear, nilItems)
 }
 
 func (n *node) findItem(item *MutationItem) (int, bool) {
@@ -104,9 +104,9 @@ func (n *node) insertChildAt(i int, child *node) {
 
 func (n *node) truncateChildren() {
 	i          := MAX_ITEMS / 2 + 1
-	toClear    := n.children[i:]
+	// toClear    := n.children[i:]
 	n.children  = n.children[:i]
-	copy(toClear, nilChildren)
+	// copy(toClear, nilChildren)
 }
 
 func (n *node) split() (*MutationItem, *node) {
