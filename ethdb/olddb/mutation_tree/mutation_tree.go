@@ -114,7 +114,7 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 }
 
 const (
-	DEGREE    = 128
+	DEGREE    = 64
 	MAX_ITEMS = DEGREE * 2 - 1
 )
 
@@ -161,7 +161,7 @@ func (n *node) findItem(item *MutationItem) (int, bool) {
 	i, j := 0, n.items_len
 	for i < j {
 		h := (i + j) >> 1
-		// i ≤ h < j
+		// i <= h < j
 		if !item.Less(n.items[h]) {
 			i = h + 1 // preserves item >= items[i-1]
 		} else {
