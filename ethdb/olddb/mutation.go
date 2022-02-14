@@ -1,7 +1,6 @@
 package olddb
 
 import (
-	"bytes"
 	"context"
 	"encoding/binary"
 	// "fmt"
@@ -10,7 +9,8 @@ import (
 	// "time"
 	"unsafe"
 
-	"github.com/google/btree"
+	// "github.com/google/btree"
+	mtree "github.com/ledgerwatch/erigon/ethdb/olddb/mutation_tree"
 	"github.com/ledgerwatch/erigon-lib/kv"
 	"github.com/ledgerwatch/erigon/common"
 	"github.com/ledgerwatch/erigon/ethdb"
@@ -34,18 +34,13 @@ func tableIDToName(i int) string {
 }
 
 type Mutation struct {
-	trees      []*btree.BTree
+	trees      []*mtree.BTree
 	db         kv.RwTx
 	quit       <-chan struct{}
 	clean      func()
 	// mu         sync.RWMutex
 	mu         common.RWSpinlock
 	size       int
-}
-
-type MutationItem struct {
-	key   []byte
-	value []byte
 }
 
 // NewBatch - starts in-mem batch
@@ -75,19 +70,9 @@ func NewBatch(tx kv.RwTx, quit <-chan struct{}) *Mutation {
 		clean: clean,
 	}
 	for range kv.ChaindataTables {
-		m.trees = append(m.trees, btree.New(32))
+		m.trees = append(m.trees, mtree.New())
 	}
 	return m
-}
-
-func (mi *MutationItem) Less(than btree.Item) bool {
-	i := than.(*MutationItem)
-	// c := mi.table - i.table
-	// if c != 0 {
-	// 	return c < 0
-	// }
-	return bytes.Compare(mi.key, i.key) < 0
-	// return string(mi.key) < string(i.key) // TODO
 }
 
 func (m *Mutation) RwKV() kv.RwDB {
@@ -102,12 +87,12 @@ func (m *Mutation) getMem(table string, key []byte) ([]byte, bool) {
 	m.mu.RLock()
 	// bench.TiCk(501)
 	defer m.mu.RUnlock()
-	t := MutationItem{ key, nil }
+	t := mtree.MutationItem{ key, nil }
 	i := m.trees[tableNameToID(table)].Get(&t)
 	if i == nil {
 		return nil, false
 	}
-	return i.(*MutationItem).value, true
+	return i.Value, true
 }
 
 func (m *Mutation) IncrementSequence(bucket string, amount uint64) (res uint64, err error) {
@@ -199,7 +184,7 @@ func (m *Mutation) hasMem(table string, key []byte) bool {
 	m.mu.RLock()
 	// bench.TiCk(503)
 	defer m.mu.RUnlock()
-	t := MutationItem{ key, nil }
+	t := mtree.MutationItem{ key, nil }
 	return m.trees[tableNameToID(table)].Has(&t)
 }
 
@@ -220,12 +205,11 @@ func (m *Mutation) Put(table string, key []byte, value []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	newMi := &MutationItem{ key: key, value: value }
+	newMi := &mtree.MutationItem{ key, value }
 	i := m.trees[tableNameToID(table)].ReplaceOrInsert(newMi)
 	m.size += int(unsafe.Sizeof(newMi)) + len(key) + len(value)
 	if i != nil {
-		oldMi := i.(*MutationItem)
-		m.size -= (int(unsafe.Sizeof(oldMi)) + len(oldMi.key) + len(oldMi.value))
+		m.size -= (int(unsafe.Sizeof(i)) + len(i.Key) + len(i.Value))
 	}
 	return nil
 }
@@ -360,7 +344,7 @@ func (m *Mutation) Rollback() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	for _, t := range m.trees {
-		t.Clear(false /* addNodesToFreelist */)
+		t.Clear()
 	}
 	m.size = 0
 	m.clean()
