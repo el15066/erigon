@@ -46,10 +46,6 @@ type FreeList struct {
 	freelist []*node
 }
 
-func newNode() (n *node) {
-	return new(node)
-}
-
 func New() *BTree {
 	return &BTree{}
 }
@@ -58,13 +54,23 @@ func New() *BTree {
 //   * len(children) == 0, len(items) unconstrained
 //   * len(children) == len(items) + 1
 type node struct {
+	// n_items    int
+	// n_children int
 	items    []*MutationItem
 	children []*node
 }
 
+func newNode() (n *node) {
+	return &node{
+		items:    make([]*MutationItem, 0, MAX_ITEMS),
+		children: make([]*node,         0, MAX_ITEMS + 1),
+	}
+}
+
 func (n *node) insertItemAt(i int, item *MutationItem) {
-	n.items = append(n.items, nil)
-	if i < len(n.items) {
+	l := len(n.items)
+	n.items = n.items[:l+1]
+	if i <= l {
 		copy(n.items[i+1:], n.items[i:])
 	}
 	n.items[i] = item
@@ -88,8 +94,9 @@ func (n *node) findItem(item *MutationItem) (int, bool) {
 }
 
 func (n *node) insertChildAt(i int, child *node) {
-	n.children = append(n.children, nil)
-	if i < len(n.children) {
+	l := len(n.children)
+	n.children = n.children[:l+1]
+	if i <= l {
 		copy(n.children[i+1:], n.children[i:])
 	}
 	n.children[i] = child
