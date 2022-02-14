@@ -33,15 +33,14 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 	// Len will alsways be at least common.AddressLength (160b)
 	// so can we speed things up by comparing by 64-bit parts ?
 	// fun fact: works even with little endian if we don't plan on iterating
+	// Accounts and storage are in the same table/bucket/tree so we have to separate key lengths :(
 	la, lb := len(mi.Key), len(i.Key)
-	l      := la
-	if lb < l {
-		l = lb
-	}
 	var a, b uint64
 	switch {
 	//
-	case l == 60: // Will be 20+8+32 (addr+inc+storage)
+	case la == 60: // Will be 20+8+32 (addr+inc+storage)
+		if lb != 60 { return false } // The other is plain account (separating by len first, won't impact writes as it's just 1 account vs 0 or N>1+++ storage locs)
+		//
 		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
 		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
 		if a != b { return a < b }
@@ -67,7 +66,7 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 		d := binary.LittleEndian.Uint32( i.Key[56:60])
 		return c < d // Impossible for la != lb
 	//
-	case l == 32: // Will be 32 (code hash)
+	case la == 32: // Will be 32 (code hash)
 		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
 		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
 		if a != b { return a < b }
@@ -81,7 +80,7 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 		b  = binary.LittleEndian.Uint64( i.Key[24:32])
 		return a < b // Impossible for la != lb
 	//
-	case l == 28: // Will be 20+8 (addr+inc)
+	case la == 28: // Will be 20+8 (addr+inc)
 		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
 		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
 		if a != b { return a < b }
@@ -95,7 +94,9 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 		d := binary.LittleEndian.Uint32( i.Key[24:28])
 		return c < d // Impossible for la != lb
 	//
-	case l == 20: // Will be 20 (addr)
+	case la == 20: // Will be 20 (addr)
+		if lb != 20 { return true } // The other is storage address, see above
+		//
 		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
 		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
 		if a != b { return a < b }
@@ -104,8 +105,7 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 		if a != b { return a < b }
 		c := binary.LittleEndian.Uint32(mi.Key[16:20])
 		d := binary.LittleEndian.Uint32( i.Key[16:20])
-		if c != d { return c < d }
-		return la < lb // Accounts and storage are in the same table/bucket/tree :(
+		return c < d
 	//
 	default:
 		panic(fmt.Sprintf("Unexpected key len combination %d %d", la, lb))
