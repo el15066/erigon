@@ -32,9 +32,8 @@ func (mi *MutationItem) Less(i *MutationItem) bool {
 }
 
 const (
-	FREELIST_SIZE = 32
-	DEGREE        = 32
-	MAX_ITEMS     = DEGREE * 2 - 1
+	DEGREE    = 8 // MUST be even
+	MAX_ITEMS = DEGREE * 2 - 1
 )
 
 // var nilItems    = [DEGREE]*MutationItem{}
