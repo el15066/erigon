@@ -87,10 +87,7 @@ type FreeList struct {
 }
 
 func newNode() (n *node) {
-	return &node{
-		items:    make(items,    0, MAX_ITEMS),
-		children: make(children, 0, MAX_ITEMS + 1),
-	}
+	return new(node)
 }
 
 // New creates a new B-Tree with the given degree.
