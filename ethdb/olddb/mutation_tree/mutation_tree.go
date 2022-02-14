@@ -30,93 +30,87 @@ type MutationItem struct {
 }
 
 func (mi *MutationItem) Less(i *MutationItem) bool {
-	return mi.PickLessFunc()(i)
-}
-
-func (mi *MutationItem) PickLessFunc() (func(*MutationItem) bool) {
 	// Len will alsways be at least common.AddressLength (160b)
-	// so can we speed things up by comparing by 64-bit parts
+	// so can we speed things up by comparing by 64-bit parts ?
 	// fun fact: works even with little endian if we don't plan on iterating
 	// Accounts and storage are in the same table/bucket/tree so we have to separate key lengths :(
-	l := len(mi.Key)
+	la, lb := len(mi.Key), len(i.Key)
+	var a, b uint64
 	switch {
-	case l == 60: return mi.Less60 // Will be 20+8+32 (addr+inc+storage)
-	case l == 20: return mi.Less20 // Will be 20 (addr)
-	case l == 32: return mi.Less32 // Will be 32 (code hash)
-	case l == 28: return mi.Less28 // Will be 20+8 (addr+inc)
+	//
+	case la == 60: // Will be 20+8+32 (addr+inc+storage)
+		if lb != 60 { return false } // The other is plain account (separating by len first, won't impact writes as it's just 1 account vs 0 or N>1+++ storage locs)
+		//
+		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
+		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
+		b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[16:24])
+		b  = binary.LittleEndian.Uint64( i.Key[16:24])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[24:32])
+		b  = binary.LittleEndian.Uint64( i.Key[24:32])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[32:40])
+		b  = binary.LittleEndian.Uint64( i.Key[32:40])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[40:48])
+		b  = binary.LittleEndian.Uint64( i.Key[40:48])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[48:56])
+		b  = binary.LittleEndian.Uint64( i.Key[48:56])
+		if a != b { return a < b }
+		c := binary.LittleEndian.Uint32(mi.Key[56:60])
+		d := binary.LittleEndian.Uint32( i.Key[56:60])
+		return c < d // Impossible for la != lb
+	//
+	case la == 20: // Will be 20 (addr)
+		if lb != 20 { return true } // The other is storage address, see above
+		//
+		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
+		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
+		b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
+		if a != b { return a < b }
+		c := binary.LittleEndian.Uint32(mi.Key[16:20])
+		d := binary.LittleEndian.Uint32( i.Key[16:20])
+		return c < d
+	//
+	case la == 32: // Will be 32 (code hash)
+		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
+		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
+		b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[16:24])
+		b  = binary.LittleEndian.Uint64( i.Key[16:24])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[24:32])
+		b  = binary.LittleEndian.Uint64( i.Key[24:32])
+		return a < b // Impossible for la != lb
+	//
+	case la == 28: // Will be 20+8 (addr+inc)
+		a  = binary.LittleEndian.Uint64(mi.Key[ 0: 8])
+		b  = binary.LittleEndian.Uint64( i.Key[ 0: 8])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
+		b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
+		if a != b { return a < b }
+		a  = binary.LittleEndian.Uint64(mi.Key[16:24])
+		b  = binary.LittleEndian.Uint64( i.Key[16:24])
+		if a != b { return a < b }
+		c := binary.LittleEndian.Uint32(mi.Key[24:28])
+		d := binary.LittleEndian.Uint32( i.Key[24:28])
+		return c < d // Impossible for la != lb
+	//
 	default:
-		panic(fmt.Sprintf("Unexpected key len %d", l))
+		panic(fmt.Sprintf("Unexpected key len combination %d %d", la, lb))
+		// return bytes.Compare(mi.Key,      i.Key)      < 0
 	}
-}
-
-func (mi *MutationItem) Less20(i *MutationItem) bool {
-	if len(i.Key) != 20 { return  true } // The other is storage address, see below
-	//
-	a := binary.LittleEndian.Uint64(mi.Key[ 0: 8])
-	b := binary.LittleEndian.Uint64( i.Key[ 0: 8])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
-	b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
-	if a != b { return a < b }
-	c := binary.LittleEndian.Uint32(mi.Key[16:20])
-	d := binary.LittleEndian.Uint32( i.Key[16:20])
-	return c < d
-}
-func (mi *MutationItem) Less28(i *MutationItem) bool {
-	a := binary.LittleEndian.Uint64(mi.Key[ 0: 8])
-	b := binary.LittleEndian.Uint64( i.Key[ 0: 8])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
-	b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[16:24])
-	b  = binary.LittleEndian.Uint64( i.Key[16:24])
-	if a != b { return a < b }
-	c := binary.LittleEndian.Uint32(mi.Key[24:28])
-	d := binary.LittleEndian.Uint32( i.Key[24:28])
-	return c < d
-}
-func (mi *MutationItem) Less32(i *MutationItem) bool {
-	a := binary.LittleEndian.Uint64(mi.Key[ 0: 8])
-	b := binary.LittleEndian.Uint64( i.Key[ 0: 8])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
-	b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[16:24])
-	b  = binary.LittleEndian.Uint64( i.Key[16:24])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[24:32])
-	b  = binary.LittleEndian.Uint64( i.Key[24:32])
-	return a < b
-}
-func (mi *MutationItem) Less60(i *MutationItem) bool {
-	if len(i.Key) != 60 { return false } // The other is plain account (separating by len first, won't impact writes as it's just 1 account vs 0 or N>1+++ storage locs)
-	//
-	a := binary.LittleEndian.Uint64(mi.Key[ 0: 8])
-	b := binary.LittleEndian.Uint64( i.Key[ 0: 8])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[ 8:16])
-	b  = binary.LittleEndian.Uint64( i.Key[ 8:16])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[16:24])
-	b  = binary.LittleEndian.Uint64( i.Key[16:24])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[24:32])
-	b  = binary.LittleEndian.Uint64( i.Key[24:32])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[32:40])
-	b  = binary.LittleEndian.Uint64( i.Key[32:40])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[40:48])
-	b  = binary.LittleEndian.Uint64( i.Key[40:48])
-	if a != b { return a < b }
-	a  = binary.LittleEndian.Uint64(mi.Key[48:56])
-	b  = binary.LittleEndian.Uint64( i.Key[48:56])
-	if a != b { return a < b }
-	c := binary.LittleEndian.Uint32(mi.Key[56:60])
-	d := binary.LittleEndian.Uint32( i.Key[56:60])
-	return c < d // Impossible for la != lb
 }
 
 const (
@@ -164,9 +158,8 @@ func (n *node) truncateItems() {
 }
 
 func (n *node) findItem(item *MutationItem) (int, bool) {
-	f := item.PickLessFunc()
 	i := sort.Search(n.items_len, func(j int) bool {
-		return f(n.items[j])
+		return item.Less(n.items[j])
 	})
 	if i > 0 && !n.items[i-1].Less(item) {
 		return i - 1, true
