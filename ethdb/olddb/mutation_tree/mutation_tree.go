@@ -86,15 +86,8 @@ type FreeList struct {
 	freelist []*node
 }
 
-func (f *FreeList) newNode() (n *node) {
-	index := len(f.freelist) - 1
-	if index < 0 {
-		return new(node)
-	}
-	n = f.freelist[index]
-	f.freelist[index] = nil
-	f.freelist = f.freelist[:index]
-	return
+func newNode() (n *node) {
+	return new(node)
 }
 
 // New creates a new B-Tree with the given degree.
@@ -102,9 +95,7 @@ func (f *FreeList) newNode() (n *node) {
 // New(2), for example, will create a 2-3-4 tree (each node contains 1-3 items
 // and 2-4 children).
 func New() *BTree {
-	return &BTree{
-		cow: copyOnWriteContext{freelist: &FreeList{freelist: make([]*node, 0, FREELIST_SIZE)}},
-	}
+	return &BTree{}
 }
 
 // items stores items in a node.
@@ -176,7 +167,6 @@ func (s *children) truncate() {
 type node struct {
 	items    items
 	children children
-	cow      copyOnWriteContext
 }
 
 // split splits the given node at the given index.  The current node shrinks,
@@ -185,7 +175,7 @@ type node struct {
 func (n *node) split() (*MutationItem, *node) {
 	i    := MAX_ITEMS / 2
 	item := n.items[i]
-	next := n.cow.newNode()
+	next := newNode()
 	next.items = append(next.items, n.items[i+1:]...)
 	n.items.truncate()
 	if len(n.children) > 0 {
@@ -258,31 +248,6 @@ func (n *node) get(key *MutationItem) *MutationItem {
 // goroutines, but Read operations are.
 type BTree struct {
 	root *node
-	cow  copyOnWriteContext
-}
-
-// copyOnWriteContext pointers determine node ownership... a tree with a write
-// context equivalent to a node's write context is allowed to modify that node.
-// A tree whose write context does not match a node's is not allowed to modify
-// it, and must create a new, writable copy (IE: it's a Clone).
-//
-// When doing any write operation, we maintain the invariant that the current
-// node's context is equal to the context of the tree that requested the write.
-// We do this by, before we descend into any node, creating a copy with the
-// correct context if the contexts don't match.
-//
-// Since the node we're currently visiting on any write has the requesting
-// tree's context, that node is modifiable in place.  Children of that node may
-// not share context, but before we descend into them, we'll make a mutable
-// copy.
-type copyOnWriteContext struct {
-	freelist *FreeList
-}
-
-func (c copyOnWriteContext) newNode() (n *node) {
-	n = c.freelist.newNode()
-	n.cow = c
-	return
 }
 
 // ReplaceOrInsert adds the given item to the tree.  If an item in the tree
@@ -295,15 +260,15 @@ func (t *BTree) ReplaceOrInsert(item *MutationItem) *MutationItem {
 		panic("nil item being added to BTree")
 	}
 	if t.root == nil {
-		t.root = t.cow.newNode()
+		t.root       = newNode()
 		t.root.items = append(t.root.items, item)
 		return nil
 	} else {
 		if len(t.root.items) >= MAX_ITEMS {
-			item2, second := t.root.split()
-			oldroot := t.root
-			t.root = t.cow.newNode()
-			t.root.items = append(t.root.items, item2)
+			item2, second  := t.root.split()
+			oldroot        := t.root
+			t.root          = newNode()
+			t.root.items    = append(t.root.items, item2)
 			t.root.children = append(t.root.children, oldroot, second)
 		}
 	}
