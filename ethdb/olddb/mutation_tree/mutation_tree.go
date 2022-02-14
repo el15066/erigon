@@ -19,7 +19,7 @@ package mutation_tree
 
 import (
 	"fmt"
-	"sort"
+	// "sort"
 	// "bytes"
 	"encoding/binary"
 )
@@ -158,9 +158,16 @@ func (n *node) truncateItems() {
 }
 
 func (n *node) findItem(item *MutationItem) (int, bool) {
-	i := sort.Search(n.items_len, func(j int) bool {
-		return item.Less(n.items[j])
-	})
+	i, j := 0, n.items_len
+	for i < j {
+		h := (i + j) >> 1
+		// i ≤ h < j
+		if !item.Less(n.items[h]) {
+			i = h + 1 // preserves item >= items[i-1]
+		} else {
+			j = h     // preserves item <  items[j]
+		}
+	}
 	if i > 0 && !n.items[i-1].Less(item) {
 		return i - 1, true
 	}
