@@ -94,7 +94,7 @@ var jumpTable = [256]func(state *State){
 	 84:    _op,
 	 85:    _op,
 	 86:    _op,
-	 87:    _op,
+	 87:    opCopy,
 	 88:    opNot,
 	 89:    opIszero,
 	 90:    _op,

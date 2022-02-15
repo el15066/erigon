@@ -94,7 +94,7 @@ var jumpTableNames = [256]string{
      84:    "INVALID",
      85:    "INVALID",
      86:    "INVALID",
-     87:    "INVALID",
+     87:    "COPY",
      88:    "NOT",
      89:    "ISZERO",
      90:    "INVALID",

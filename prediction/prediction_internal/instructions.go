@@ -208,6 +208,17 @@ func opSelfBalance(state *State) {
 	return
 }
 
+func opCopy(state *State) {
+	i      := state.i + 1
+	i, rd  := getArg(state.code, i)
+	i, r0  := getArg(state.code, i)
+	state.i = i
+	d      := &state.regs[rd]
+	v0     := &state.regs[r0]
+	d.Set(v0)
+	return
+}
+
 func uniOp(state *State, op func (*uint256.Int, *uint256.Int) *uint256.Int) {
 	i      := state.i + 1
 	i, rd  := getArg(state.code, i)
