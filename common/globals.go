@@ -13,9 +13,8 @@ const     JUMP_TRACING = false
 
 const PREFETCH_BLOCKS           = true
 const BLOCK_READAHEAD           = 1 + 1
-const PREFETCH_ACCOUNTS         = false
-const PREFETCH_CODE             = false
 const PREFETCH_ACCOUNTS         = true
+const PREFETCH_CODE             = true
 const USE_PREDICTORS            = true
 const USE_STORAGE_PREFETCH_FILE = false
 
