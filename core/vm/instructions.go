@@ -376,9 +376,7 @@ func opExtCodeSize(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx
 }
 
 func opCodeSize(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
-	l := new(uint256.Int)
-	l.SetUint64(uint64(len(callContext.contract.Code)))
-	callContext.stack.Push(l)
+	callContext.stack.PushEmpty().SetUint64(uint64(common.PaddedCodeLen(callContext.contract.Code)))
 	return nil, nil
 }
 
