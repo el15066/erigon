@@ -335,10 +335,12 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		switch {
 		case err != nil:
 			return res, err
-		case operation.reverts:
-			return res, ErrExecutionReverted
 		case operation.halts:
-			return res, nil
+			if operation.reverts {
+				return res, ErrExecutionReverted
+			} else {
+				return res, nil
+			}
 		}
 	}
 	return nil, nil

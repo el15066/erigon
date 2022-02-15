@@ -191,6 +191,7 @@ func newByzantiumInstructionSet() JumpTable {
 		numPop:     2,
 		numPush:    0,
 		memorySize: memoryRevert,
+		halts:      true,
 		reverts:    true,
 		returns:    true,
 	}
