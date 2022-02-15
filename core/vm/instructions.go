@@ -856,7 +856,7 @@ func opReturn(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]
 func opRevert(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
 	offset, size := callContext.stack.PopPtr(), callContext.stack.PopPtr()
 	ret := callContext.memory.GetPtr(offset.Uint64(), size.Uint64())
-	interpreter.returnData = ret
+	// interpreter.returnData = ret
 	return ret, nil
 }
 
