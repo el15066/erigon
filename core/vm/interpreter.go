@@ -324,6 +324,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		// execute the operation
 		// bench.Tick(55)
 		res, err = operation.execute(&pc, in, callContext)
+		pc      += 1
 		// bench.TiCk(56)
 		// if the operation clears the return data (e.g. it has returning data)
 		// set the last return to the result of the operation.
@@ -338,8 +339,6 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			return res, ErrExecutionReverted
 		case operation.halts:
 			return res, nil
-		case !operation.jumps:
-			pc++
 		}
 	}
 	return nil, nil
