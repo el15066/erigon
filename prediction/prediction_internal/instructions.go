@@ -254,8 +254,9 @@ func opBalance(state *State) {
 	d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := common.Address(v0.Bytes20())
-	d.Set(state.ctx.ibs.GetBalance(a))
-	// d.Set(&UNKNOWN_U256) // TEMP
+	// d.Set(state.ctx.ibs.GetBalance(a))
+	state.ctx.ibs.Exist(a) // prefetch
+	d.Set(&UNKNOWN_U256)   // set to unknown, to continue predicting even if it wouldn't
 	return
 }
 func opExtCodeSize(state *State) {
