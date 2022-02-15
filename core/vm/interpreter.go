@@ -18,7 +18,7 @@ package vm
 
 import (
 	"hash"
-	"sync/atomic"
+	// "sync/atomic"
 
 	"github.com/ledgerwatch/erigon/common"
 	"github.com/ledgerwatch/erigon/common/math"
