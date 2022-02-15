@@ -18,7 +18,7 @@ package vm
 
 import (
 	"hash"
-	// "sync/atomic"
+	"sync/atomic"
 
 	"github.com/ledgerwatch/erigon/common"
 	"github.com/ledgerwatch/erigon/common/math"
@@ -242,16 +242,16 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 	// explicit STOP, RETURN or SELFDESTRUCT is executed, an error occurred during
 	// the execution of one of the operations or until the done flag is set by the
 	// parent context.
-	// steps := 0
+	steps := 0
 	for {
-		// steps++
-		// if steps & 0xFFFF == 0 && atomic.LoadInt32(&in.evm.abort) != 0 {
-		// 	break
-		// }
-		// if in.cfg.Debug {
-		// 	// Capture pre-execution values for tracing.
-		// 	logged, pcCopy, gasCopy = false, pc, contract.Gas
-		// }
+		steps++
+		if steps & 0xFFFF == 0 && atomic.LoadInt32(&in.evm.abort) != 0 {
+			break
+		}
+		if in.cfg.Debug {
+			// Capture pre-execution values for tracing.
+			logged, pcCopy, gasCopy = false, pc, contract.Gas
+		}
 
 		// Get the operation from the jump table and validate the stack to ensure there are
 		// enough stack items available to perform the operation.
@@ -269,18 +269,18 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			return nil, &ErrStackOverflow{stackLen: sLen, limit: operation.maxStack}
 		}
 		// If the operation is valid, enforce and write restrictions
-		// if in.readOnly && in.evm.ChainRules.IsByzantium {
-		// 	// If the interpreter is operating in readonly mode, make sure no
-		// 	// state-modifying operation is performed. The 3rd stack item
-		// 	// for a call operation is the value. Transferring value from one
-		// 	// account to the others means the state is modified and should also
-		// 	// return with an error.
-		// 	if operation.writes || (op == CALL && locStack.Back(2).Sign() != 0) {
-		// 		return nil, ErrWriteProtection
-		// 	}
-		// }
+		if in.readOnly && in.evm.ChainRules.IsByzantium {
+			// If the interpreter is operating in readonly mode, make sure no
+			// state-modifying operation is performed. The 3rd stack item
+			// for a call operation is the value. Transferring value from one
+			// account to the others means the state is modified and should also
+			// return with an error.
+			if operation.writes || (op == CALL && locStack.Back(2).Sign() != 0) {
+				return nil, ErrWriteProtection
+			}
+		}
 		// Static portion of gas
-		// cost = operation.constantGas // For tracing
+		cost = operation.constantGas // For tracing
 		if !contract.UseGas(operation.constantGas) {
 			return nil, ErrOutOfGas
 		}
@@ -307,7 +307,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		if operation.dynamicGas != nil {
 			var dynamicCost uint64
 			dynamicCost, err = operation.dynamicGas(in.evm, contract, locStack, mem, memorySize)
-			// cost += dynamicCost // total cost, for debug tracing
+			cost += dynamicCost // total cost, for debug tracing
 			if err != nil || !contract.UseGas(dynamicCost) {
 				return nil, ErrOutOfGas
 			}
@@ -316,10 +316,10 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			mem.Resize(memorySize)
 		}
 
-		// if in.cfg.Debug {
-		// 	in.cfg.Tracer.CaptureState(in.evm, pc, op, gasCopy, cost, mem, locStack, in.returnData, contract, in.evm.depth, err) //nolint:errcheck
-		// 	logged = true
-		// }
+		if in.cfg.Debug {
+			in.cfg.Tracer.CaptureState(in.evm, pc, op, gasCopy, cost, mem, locStack, in.returnData, contract, in.evm.depth, err) //nolint:errcheck
+			logged = true
+		}
 
 		// execute the operation
 		// bench.Tick(55)
