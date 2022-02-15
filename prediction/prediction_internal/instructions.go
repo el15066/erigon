@@ -205,7 +205,8 @@ func opGasLimit(state *State) {
 }
 func opSelfBalance(state *State) {
 	d := zerOpArgVs(state)
-	d.Set(&UNKNOWN_U256) // set to unknown, to continue predicting even if it wouldn't
+	d.Set(&state.callvalue)
+	// d.Set(&UNKNOWN_U256) // set to unknown, to continue predicting even if it wouldn't
 	return
 }
 
