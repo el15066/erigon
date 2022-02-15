@@ -20,9 +20,13 @@ import (
 	bench "github.com/ledgerwatch/erigon/bench"
 )
 
+// The following must be kept the same as in encode_predictors.py
 const BLOCK_ID_SHIFTS = 0
 const BLOCK_ID_MAX    = uint64(65536 << BLOCK_ID_SHIFTS) - 1
+const INVALID_REG     = 65000
+
 const INVALID_TARGET  = int(math.MaxInt64)
+
 const ZEROS32         = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 
 var UNKNOWN_U256 = uint256.Int{

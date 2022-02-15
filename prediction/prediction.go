@@ -19,7 +19,7 @@ import (
 	bench "github.com/ledgerwatch/erigon/bench"
 )
 
-const PREDICTED_CAP = 2048
+const PREDICTED_CAP = 16384 // initial capacity of the ctx.Predicted slice (if TRACE_PREDICTED enabled)
 
 var ctx       *internal.Ctx
 var tracefile *bufio.Writer

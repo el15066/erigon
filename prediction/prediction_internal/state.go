@@ -78,6 +78,7 @@ func (sp *StatePool) Init(ctx *Ctx) {
 	for i := 0; i < c; i += 1 {
 		sp.states[i].spIndex = byte(i)
 		sp.states[i].ctx     = ctx
+		sp.states[i].regs[INVALID_REG].Set(&UNKNOWN_U256)
 	}
 	sp.available = (uint64(1) << c) - 1
 }
