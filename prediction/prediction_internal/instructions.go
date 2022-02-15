@@ -65,6 +65,7 @@ func opPhi(state *State) {
 	d      := &state.regs[rd]
 	s      := &state.regs[rs]
 	d.Set(s)
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(rs) }
 	return
 }
 func opBlockId(state *State) {
@@ -708,7 +709,8 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	ns := state.ctx.sp.NewState() // Careful: we can't return without FreeState() from now on
 	                              //          we won't use defer for now
-	if ns == nil {                // this must be checked on its own
+	// this must be checked on its own
+	if ns == nil {
 		d.Set(&UNKNOWN_U256)
 		return
 	}
