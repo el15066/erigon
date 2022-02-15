@@ -11,14 +11,14 @@ const       TX_DUMPING = false
 const     CODE_DUMPING = false
 const     JUMP_TRACING = false
 
-const PREFETCH_BLOCKS           = true
+const PREFETCH_BLOCKS           = false
 const BLOCK_READAHEAD           = 1 + 1
-const PREFETCH_ACCOUNTS         = true
-const PREFETCH_CODE             = true
-const USE_PREDICTORS            = true
+const PREFETCH_ACCOUNTS         = false
+const PREFETCH_CODE             = false
+const USE_PREDICTORS            = false
 const USE_STORAGE_PREFETCH_FILE = false
 
-const TRACE_PREDICTED = true
+const TRACE_PREDICTED = false
 
 const PREDICTOR_CACHE_SIZE      = 256
 const PREDICTOR_INITIAL_GAZ     = 100000
