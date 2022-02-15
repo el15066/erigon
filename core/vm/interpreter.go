@@ -326,11 +326,13 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		res, err = operation.execute(&pc, in, callContext)
 		pc      += 1
 		// bench.TiCk(56)
-		// if the operation clears the return data (e.g. it has returning data)
-		// set the last return to the result of the operation.
-		if operation.returns {
-			in.returnData = res
-		}
+
+		// The following is now handled by the operations themselves
+		// // if the operation clears the return data (e.g. it has returning data)
+		// // set the last return to the result of the operation.
+		// if operation.returns {
+		// 	in.returnData = res
+		// }
 
 		switch {
 		case err != nil:

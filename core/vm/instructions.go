@@ -681,10 +681,11 @@ func opCreate(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]
 	}
 	callContext.contract.Gas += returnGas
 
-	if suberr == ErrExecutionReverted {
-		return res, nil
+	if suberr != ErrExecutionReverted {
+		res = nil
 	}
-	return nil, nil
+	interpreter.returnData = res
+	return res, nil
 }
 
 func opCreate2(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
@@ -713,10 +714,11 @@ func opCreate2(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([
 	callContext.stack.Push(&stackValue)
 	callContext.contract.Gas += returnGas
 
-	if suberr == ErrExecutionReverted {
-		return res, nil
+	if suberr != ErrExecutionReverted {
+		res = nil
 	}
-	return nil, nil
+	interpreter.returnData = res
+	return res, nil
 }
 
 func opCall(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
@@ -749,6 +751,7 @@ func opCall(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]by
 
 	callContext.contract.Gas += returnGas
 
+	interpreter.returnData = ret
 	return ret, nil
 }
 
@@ -782,6 +785,7 @@ func opCallCode(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) (
 
 	callContext.contract.Gas += returnGas
 
+	interpreter.returnData = ret
 	return ret, nil
 }
 
@@ -810,6 +814,7 @@ func opDelegateCall(pc *uint64, interpreter *EVMInterpreter, callContext *callCt
 
 	callContext.contract.Gas += returnGas
 
+	interpreter.returnData = ret
 	return ret, nil
 }
 
@@ -838,6 +843,7 @@ func opStaticCall(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx)
 
 	callContext.contract.Gas += returnGas
 
+	interpreter.returnData = ret
 	return ret, nil
 }
 
@@ -850,6 +856,7 @@ func opReturn(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]
 func opRevert(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
 	offset, size := callContext.stack.PopPtr(), callContext.stack.PopPtr()
 	ret := callContext.memory.GetPtr(offset.Uint64(), size.Uint64())
+	interpreter.returnData = ret
 	return ret, nil
 }
 
