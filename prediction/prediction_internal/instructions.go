@@ -202,6 +202,11 @@ func opGasLimit(state *State) {
 	d.SetUint64(state.ctx.GasLimit)
 	return
 }
+func opSelfBalance(state *State) {
+	d := zerOpArgVs(state)
+	d.Set(&UNKNOWN_U256) // set to unknown, to continue predicting even if it wouldn't
+	return
+}
 
 func uniOp(state *State, op func (*uint256.Int, *uint256.Int) *uint256.Int) {
 	i      := state.i + 1
@@ -530,7 +535,7 @@ func opReturn(state *State) {
 		state.ctx.returnSize = s
 	} else {
 		state.ctx.returnData.setUnknown(0, s)
-		state.ctx.returnSize = random_u256_part_0
+		state.ctx.returnSize = random_u256_part_0 // TODO maybe set to s ?
 	}
 	return
 }
@@ -590,6 +595,7 @@ func opReturnDataCopy(state *State) {
 	i := v1.Uint64()
 	s := v2.Uint64()
 	data := state.ctx.returnData.get(i, s)
+	// if state.ctx.returnSize == random_u256_part_0 { data = nil } // TODO
 	if data != nil { state.mem.set(o, s, data)
 	} else         { state.mem.setUnknown(o, s) }
 	return
@@ -734,6 +740,7 @@ func opCallCommon(state *State, t CallOpType) {
 			oS = state.ctx.returnSize
 		}
 		odata := state.ctx.returnData.get(0, oS)
+		// if state.ctx.returnSize == random_u256_part_0 { odata = nil } // TODO
 		if odata != nil {
 			state.mem.set(o0, oS, odata)
 			if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" returnData ", hex.EncodeToString(odata)) }

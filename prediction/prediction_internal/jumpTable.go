@@ -66,7 +66,7 @@ var jumpTable = [256]func(state *State){
 	 56:    opNumber,
 	 57:    opDifficulty,
 	 58:    opGasLimit,
-	 59:    _op,
+	 59:    opSelfBalance,
 	 60:    _op,
 	 61:    _op,
 	 62:    _op,

@@ -66,7 +66,7 @@ var jumpTableNames = [256]string{
      56:    "NUMBER",
      57:    "DIFFICULTY",
      58:    "GASLIMIT",
-     59:    "INVALID",
+     59:    "SELFBALANCE",
      60:    "INVALID",
      61:    "INVALID",
      62:    "INVALID",

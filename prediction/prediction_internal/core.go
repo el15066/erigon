@@ -206,7 +206,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	//
 	bench.Tick(215)
 	state.ctx.returnData.Init()
-	state.ctx.returnSize = 0
+	state.ctx.returnSize = 0 // TODO maybe set to random_u256_part_0
 	state.blockTbl = p.BlockTbl
 	state.code     = p.Code
 	state.curBlock = 0
