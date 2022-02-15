@@ -212,11 +212,11 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		// It's theoretically possible to go above 2^64. The YP defines the PC
 		// to be uint256. Practically much less so feasible.
 		pc   = uint64(0) // program counter
-		cost uint64
+		// cost uint64
 		// copies used by tracer
-		pcCopy  uint64 // needed for the deferred Tracer
-		gasCopy uint64 // for Tracer to log gas remaining before execution
-		logged  bool   // deferred Tracer should ignore already logged steps
+		// pcCopy  uint64 // needed for the deferred Tracer
+		// gasCopy uint64 // for Tracer to log gas remaining before execution
+		// logged  bool   // deferred Tracer should ignore already logged steps
 		res     []byte // result of the opcode execution function
 	)
 	// Don't move this deferrred function, it's placed before the capturestate-deferred method,
@@ -227,17 +227,17 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 	}()
 	contract.Input = input
 
-	if in.cfg.Debug {
-		defer func() {
-			if err != nil {
-				if !logged {
-					in.cfg.Tracer.CaptureState(in.evm, pcCopy, op, gasCopy, cost, mem, locStack, in.returnData, contract, in.evm.depth, err) //nolint:errcheck
-				} else {
-					_ = in.cfg.Tracer.CaptureFault(in.evm, pcCopy, op, gasCopy, cost, mem, locStack, contract, in.evm.depth, err)
-				}
-			}
-		}()
-	}
+	// if in.cfg.Debug {
+	// 	defer func() {
+	// 		if err != nil {
+	// 			if !logged {
+	// 				in.cfg.Tracer.CaptureState(in.evm, pcCopy, op, gasCopy, cost, mem, locStack, in.returnData, contract, in.evm.depth, err) //nolint:errcheck
+	// 			} else {
+	// 				_ = in.cfg.Tracer.CaptureFault(in.evm, pcCopy, op, gasCopy, cost, mem, locStack, contract, in.evm.depth, err)
+	// 			}
+	// 		}
+	// 	}()
+	// }
 	// The Interpreter main run loop (contextual). This loop runs until either an
 	// explicit STOP, RETURN or SELFDESTRUCT is executed, an error occurred during
 	// the execution of one of the operations or until the done flag is set by the
@@ -248,10 +248,10 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		if steps & 0xFFFF == 0 && atomic.LoadInt32(&in.evm.abort) != 0 {
 			break
 		}
-		if in.cfg.Debug {
-			// Capture pre-execution values for tracing.
-			logged, pcCopy, gasCopy = false, pc, contract.Gas
-		}
+		// if in.cfg.Debug {
+		// 	// Capture pre-execution values for tracing.
+		// 	logged, pcCopy, gasCopy = false, pc, contract.Gas
+		// }
 
 		// Get the operation from the jump table and validate the stack to ensure there are
 		// enough stack items available to perform the operation.
@@ -280,7 +280,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			}
 		}
 		// Static portion of gas
-		cost = operation.constantGas // For tracing
+		// cost = operation.constantGas // For tracing
 		if !contract.UseGas(operation.constantGas) {
 			return nil, ErrOutOfGas
 		}
@@ -307,7 +307,7 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 		if operation.dynamicGas != nil {
 			var dynamicCost uint64
 			dynamicCost, err = operation.dynamicGas(in.evm, contract, locStack, mem, memorySize)
-			cost += dynamicCost // total cost, for debug tracing
+			// cost += dynamicCost // total cost, for debug tracing
 			if err != nil || !contract.UseGas(dynamicCost) {
 				return nil, ErrOutOfGas
 			}
@@ -316,10 +316,10 @@ func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (
 			mem.Resize(memorySize)
 		}
 
-		if in.cfg.Debug {
-			in.cfg.Tracer.CaptureState(in.evm, pc, op, gasCopy, cost, mem, locStack, in.returnData, contract, in.evm.depth, err) //nolint:errcheck
-			logged = true
-		}
+		// if in.cfg.Debug {
+		// 	in.cfg.Tracer.CaptureState(in.evm, pc, op, gasCopy, cost, mem, locStack, in.returnData, contract, in.evm.depth, err) //nolint:errcheck
+		// 	logged = true
+		// }
 
 		// execute the operation
 		// bench.Tick(55)
