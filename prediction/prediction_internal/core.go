@@ -172,6 +172,7 @@ func PredictTX(
 	address   common.Address,
 	callvalue *uint256.Int,
 	calldata  []byte,
+	gaz       int,
 ) {
 	state := ctx.sp.NewState()
 	if state == nil { return }
@@ -179,7 +180,7 @@ func PredictTX(
 	state.caller    = ctx.Origin
 	state.callvalue.Set(callvalue)
 	state.calldata  = calldata
-	state.gaz       = common.PREDICTOR_INITIAL_GAZ
+	state.gaz       = gaz
 	predictCall(state, address)
 	ctx.sp.FreeState(state)
 }

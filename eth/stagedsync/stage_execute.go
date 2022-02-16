@@ -409,6 +409,8 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 										//
 										tx.GetValue(),
 										tx.GetData(),
+										//
+										tx.GetGas(),
 									)
 									bench.Tick(112)
 								}
@@ -556,15 +558,15 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		//
 		"TRACE_PREDICTED",           common.TRACE_PREDICTED,
 		//
-		"PREDICTOR_CACHE_SIZE",      common.PREDICTOR_CACHE_SIZE,
-		"PREDICTOR_INITIAL_GAZ",     common.PREDICTOR_INITIAL_GAZ,
-		"PREDICTOR_RESERVE_GAZ_DIV", common.PREDICTOR_RESERVE_GAZ_DIV,
-		"PREDICTOR_CALL_GAZ_BONUS",  common.PREDICTOR_CALL_GAZ_BONUS,
-		//
 		"DEBUG_TX",                  common.DEBUG_TX,
 		"DEBUG_TX_BLOCK",            common.DEBUG_TX_BLOCK,
 		"DEBUG_TX_INDEX",            common.DEBUG_TX_INDEX,
 		//
+		"PREDICTOR_CACHE_SIZE",      common.PREDICTOR_CACHE_SIZE,
+		// "PREDICTOR_INITIAL_GAZ",     common.PREDICTOR_INITIAL_GAZ,
+		"PREDICTOR_GAS_TO_GAZ_RATE", common.PREDICTOR_GAS_TO_GAZ_RATE,
+		"PREDICTOR_RESERVE_GAZ_DIV", common.PREDICTOR_RESERVE_GAZ_DIV,
+		"PREDICTOR_CALL_GAZ_BONUS",  common.PREDICTOR_CALL_GAZ_BONUS,
 		"PREDICTOR_DB_PATH",         common.PREDICTOR_DB_PATH,
 	)
 

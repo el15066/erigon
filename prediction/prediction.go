@@ -86,6 +86,8 @@ func PredictTX(
 	//
 	callvalue *uint256.Int,
 	calldata  []byte,
+	//
+	gas       uint64,
 ) {
 	ctx.Origin   = origin
 	ctx.GasPrice = gasPrice
@@ -101,8 +103,11 @@ func PredictTX(
 			ctx.Debug = false
 		}
 	}
+
+	gaz := int(gas * common.PREDICTOR_GAS_TO_GAZ_RATE / 1024)
+
 	bench.Tick(150)
-	internal.PredictTX(ctx, to_addr, callvalue, calldata)
+	internal.PredictTX(ctx, to_addr, callvalue, calldata, gaz)
 	bench.Tick(151)
 
 	if common.TRACE_PREDICTED && tracefile != nil {
