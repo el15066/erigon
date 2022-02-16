@@ -4,6 +4,7 @@ package prediction_internal
 import (
 	"fmt"
 	"encoding/hex"
+	"encoding/binary"
 
 	"github.com/holiman/uint256"
 
@@ -38,7 +39,7 @@ func getData(data []byte, start uint64, size uint64) []byte {
 
 func isValidTarget(target int) bool { return target != INVALID_TARGET }
 
-func getArg(data []byte, i int) (int, uint16) { return i+2, uint16(data[i]) | (uint16(data[i+1]) << 8) }
+func getArg(data []byte, i int) (int, uint16) { return i+2, binary.LittleEndian.Uint16(data[i:i+2]) }
 
 func opStop(state *State) {
 	state.i = INVALID_TARGET
