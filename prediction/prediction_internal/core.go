@@ -67,7 +67,8 @@ func (mem *Mem) updateMsize(i1 uint64) {
 	m1 := mem.msize
 	m2 := (i1 + 31) & ^uint64(31)
 	if m2 > m1 {
-		for i := m1; i < m2; i += 1 { mem.data[i] = 0 }
+		t := mem.data[m1:m2]
+		for i := range t { t[i] = 0 }
 		mem.msize = m2
 	}
 }
