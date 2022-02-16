@@ -266,8 +266,8 @@ func opExtCodeSize(state *State) {
 	if d == nil { return }
 	a := common.Address(v0.Bytes20())
 	// d.SetUint64(uint64(state.ctx.ibs.GetCodeSize(a)))
-	state.ctx.ibs.Exist(a) // prefetch
-	d.Set(&UNKNOWN_U256)   // set to unknown, to continue predicting even if it wouldn't
+	state.ctx.ibs.GetCode(a) // prefetch
+	d.Set(&UNKNOWN_U256)     // set to unknown, to continue predicting even if it wouldn't
 	return
 }
 func opExtCodeHash(state *State) {
@@ -279,8 +279,8 @@ func opExtCodeHash(state *State) {
 	// } else {
 	// 	d.SetBytes(state.ctx.ibs.GetCodeHash(a).Bytes())
 	// }
-	state.ctx.ibs.Exist(a) // prefetch
-	d.Set(&UNKNOWN_U256)   // set to unknown, to continue predicting even if it wouldn't
+	state.ctx.ibs.GetCode(a) // prefetch
+	d.Set(&UNKNOWN_U256)     // set to unknown, to continue predicting even if it wouldn't
 	return
 }
 func opSload(state *State) {
@@ -699,6 +699,8 @@ func opCallCommon(state *State, t CallOpType) {
 	_ = v0 // ignore gas
 	//
 	ca    := common.Address(v1.Bytes20())
+	state.ctx.ibs.GetCode(ca) // prefetch
+	//
 	i0    := v3.Uint64()
 	iS    := v4.Uint64()
 	idata := state.mem.get(i0, iS)
