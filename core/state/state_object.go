@@ -158,17 +158,19 @@ func (so *stateObject) touch() {
 
 // GetState returns a value from account storage.
 func (so *stateObject) GetState(key *common.Hash, out *uint256.Int) {
-	// if common.STORAGE_TRACING { so.GetCommittedState(key, out) }
 	// bench.Tick(30)
 	value, dirty := so.dirtyStorage[*key]
 	if dirty {
 		*out = value
 		// bench.Tick(31)
+		if common.STORAGE_TRACING {
+			enc := out.Bytes32()
+			so.db.stateReader.(*PlainStateReader).WriteTraceAccountStorage(so.address, so.data.GetIncarnation(), key, enc[:])
+		}
 		return
 	}
 	// bench.Tick(31)
 	// Otherwise return the entry's original value
-	// if !common.STORAGE_TRACING { so.GetCommittedState(key, out) }
 	so.GetCommittedState(key, out)
 }
 // Similar to GetState, but will ignore the value read.
@@ -184,16 +186,23 @@ func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
 	// If we have the original value cached, return that
 	{
 		value, cached := so.originStorage[*key]
-		// if cached && !common.STORAGE_TRACING {
 		if cached {
 			*out = value
 			// bench.Tick(33)
+			if common.STORAGE_TRACING {
+				enc := out.Bytes32()
+				so.db.stateReader.(*PlainStateReader).WriteTraceAccountStorage(so.address, so.data.GetIncarnation(), key, enc[:])
+			}
 			return
 		}
 	}
 	if so.created {
 		out.Clear()
 		// bench.Tick(33)
+		if common.STORAGE_TRACING {
+			enc := out.Bytes32()
+			so.db.stateReader.(*PlainStateReader).WriteTraceAccountStorage(so.address, so.data.GetIncarnation(), key, enc[:])
+		}
 		return
 	}
 	// bench.Tick(33)

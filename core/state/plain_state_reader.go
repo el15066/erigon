@@ -123,6 +123,17 @@ func (r *PlainStateReader) ReadAccountStorage(address common.Address, incarnatio
 	bench.TiCk(63)
 	return enc, nil
 }
+func (r *PlainStateReader) WriteTraceAccountStorage(address common.Address, incarnation uint64, key *common.Hash, enc []byte) {
+
+	compositeKey := dbutils.PlainGenerateCompositeStorageKey(address.Bytes(), incarnation, key.Bytes())
+
+	// HERE
+	if common.STORAGE_TRACING && tracefile != nil {
+		traceMu.Lock()
+		tracefile.WriteString(fmt.Sprintf("S %8d %3d %s %s\n", r.blockID, r.txID, ENC(compositeKey), ENC(enc)))
+		traceMu.Unlock()
+	}
+}
 
 func (r *PlainStateReader) ReadAccountCode(address common.Address, incarnation uint64, codeHash common.Hash) ([]byte, error) {
 	bench.Tick(64)
