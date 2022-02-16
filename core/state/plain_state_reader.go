@@ -21,6 +21,7 @@ import (
 var ENC = hex.EncodeToString
 
 var tracefile *bufio.Writer
+var traceMu   common.Spinlock
 var notrace = false
 
 var _ StateReader = (*PlainStateReader)(nil)
@@ -35,14 +36,18 @@ type PlainStateReader struct {
 }
 
 func NewPlainStateReader(db kv.Getter) *PlainStateReader {
-	if common.STORAGE_TRACING && tracefile == nil && !notrace {
-		_f, _err := os.OpenFile("logz/reads.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
-		if _err == nil {
-			tracefile = bufio.NewWriterSize(_f, 128*1024)
-		} else {
-			notrace = true
-			fmt.Println("\n\nWARNING: READS NOT RECORDED", _err)
+	if common.STORAGE_TRACING {
+		traceMu.Lock()
+		if tracefile == nil && !notrace {
+			_f, _err := os.OpenFile("logz/reads.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+			if _err == nil {
+				tracefile = bufio.NewWriterSize(_f, 2*1024*1024)
+			} else {
+				notrace = true
+				fmt.Println("\n\nWARNING: READS NOT RECORDED", _err)
+			}
 		}
+		traceMu.Unlock()
 	}
 	return &PlainStateReader{
 		db: db,
@@ -53,7 +58,9 @@ func NewPlainStateReader(db kv.Getter) *PlainStateReader {
 
 func FlushStateReaderTracefile() {
 	if common.STORAGE_TRACING && tracefile != nil {
+		traceMu.Lock()
 		tracefile.Flush()
+		traceMu.Unlock()
 	}
 }
 
@@ -67,7 +74,9 @@ func (r *PlainStateReader) ReadAccountData(address common.Address) (*accounts.Ac
 
 	// HERE
 	if common.STORAGE_TRACING && tracefile != nil {
+		traceMu.Lock()
 		tracefile.WriteString(fmt.Sprintf("A %8d %3d %s %s\n", r.blockID, r.txID, ENC(address.Bytes()), ENC(enc)))
+		traceMu.Unlock()
 	}
 
 	if err != nil {
@@ -97,7 +106,9 @@ func (r *PlainStateReader) ReadAccountStorage(address common.Address, incarnatio
 
 	// HERE
 	if common.STORAGE_TRACING && tracefile != nil {
+		traceMu.Lock()
 		tracefile.WriteString(fmt.Sprintf("S %8d %3d %s %s\n", r.blockID, r.txID, ENC(compositeKey), ENC(enc)))
+		traceMu.Unlock()
 	}
 
 	if err != nil {
@@ -123,7 +134,9 @@ func (r *PlainStateReader) ReadAccountCode(address common.Address, incarnation u
 
 	// HERE
 	if common.STORAGE_TRACING && tracefile != nil {
+		traceMu.Lock()
 		tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", r.blockID, r.txID, ENC(codeHash.Bytes())))
+		traceMu.Unlock()
 	}
 
 	code, err := r.db.GetOne(kv.Code, codeHash.Bytes())
@@ -146,7 +159,9 @@ func (r *PlainStateReader) ReadAccountIncarnation(address common.Address) (uint6
 
 	// HERE
 	if common.STORAGE_TRACING && tracefile != nil {
+		traceMu.Lock()
 		tracefile.WriteString(fmt.Sprintf("I %8d %3d %s\n", r.blockID, r.txID, ENC(address.Bytes())))
+		traceMu.Unlock()
 	}
 
 	b, err := r.db.GetOne(kv.IncarnationMap, address.Bytes())
