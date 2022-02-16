@@ -25,7 +25,7 @@ import (
 	"github.com/ledgerwatch/erigon/core/vm/stack"
 	"github.com/ledgerwatch/log/v3"
 
-	"github.com/ledgerwatch/erigon/bench"
+	// "github.com/ledgerwatch/erigon/bench"
 )
 
 // Config are the configuration options for the Interpreter
@@ -176,11 +176,11 @@ func NewEVMInterpreterByVM(vm *VM) *EVMInterpreter {
 // ErrExecutionReverted which means revert-and-keep-gas-left.
 func (in *EVMInterpreter) Run(contract *Contract, input []byte, readOnly bool) (ret []byte, err error) {
 	// Increment the call depth which is restricted to 1024
-	bench.Tick(50) // this function is re-entrant, so there is double counting (it's here just for total call count)
+	// bench.Tick(50) // this function is re-entrant, so there is double counting (it's here just for total call count)
 	in.evm.depth++
 	defer func() {
 		in.evm.depth--
-		bench.TiCk(51)
+		// bench.TiCk(51)
 	}()
 
 	// Make sure the readOnly is only set if we aren't in readOnly yet.
