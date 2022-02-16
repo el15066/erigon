@@ -448,3 +448,32 @@ func (keys StorageKeys) Less(i, j int) bool {
 func (keys StorageKeys) Swap(i, j int) {
 	keys[i], keys[j] = keys[j], keys[i]
 }
+
+/////////// PaddedCode
+
+// codePadding needs to hold at least a PUSH32 and its arguement
+const codePadding = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" // 40 B
+
+// Use a struct to avoid being accessed without the functions below
+type PaddedCode struct {
+	code []byte
+}
+func (c PaddedCode) AsByteSlice() []byte {
+	return c.code
+}
+func (c PaddedCode) UnpaddedLen(code []byte) int {
+	return len(c.code) - len(codePadding)
+}
+
+// TODO: unexport this
+func PadCodeRaw(code []byte) []byte {
+	return append(code, codePadding...)
+}
+// TODO: use this everywhere
+func PadCode(code []byte) PaddedCode {
+	return PaddedCode{ PadCodeRaw(code) }
+}
+// TODO: remove this (use UnpaddedLen)
+func PaddedCodeLen(code []byte) int {
+	return len(code) - len(codePadding)
+}
