@@ -14,7 +14,7 @@ import (
 	"github.com/ledgerwatch/erigon/common/dbutils"
 	"github.com/ledgerwatch/erigon/core/types/accounts"
 
-	"github.com/ledgerwatch/erigon/bench"
+	// "github.com/ledgerwatch/erigon/bench"
 )
 
 // var ENC = base64.StdEncoding.EncodeToString
@@ -68,7 +68,7 @@ func (r *PlainStateReader) SetBlockID(n int) { r.blockID = n }
 func (r *PlainStateReader) SetTxID(   n int) { r.txID    = n }
 
 func (r *PlainStateReader) ReadAccountData(address common.Address) (*accounts.Account, error) {
-	bench.Tick(60)
+	// bench.Tick(60)
 
 	enc, err := r.db.GetOne(kv.PlainState, address.Bytes())
 
@@ -83,25 +83,25 @@ func (r *PlainStateReader) ReadAccountData(address common.Address) (*accounts.Ac
 	}
 
 	if err != nil {
-		bench.TiCk(61)
+		// bench.TiCk(61)
 		return nil, err
 	}
 	if len(enc) == 0 {
-		bench.TiCk(61)
+		// bench.TiCk(61)
 		return nil, nil
 	}
 	var a accounts.Account
 	if err = a.DecodeForStorage(enc); err != nil {
-		bench.TiCk(61)
+		// bench.TiCk(61)
 		return nil, err
 	}
 
-	bench.TiCk(61)
+	// bench.TiCk(61)
 	return &a, nil
 }
 
 func (r *PlainStateReader) ReadAccountStorage(address common.Address, incarnation uint64, key *common.Hash) ([]byte, error) {
-	bench.Tick(62)
+	// bench.Tick(62)
 
 	compositeKey := dbutils.PlainGenerateCompositeStorageKey(address.Bytes(), incarnation, key.Bytes())
 
@@ -118,15 +118,15 @@ func (r *PlainStateReader) ReadAccountStorage(address common.Address, incarnatio
 	}
 
 	if err != nil {
-		bench.TiCk(63)
+		// bench.TiCk(63)
 		return nil, err
 	}
 	if len(enc) == 0 {
-		bench.TiCk(63)
+		// bench.TiCk(63)
 		return nil, nil
 	}
 
-	bench.TiCk(63)
+	// bench.TiCk(63)
 	return enc, nil
 }
 func (r *PlainStateReader) WriteTraceAccountStorage(address common.Address, incarnation uint64, key *common.Hash, enc []byte) {
@@ -145,10 +145,10 @@ func (r *PlainStateReader) WriteTraceAccountStorage(address common.Address, inca
 }
 
 func (r *PlainStateReader) ReadAccountCode(address common.Address, incarnation uint64, codeHash common.Hash) ([]byte, error) {
-	bench.Tick(64)
+	// bench.Tick(64)
 
 	if bytes.Equal(codeHash.Bytes(), emptyCodeHash) {
-		bench.TiCk(65)
+		// bench.TiCk(65)
 		return nil, nil
 	}
 
@@ -164,11 +164,11 @@ func (r *PlainStateReader) ReadAccountCode(address common.Address, incarnation u
 
 	code, err := r.db.GetOne(kv.Code, codeHash.Bytes())
 	if len(code) == 0 {
-		bench.TiCk(65)
+		// bench.TiCk(65)
 		return nil, nil
 	}
 
-	bench.TiCk(65)
+	// bench.TiCk(65)
 	return code, err
 }
 
@@ -178,7 +178,7 @@ func (r *PlainStateReader) ReadAccountCodeSize(address common.Address, incarnati
 }
 
 func (r *PlainStateReader) ReadAccountIncarnation(address common.Address) (uint64, error) {
-	bench.Tick(66)
+	// bench.Tick(66)
 
 	// HERE
 	if common.STORAGE_TRACING && tracefile != nil {
@@ -192,14 +192,14 @@ func (r *PlainStateReader) ReadAccountIncarnation(address common.Address) (uint6
 
 	b, err := r.db.GetOne(kv.IncarnationMap, address.Bytes())
 	if err != nil {
-		bench.TiCk(67)
+		// bench.TiCk(67)
 		return 0, err
 	}
 	if len(b) == 0 {
-		bench.TiCk(67)
+		// bench.TiCk(67)
 		return 0, nil
 	}
 
-	bench.TiCk(67)
+	// bench.TiCk(67)
 	return binary.BigEndian.Uint64(b), nil
 }
