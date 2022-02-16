@@ -17,7 +17,7 @@ import (
 
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 
-	bench "github.com/ledgerwatch/erigon/bench"
+	// bench "github.com/ledgerwatch/erigon/bench"
 )
 
 // The following must be kept the same as in encode_predictors.py
@@ -185,7 +185,7 @@ func PredictTX(
 	ctx.sp.FreeState(state)
 }
 
-var inside = false
+// var inside = false
 
 func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	if common.DEBUG_TX && state.ctx.Debug {
@@ -201,15 +201,15 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	//
 	if isPrecompile(codeAddress) { return 1, true }
 	//
-	bench.Tick(210)
+	// bench.Tick(210)
 	ch := state.ctx.ibs.GetCodeHash(codeAddress)
-	bench.Tick(211)
+	// bench.Tick(211)
 	p  := predictorDB.GetPredictor(ch)
-	bench.Tick(212)
+	// bench.Tick(212)
 	if     common.DEBUG_TX && state.ctx.Debug { fmt.Println("  code hash", ch, "have?", p.Code != nil) }
 	if p.Code == nil { return 0, false }
 	//
-	bench.Tick(215)
+	// bench.Tick(215)
 	state.ctx.returnData.Init()
 	state.ctx.returnSize = 0 // TODO maybe set to random_u256_part_0
 	state.blockTbl = p.BlockTbl
@@ -220,13 +220,13 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	code          := state.code
 	i_max         := len(code)
 	//
-	me := false
-	if !inside {
-		inside = true
-		me = true
-		bench.Tick(220)
-		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("\n\n---- tx @", state.ctx.BlockNumber) }
-	}
+	// me := false
+	// if !inside {
+	// 	inside = true
+	// 	me = true
+	// 	bench.Tick(220)
+	// 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println("\n\n---- tx @", state.ctx.BlockNumber) }
+	// }
 	if     common.DEBUG_TX && state.ctx.Debug { fmt.Println("  call", codeAddress) }
 	//
 	for state.i < i_max && state.gaz > 0 {
@@ -242,15 +242,15 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 		if common.DEBUG_TX && state.ctx.Debug { fmt.Print(fmt.Sprintf("\n%5d| %4d = %20s \n", state.gaz, rd, _enc_reg(state, rd))) }
 		if common.DEBUG_TX && state.ctx.Debug { state.mem.debug() }
 	}
-	if me {
-		bench.Tick(221)
-		inside = false
-		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("\n\n---- end") }
-	}
+	// if me {
+	// 	bench.Tick(221)
+	// 	inside = false
+	// 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println("\n\n---- end") }
+	// }
 	if state.gaz <= 0 {
 		if common.DEBUG_TX && state.ctx.Debug { fmt.Println("Call out of gaz, ca:", codeAddress) }
 	}
-	bench.Tick(216)
+	// bench.Tick(216)
 	return 1, true
 }
 // Not exact, only for prediction
