@@ -361,6 +361,9 @@ func (so *stateObject) Address() common.Address {
 	return so.address
 }
 
+// codePadding needs to hold at least a PUSH32 and its arguement
+const codePadding = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" // 40 B
+
 // Code returns the contract code associated with this object, if any.
 func (so *stateObject) Code() []byte {
 	a :=                    so.Address()
@@ -388,7 +391,7 @@ func (so *stateObject) Code() []byte {
 	if common.CODE_DUMPING {
 		common.CONTRACT_CODE[h]        = code
 	}
-	so.code = common.PadCodeRaw(code)
+	so.code = append(code, codePadding...)
 	return so.code
 }
 

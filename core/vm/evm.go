@@ -258,7 +258,7 @@ func (evm *EVM) Call(caller ContractRef, addr common.Address, input []byte, gas 
 	} else {
 		// Initialise a new contract and set the code that is to be used by the EVM.
 		// The contract is a scoped environment for this execution context only.
-		if common.PaddedCodeLen(code) == 0 {
+		if len(code) == 0 {
 			ret, err = nil, nil // gas is unchanged
 		} else {
 			addrCopy := addr
@@ -481,17 +481,15 @@ func (evm *EVM) StaticCall(caller ContractRef, addr common.Address, input []byte
 }
 
 type codeAndHash struct {
-	code common.PaddedCode
+	code []byte
 	hash common.Hash
 }
-func newCodeAndHash(code []byte, withHash bool) *codeAndHash {
-	c := &codeAndHash{
-		code: common.PadCode(code),
+
+func (c *codeAndHash) Hash() common.Hash {
+	if c.hash == (common.Hash{}) {
+		c.hash = crypto.Keccak256Hash(c.code)
 	}
-	if withHash {
-		c.hash = crypto.Keccak256Hash(code)
-	}
-	return c
+	return c.hash
 }
 
 // create creates a new contract using code as deployment code.
@@ -507,7 +505,7 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 		return nil, common.Address{}, gas, ErrInsufficientBalance
 	}
 	if evm.Config.Debug || evm.Config.EnableTEMV {
-		_ = evm.Config.Tracer.CaptureStart(evm.depth, caller.Address(), address, false /* precompile */, true /* create */, calltype, codeAndHash.code.AsByteSlice(), gas, value.ToBig(), nil)
+		_ = evm.Config.Tracer.CaptureStart(evm.depth, caller.Address(), address, false /* precompile */, true /* create */, calltype, codeAndHash.code, gas, value.ToBig(), nil)
 		defer func(startGas uint64, startTime time.Time) { // Lazy evaluation of the parameters
 			evm.Config.Tracer.CaptureEnd(evm.depth, ret, startGas, gas, time.Since(startTime), err) //nolint:errcheck
 		}(gas, time.Now())
@@ -588,9 +586,8 @@ func (evm *EVM) create(caller ContractRef, codeAndHash *codeAndHash, gas uint64,
 // Create creates a new contract using code as deployment code.
 // DESCRIBED: docs/programmers_guide/guide.md#nonce
 func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *uint256.Int) (ret []byte, contractAddr common.Address, leftOverGas uint64, err error) {
-	codeAndHash := newCodeAndHash(code, false /* withHash */)
 	contractAddr = crypto.CreateAddress(caller.Address(), evm.IntraBlockState.GetNonce(caller.Address()))
-	return evm.create(caller, codeAndHash, gas, value, contractAddr, CREATET)
+	return evm.create(caller, &codeAndHash{code: code}, gas, value, contractAddr, CREATET)
 }
 
 // Create2 creates a new contract using code as deployment code.
@@ -599,8 +596,8 @@ func (evm *EVM) Create(caller ContractRef, code []byte, gas uint64, value *uint2
 // instead of the usual sender-and-nonce-hash as the address where the contract is initialized at.
 // DESCRIBED: docs/programmers_guide/guide.md#nonce
 func (evm *EVM) Create2(caller ContractRef, code []byte, gas uint64, endowment *uint256.Int, salt *uint256.Int) (ret []byte, contractAddr common.Address, leftOverGas uint64, err error) {
-	codeAndHash := newCodeAndHash(code, true  /* withHash */)
-	contractAddr = crypto.CreateAddress2(caller.Address(), common.Hash(salt.Bytes32()), codeAndHash.hash.Bytes())
+	codeAndHash := &codeAndHash{code: code}
+	contractAddr = crypto.CreateAddress2(caller.Address(), common.Hash(salt.Bytes32()), codeAndHash.Hash().Bytes())
 	return evm.create(caller, codeAndHash, gas, endowment, contractAddr, CREATE2T)
 }
 
