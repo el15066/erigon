@@ -289,7 +289,7 @@ func opSload(state *State) {
 	a := state.address
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("STORAGE ", k) }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" STORAGE ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	state.ctx.ibs.GetState(a, k, d)
 	// d.Set(&UNKNOWN_U256) // TEMP
@@ -352,7 +352,7 @@ func opStouch(state *State) {
 	a := state.address
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("STORAGE ", k) }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" STORAGE ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	// state.ctx.ibs.PrefetchState(a, k)
 	state.ctx.ibs.SetDirtyState(a, k, UNKNOWN_U256)
@@ -532,7 +532,7 @@ func opSstore(state *State) {
 	a := state.address
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("STORAGE ", k) }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" STORAGE ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	state.ctx.ibs.SetDirtyState(a, k, *v1)
 	return
@@ -694,7 +694,7 @@ func opCallCommon(state *State, t CallOpType) {
 	v5     := &state.regs[r5]
 	v6     := &state.regs[r6]
 	//
-	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("CALL type ", t, " r ", r0,r1,r2,r3,r4,r5,r6, " v ", _enc(v0),_enc(v1),_enc(v2),_enc(v3),_enc(v4),_enc(v5),_enc(v6)) }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" type ", t, " r ", r0,r1,r2,r3,r4,r5,r6, " v ", _enc(v0),_enc(v1),_enc(v2),_enc(v3),_enc(v4),_enc(v5),_enc(v6)) }
 	//
 	_ = v0 // ignore gas
 	//
