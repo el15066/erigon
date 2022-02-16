@@ -14,6 +14,7 @@ import (
 	"sync/atomic"
 )
 
+
 type Spinlock struct {
 	_    sync.Mutex // for compiler warning if copied, see https://github.com/tidwall/spinlock
 	lock uint32
@@ -23,17 +24,13 @@ func (l *Spinlock) Lock() {
 		runtime.Gosched()
 	}
 }
-func (l *Spinlock) RLock() {
-	for !atomic.CompareAndSwapUint32(&l.lock, 0, 1) {
-		runtime.Gosched()
-	}
-}
+func (l *Spinlock) RLock() { l.Lock() }
+
 func (l *Spinlock) Unlock() {
 	l.lock = 0
 }
-func (l *Spinlock) RUnlock() {
-	l.lock = 0
-}
+func (l *Spinlock) RUnlock() { l.Unlock() }
+
 
 type RWSpinlock struct {
 	_    sync.Mutex // for compiler warning if copied
