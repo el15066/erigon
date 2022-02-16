@@ -227,9 +227,9 @@ func (sdb *IntraBlockState) SubRefund(gas uint64) {
 // Exist reports whether the given account address exists in the state.
 // Notably this also returns true for suicided accounts.
 func (sdb *IntraBlockState) Exist(addr common.Address) bool {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountRead err", err)
 		}
 	}
@@ -240,9 +240,9 @@ func (sdb *IntraBlockState) Exist(addr common.Address) bool {
 // Empty returns whether the state object is either non-existent
 // or empty according to the EIP161 specification (balance = nonce = code = 0)
 func (sdb *IntraBlockState) Empty(addr common.Address) bool {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountRead err", err)
 		}
 	}
@@ -253,9 +253,9 @@ func (sdb *IntraBlockState) Empty(addr common.Address) bool {
 // GetBalance retrieves the balance from the given address or 0 if object not found
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) GetBalance(addr common.Address) *uint256.Int {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountRead err", err)
 		}
 	}
@@ -268,9 +268,9 @@ func (sdb *IntraBlockState) GetBalance(addr common.Address) *uint256.Int {
 
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) GetNonce(addr common.Address) uint64 {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountRead err", err)
 		}
 	}
@@ -289,20 +289,20 @@ func (sdb *IntraBlockState) TxIndex() int {
 
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) GetCode(addr common.Address) []byte {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountRead err", err)
 		}
 	}
 	stateObject := sdb.getStateObject(addr)
 	if stateObject != nil && !stateObject.deleted {
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Printf("GetCode %x, returned %d\n", addr, len(stateObject.Code()))
 		}
 		return stateObject.Code()
 	}
-	if sdb.trace {
+	if false && sdb.trace {
 		fmt.Printf("GetCode %x, returned nil\n", addr)
 	}
 	return nil
@@ -310,9 +310,9 @@ func (sdb *IntraBlockState) GetCode(addr common.Address) []byte {
 
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) GetCodeSize(addr common.Address) int {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountRead err", err)
 		}
 	}
@@ -332,9 +332,9 @@ func (sdb *IntraBlockState) GetCodeSize(addr common.Address) int {
 
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) GetCodeHash(addr common.Address) common.Hash {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountRead err", err)
 		}
 	}
@@ -395,12 +395,12 @@ func (sdb *IntraBlockState) HasSuicided(addr common.Address) bool {
 // AddBalance adds amount to the account associated with addr.
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) AddBalance(addr common.Address, amount *uint256.Int) {
-	if sdb.trace {
+	if false && sdb.trace {
 		fmt.Printf("AddBalance %x, %d\n", addr, amount)
 	}
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountWrite(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountWrite err", err)
 		}
 	}
@@ -414,12 +414,12 @@ func (sdb *IntraBlockState) AddBalance(addr common.Address, amount *uint256.Int)
 // SubBalance subtracts amount from the account associated with addr.
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) SubBalance(addr common.Address, amount *uint256.Int) {
-	if sdb.trace {
+	if false && sdb.trace {
 		fmt.Printf("SubBalance %x, %d\n", addr, amount)
 	}
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountWrite(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountWrite err", err)
 		}
 
@@ -433,9 +433,9 @@ func (sdb *IntraBlockState) SubBalance(addr common.Address, amount *uint256.Int)
 
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) SetBalance(addr common.Address, amount *uint256.Int) {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountWrite(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountWrite err", err)
 		}
 	}
@@ -448,9 +448,9 @@ func (sdb *IntraBlockState) SetBalance(addr common.Address, amount *uint256.Int)
 
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) SetNonce(addr common.Address, nonce uint64) {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountWrite(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountWrite err", err)
 		}
 	}
@@ -464,9 +464,9 @@ func (sdb *IntraBlockState) SetNonce(addr common.Address, nonce uint64) {
 // DESCRIBED: docs/programmers_guide/guide.md#code-hash
 // DESCRIBED: docs/programmers_guide/guide.md#address---identifier-of-an-account
 func (sdb *IntraBlockState) SetCode(addr common.Address, code []byte) {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountWrite(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountWrite err", err)
 		}
 	}
@@ -524,13 +524,13 @@ func (sdb *IntraBlockState) GetIncarnation(addr common.Address) uint64 {
 // The account's state object is still available until the state is committed,
 // getStateObject will return a non-nil account after Suicide.
 func (sdb *IntraBlockState) Suicide(addr common.Address) bool {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountRead err", err)
 		}
 		err = sdb.tracer.CaptureAccountWrite(addr)
-		if sdb.trace {
+		if false && sdb.trace {
 			fmt.Println("CaptureAccountWrite err", err)
 		}
 	}
@@ -638,14 +638,14 @@ func (sdb *IntraBlockState) createObject(addr common.Address, previous *stateObj
 //
 // Carrying over the balance ensures that Ether doesn't disappear.
 func (sdb *IntraBlockState) CreateAccount(addr common.Address, contractCreation bool) {
-	if sdb.tracer != nil {
+	if false && sdb.tracer != nil {
 		err := sdb.tracer.CaptureAccountRead(addr)
-		if sdb.trace && err != nil {
+		if false && sdb.trace && err != nil {
 			log.Error("error while CaptureAccountRead", "err", err)
 		}
 
 		err = sdb.tracer.CaptureAccountWrite(addr)
-		if sdb.trace && err != nil {
+		if false && sdb.trace && err != nil {
 			log.Error("error while CaptureAccountWrite", "err", err)
 		}
 	}
@@ -657,7 +657,7 @@ func (sdb *IntraBlockState) CreateAccount(addr common.Address, contractCreation 
 			prevInc = previous.data.Incarnation
 		} else {
 			inc, err := sdb.stateReader.ReadAccountIncarnation(addr)
-			if sdb.trace && err != nil {
+			if false && sdb.trace && err != nil {
 				log.Error("error while ReadAccountIncarnation", "err", err)
 			}
 			if err == nil {
