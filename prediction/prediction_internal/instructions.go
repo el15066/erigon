@@ -745,6 +745,10 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("<---  call result ", res, known) }
 	//
+	ns.gaz      -= common.PREDICTOR_CALL_GAZ_BONUS
+	if  ns.gaz < 0 {
+		ns.gaz = 0
+	}
 	state.gaz    = ns.gaz + reservedGaz
 	state.ctx.sp.FreeState(ns)
 	//
