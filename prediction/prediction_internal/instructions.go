@@ -737,6 +737,7 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	reservedGaz := state.gaz /               common.PREDICTOR_RESERVE_GAZ_DIV
 	ns.gaz       = state.gaz - reservedGaz + common.PREDICTOR_CALL_GAZ_BONUS
+	state.gaz    =             reservedGaz
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println(" ns.gaz ", ns.gaz) }
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println("---> call start") }
@@ -745,11 +746,10 @@ func opCallCommon(state *State, t CallOpType) {
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("<---  call result ", res, known) }
 	//
-	ns.gaz      -= common.PREDICTOR_CALL_GAZ_BONUS
-	if  ns.gaz < 0 {
-		ns.gaz = 0
+	gazLeft     :=    ns.gaz               - common.PREDICTOR_CALL_GAZ_BONUS
+	if gazLeft > 0 {
+		state.gaz += gazLeft
 	}
-	state.gaz    = ns.gaz + reservedGaz
 	state.ctx.sp.FreeState(ns)
 	//
 	if v5.IsUint64() && v6.IsUint64() {
