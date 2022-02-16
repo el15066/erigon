@@ -78,6 +78,9 @@ func (r *PlainStateReader) ReadAccountData(address common.Address) (*accounts.Ac
 		tracefile.WriteString(fmt.Sprintf("A %8d %3d %s %s\n", r.blockID, r.txID, ENC(address.Bytes()), ENC(enc)))
 		traceMu.Unlock()
 	}
+	if common.DEBUG_TX && r.blockID == common.DEBUG_TX_BLOCK && r.txID == common.DEBUG_TX_INDEX {
+		fmt.Print(fmt.Sprintf("A %s\n", ENC(address.Bytes())))
+	}
 
 	if err != nil {
 		bench.TiCk(61)
@@ -110,6 +113,9 @@ func (r *PlainStateReader) ReadAccountStorage(address common.Address, incarnatio
 		tracefile.WriteString(fmt.Sprintf("S %8d %3d %s %s\n", r.blockID, r.txID, ENC(compositeKey), ENC(enc)))
 		traceMu.Unlock()
 	}
+	if common.DEBUG_TX && r.blockID == common.DEBUG_TX_BLOCK && r.txID == common.DEBUG_TX_INDEX {
+		fmt.Print(fmt.Sprintf("S %s %s #%s\n", ENC(address.Bytes()), ENC(key.Bytes()), ENC(enc)))
+	}
 
 	if err != nil {
 		bench.TiCk(63)
@@ -133,6 +139,9 @@ func (r *PlainStateReader) WriteTraceAccountStorage(address common.Address, inca
 		tracefile.WriteString(fmt.Sprintf("S %8d %3d %s %s\n", r.blockID, r.txID, ENC(compositeKey), ENC(enc)))
 		traceMu.Unlock()
 	}
+	if common.DEBUG_TX && r.blockID == common.DEBUG_TX_BLOCK && r.txID == common.DEBUG_TX_INDEX {
+		fmt.Print(fmt.Sprintf("s %s %s #%s\n", ENC(address.Bytes()), ENC(key.Bytes()), ENC(enc)))
+	}
 }
 
 func (r *PlainStateReader) ReadAccountCode(address common.Address, incarnation uint64, codeHash common.Hash) ([]byte, error) {
@@ -148,6 +157,9 @@ func (r *PlainStateReader) ReadAccountCode(address common.Address, incarnation u
 		traceMu.Lock()
 		tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", r.blockID, r.txID, ENC(codeHash.Bytes())))
 		traceMu.Unlock()
+	}
+	if common.DEBUG_TX && r.blockID == common.DEBUG_TX_BLOCK && r.txID == common.DEBUG_TX_INDEX {
+		fmt.Print(fmt.Sprintf("C %s\n", ENC(codeHash.Bytes())))
 	}
 
 	code, err := r.db.GetOne(kv.Code, codeHash.Bytes())
@@ -173,6 +185,9 @@ func (r *PlainStateReader) ReadAccountIncarnation(address common.Address) (uint6
 		traceMu.Lock()
 		tracefile.WriteString(fmt.Sprintf("I %8d %3d %s\n", r.blockID, r.txID, ENC(address.Bytes())))
 		traceMu.Unlock()
+	}
+	if common.DEBUG_TX && r.blockID == common.DEBUG_TX_BLOCK && r.txID == common.DEBUG_TX_INDEX {
+		fmt.Print(fmt.Sprintf("I %s\n", ENC(address.Bytes())))
 	}
 
 	b, err := r.db.GetOne(kv.IncarnationMap, address.Bytes())

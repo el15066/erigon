@@ -163,7 +163,7 @@ func (so *stateObject) GetState(key *common.Hash, out *uint256.Int) {
 	if dirty {
 		*out = value
 		// bench.Tick(31)
-		if common.STORAGE_TRACING {
+		if common.STORAGE_TRACING || common.DEBUG_TX {
 			enc := out.Bytes32()
 			so.db.stateReader.(*PlainStateReader).WriteTraceAccountStorage(so.address, so.data.GetIncarnation(), key, enc[:])
 		}
@@ -189,7 +189,7 @@ func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
 		if cached {
 			*out = value
 			// bench.Tick(33)
-			if common.STORAGE_TRACING {
+			if common.STORAGE_TRACING || common.DEBUG_TX {
 				enc := out.Bytes32()
 				so.db.stateReader.(*PlainStateReader).WriteTraceAccountStorage(so.address, so.data.GetIncarnation(), key, enc[:])
 			}
@@ -199,7 +199,7 @@ func (so *stateObject) GetCommittedState(key *common.Hash, out *uint256.Int) {
 	if so.created {
 		out.Clear()
 		// bench.Tick(33)
-		if common.STORAGE_TRACING {
+		if common.STORAGE_TRACING || common.DEBUG_TX {
 			enc := out.Bytes32()
 			so.db.stateReader.(*PlainStateReader).WriteTraceAccountStorage(so.address, so.data.GetIncarnation(), key, enc[:])
 		}

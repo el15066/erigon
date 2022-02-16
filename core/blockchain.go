@@ -121,6 +121,9 @@ func ExecuteBlockEphemerally(
 	noop := state.NewNoopWriter()
 	//fmt.Printf("====txs processing start: %d====\n", block.NumberU64())
 	for i, tx := range block.Transactions() {
+		if common.DEBUG_TX && block.Number().Int64() == common.DEBUG_TX_BLOCK && i == common.DEBUG_TX_INDEX {
+			fmt.Println(fmt.Sprintf("Executing Real TX %8d %4d", common.DEBUG_TX_BLOCK, common.DEBUG_TX_INDEX))
+		}
 		ibs.Prepare(tx.Hash(), block.Hash(), i)
 		writeTrace := false
 		if vmConfig.Debug && vmConfig.Tracer == nil {
@@ -149,6 +152,9 @@ func ExecuteBlockEphemerally(
 		}
 		if !vmConfig.NoReceipts {
 			receipts = append(receipts, receipt)
+		}
+		if common.DEBUG_TX && block.Number().Int64() == common.DEBUG_TX_BLOCK && i == common.DEBUG_TX_INDEX {
+			fmt.Println("Done")
 		}
 	}
 

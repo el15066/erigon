@@ -28,6 +28,10 @@ import (
 	"github.com/ledgerwatch/log/v3"
 )
 
+func isDebugTX(in *EVMInterpreter) bool {
+	return in.evm.Context.BlockNumber == common.DEBUG_TX_BLOCK && in.evm.IntraBlockState.TxIndex() == common.DEBUG_TX_INDEX
+}
+
 func opAdd(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
 	x, y := callContext.stack.PopPtr(), callContext.stack.Peek()
 	y.Add(x, y)
@@ -540,7 +544,9 @@ func opMstore8(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([
 func opSload(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]byte, error) {
 	loc := callContext.stack.Peek()
 	interpreter.hasherBuf = loc.Bytes32()
+	if common.DEBUG_TX && isDebugTX(interpreter) { fmt.Println(fmt.Sprintf("-%6x %20s       STORAGE %x", *pc,  "SLOAD", &interpreter.hasherBuf)) }
 	interpreter.evm.IntraBlockState.GetState(callContext.contract.Address(), &interpreter.hasherBuf, loc)
+	if common.DEBUG_TX && isDebugTX(interpreter) { fmt.Println("-") }
 	return nil, nil
 }
 
@@ -548,7 +554,10 @@ func opSstore(pc *uint64, interpreter *EVMInterpreter, callContext *callCtx) ([]
 	loc := callContext.stack.PopPtr()
 	val := callContext.stack.PopPtr()
 	interpreter.hasherBuf = loc.Bytes32()
+	// In debug, there will be 2 storage access lines before this one, caused by op.dynamicGas (see makeGasSStoreFunc)
+	if common.DEBUG_TX && isDebugTX(interpreter) { fmt.Println(fmt.Sprintf("-%6x %20s       STORAGE %x #%x", *pc, "SSTORE", &interpreter.hasherBuf, val.Bytes())) }
 	interpreter.evm.IntraBlockState.SetState(callContext.contract.Address(), &interpreter.hasherBuf, *val)
+	if common.DEBUG_TX && isDebugTX(interpreter) { fmt.Println("-") }
 	return nil, nil
 }
 

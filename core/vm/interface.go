@@ -73,6 +73,8 @@ type IntraBlockState interface {
 	Snapshot() int
 
 	AddLog(*types.Log)
+
+	TxIndex() int
 }
 
 // CallContext provides a basic interface for the EVM calling conventions. The EVM
