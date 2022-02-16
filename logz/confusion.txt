@@ -6,11 +6,11 @@
 
 --- Contract 693c188e40f760ecf00d2946ef45260b84fbc43e
   Coverage:    43.3 %  missed:     68528
-  Overhead:      15 %  added:      18205
+  Overhead:      15 %  added:      18170
   Count:       120965  txs:         9464
 
 --- Contract 7a250d5630b4cf539739df2c5dacb4c659f2488d
-  Coverage:    82.0 %  missed:    123162
+  Coverage:    82.0 %  missed:    123141
   Overhead:      16 %  added:     107003
   Count:       683218  txs:        59376
 
@@ -50,18 +50,18 @@
   Count:       176449  txs:         4575
 
 --- Contract 2a0c0dbecc7e4d658f48e01e3fa353f44050c208
-  Coverage:    99.6 %  missed:       617
+  Coverage:    99.6 %  missed:       613
   Overhead:       0 %  added:        287
   Count:       163140  txs:        14115
 
 --- Contract 5acc84a3e955bdd76467d3348077d003f00ffb97
-  Coverage:    91.7 %  missed:     88713
-  Overhead:       9 %  added:      93049
+  Coverage:    91.7 %  missed:     88649
+  Overhead:       9 %  added:      93020
   Count:      1064504  txs:        52169
 
 --- Contract 9047237b16c918d94db3d1a9a86d7a2a605cdfe7
-  Coverage:    91.7 %  missed:     18918
-  Overhead:      15 %  added:      33087
+  Coverage:    91.7 %  missed:     18920
+  Overhead:      15 %  added:      33093
   Count:       227512  txs:        13518
 
 --- Contract 000000000000deab340f067535869a0e5226e58a
@@ -80,7 +80,7 @@
   Count:        35577  txs:        12331
 
 --- Contract 61935cbdd02287b511119ddb11aeb42f1593b7ef
-  Coverage:    24.5 %  missed:     33950
+  Coverage:    24.5 %  missed:     33948
   Overhead:       0 %  added:         84
   Count:        44953  txs:         2692
 
@@ -106,7 +106,7 @@
 
 --- Contract 4026064caba17596670d1655c771124c309494fb
   Coverage:    45.9 %  missed:     30441
-  Overhead:      61 %  added:      34147
+  Overhead:      61 %  added:      34173
   Count:        56258  txs:        32634
 
 --- Contract 398ec7346dcd622edc5ae82352f02be94c62d119
@@ -160,7 +160,7 @@
   Count:          195  txs:           97
 
 --- Totals ---
-  Coverage:    73.4 %  missed:   2983890
-  Overhead:      15 %  added:    1703778
-  Count:     11203606  txs:      1225691
+  Coverage:    73.4 %  missed:   2983857
+  Overhead:      15 %  added:    1703371
+  Count:     11203603  txs:      1225690
 
