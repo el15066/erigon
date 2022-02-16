@@ -287,10 +287,9 @@ func opSload(state *State) {
 	d, v0 := uniOpArgVs(state)
 	if d == nil { return }
 	a := state.address
-	// k := (*common.Hash)(v0) // hash is [32]byte :(
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("SLOAD ", k) }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("STORAGE ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	state.ctx.ibs.GetState(a, k, d)
 	// d.Set(&UNKNOWN_U256) // TEMP
@@ -353,7 +352,7 @@ func opStouch(state *State) {
 	a := state.address
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("STOUCH ", k) }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("STORAGE ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	// state.ctx.ibs.PrefetchState(a, k)
 	state.ctx.ibs.SetDirtyState(a, k, UNKNOWN_U256)
@@ -533,7 +532,7 @@ func opSstore(state *State) {
 	a := state.address
 	k := (*common.Hash)(&state.ctx.buf)
 	*k = v0.Bytes32()
-	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("SSTORE ", k) }
+	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("STORAGE ", k) }
 	if common.TRACE_PREDICTED { state.ctx.Predicted = append(state.ctx.Predicted, *k) }
 	state.ctx.ibs.SetDirtyState(a, k, *v1)
 	return
