@@ -20,16 +20,15 @@ const USE_STORAGE_PREFETCH_FILE = false
 
 const TRACE_PREDICTED = true
 
+const DEBUG_TX       = false
+const DEBUG_TX_BLOCK = 10_500_005
+const DEBUG_TX_INDEX = 81
+
 const PREDICTOR_CACHE_SIZE      = 256
 const PREDICTOR_INITIAL_GAZ     = 10000
 const PREDICTOR_RESERVE_GAZ_DIV = 4
 const PREDICTOR_CALL_GAZ_BONUS  = 0
-
-const DEBUG_TX       = false
-const DEBUG_TX_BLOCK = 7504466
-const DEBUG_TX_INDEX = 62
-
-const PREDICTOR_DB_PATH = "dbdir/predictorDB_new"
+const PREDICTOR_DB_PATH         = "dbdir/predictorDB_new"
 
 // if CODE_DUMPING {
 var CONTRACT_CODE       = map[Hash][]byte{}
