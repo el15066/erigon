@@ -3,6 +3,8 @@ package prediction
 
 import (
 	"fmt"
+	"sort"
+	"bytes"
 	"encoding/hex"
 	"encoding/binary"
 
@@ -68,13 +70,34 @@ func (ctx *Ctx) getHashBytes(i uint64) []byte {
 }
 
 func (ctx *Ctx) PredictTX(
+	txIndex   int,
+	//
+	origin    common.Address,
+	gasPrice  *uint256.Int,
 	//
 	address   common.Address,
 	callvalue *uint256.Int,
 	calldata  []byte,
-	gaz       int,
+	gas       uint64,
 	//
 ) {
+	if common.DEBUG_TX {
+		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && txIndex == common.DEBUG_TX_INDEX {
+			fmt.Println("PredictTX",
+				ctx.bvs.BlockNumber,
+				txIndex,
+				origin,
+				gasPrice,
+			)
+			ctx.Debug = true
+		} else {
+			ctx.Debug = false
+		}
+	}
+
+	ctx.Origin   = origin
+	ctx.GasPrice = gasPrice
+
 	state := statePool.NewState(ctx)
 	if state == nil { return }
 
@@ -82,9 +105,35 @@ func (ctx *Ctx) PredictTX(
 	state.caller    = ctx.Origin
 	state.callvalue.Set(callvalue)  // TODO: maybe pointer instead ?
 	state.calldata  = calldata
-	state.gaz       = gaz
+	state.gaz       = int(gas * common.PREDICTOR_GAS_TO_GAZ_RATE / 1024)
+
 
 	state.predictCall(address)
 
 	statePool.FreeState(state)
+
+	if common.TRACE_PREDICTED && tracefile != nil {
+		//
+		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, txIndex, address))
+		//
+		if len(ctx.Predicted) > 0 {
+			sort.Slice(ctx.Predicted, func(a, b int) bool {
+				return bytes.Compare(ctx.Predicted[a][:], ctx.Predicted[b][:]) < 0
+			})
+			var prev []byte // nil is not equal to the zero hash (32 zeros)
+			for i := range ctx.Predicted {
+				p :=       ctx.Predicted[i][:]
+				if bytes.Equal(p, prev) { continue }
+				prev = p
+				tracefile.WriteString(fmt.Sprintf("%x\n", ctx.Predicted[i])) // can't use p which is a slice
+			}
+		}
+		//
+		if cap(ctx.Predicted) != PREDICTED_CAP {
+			fmt.Println("Note: transaction", ctx.bvs.BlockNumber, txIndex, "ctx.Predicted len is", len(ctx.Predicted))
+			ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
+		}
+		//
+		ctx.Predicted = ctx.Predicted[:0]
+	}
 }

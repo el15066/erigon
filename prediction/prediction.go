@@ -4,8 +4,6 @@ package prediction
 import (
 	"fmt"
 	"os"
-	"sort"
-	"bytes"
 	"bufio"
 	"math/big"
 
@@ -14,8 +12,6 @@ import (
 	kv      "github.com/ledgerwatch/erigon-lib/kv"
 
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
-
-	bench "github.com/ledgerwatch/erigon/bench"
 )
 
 var statePool *StatePool
@@ -83,49 +79,5 @@ func PredictTX(
 	//
 	gas       uint64,
 ) {
-	ctx.Origin   = origin
-	ctx.GasPrice = gasPrice
-	if common.DEBUG_TX {
-		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && txIndex == common.DEBUG_TX_INDEX {
-			fmt.Println("PredictTX",
-				txIndex,
-				ctx.Origin,
-				ctx.GasPrice,
-			)
-			ctx.Debug = true
-		} else {
-			ctx.Debug = false
-		}
-	}
-
-	gaz := int(gas * common.PREDICTOR_GAS_TO_GAZ_RATE / 1024)
-
-	bench.Tick(150)
-	ctx.PredictTX(to_addr, callvalue, calldata, gaz)
-	bench.Tick(151)
-
-	if common.TRACE_PREDICTED && tracefile != nil {
-		//
-		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, txIndex, to_addr))
-		//
-		if len(ctx.Predicted) > 0 {
-			sort.Slice(ctx.Predicted, func(a, b int) bool {
-				return bytes.Compare(ctx.Predicted[a][:], ctx.Predicted[b][:]) < 0
-			})
-			var prev []byte // nil is not equal to the zero hash (32 zeros)
-			for i := range ctx.Predicted {
-				p :=       ctx.Predicted[i][:]
-				if bytes.Equal(p, prev) { continue }
-				prev = p
-				tracefile.WriteString(fmt.Sprintf("%x\n", ctx.Predicted[i])) // can't use p which is a slice
-			}
-		}
-		ctx.Predicted = ctx.Predicted[:0]
-		//
-		if cap(ctx.Predicted) != PREDICTED_CAP {
-			fmt.Println("Note", ctx.bvs.BlockNumber, txIndex, "ctx.Predicted len cap", len(ctx.Predicted), cap(ctx.Predicted))
-			ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
-		}
-		bench.Tick(152)
-	}
+	ctx.PredictTX(txIndex, origin, gasPrice, to_addr, callvalue, calldata, gas)
 }
