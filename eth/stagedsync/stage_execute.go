@@ -443,7 +443,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 								io.ReadFull(storage_prefetch_file, _buf[4:30])
 								for j := 0; j < count; j++ {
 									io.ReadFull(storage_prefetch_file, _buf[30:62])
-									db.GetOne(kv.PlainState, _buf[2:62])
+									rodb.GetOne(kv.PlainState, _buf[2:62])
 									// fmt.Println(i, ENC(_buf[2:62]))
 								}
 							} else {
