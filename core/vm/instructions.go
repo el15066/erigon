@@ -577,7 +577,7 @@ func traceJump(h common.Hash, src uint64, dst uint64) {
 	{
 		m := common.JUMP_CALLS[h]
 		if m == nil {
-			m = map[uint32]struct{}{}
+			m = map[int]struct{}{}
 			common.JUMP_CALLS[h] = m
 		}
 		m[common.CALLID] = struct{}{}
@@ -585,17 +585,17 @@ func traceJump(h common.Hash, src uint64, dst uint64) {
 	{
 		m1 := common.JUMP_DST_CALLCOUNT[h]
 		if m1 == nil {
-			m1 = map[uint32]map[uint32]map[uint32]uint{}
+			m1 = map[uint32]map[uint32]map[int]uint{}
 			common.JUMP_DST_CALLCOUNT[h] = m1
 		}
 		m2 := m1[uint32(src)]
 		if m2 == nil {
-			m2 = map[uint32]map[uint32]uint{}
+			m2 = map[uint32]map[int]uint{}
 			m1[uint32(src)] = m2
 		}
 		m3 := m2[uint32(dst)]
 		if m3 == nil {
-			m3 = map[uint32]uint{}
+			m3 = map[int]uint{}
 			m2[uint32(dst)] = m3
 		}
 		m3[common.CALLID] += 1
