@@ -245,9 +245,12 @@ func lockThreadAndCPU(cores ...int) {
 	setCPU(cores...)
 }
 
-func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transaction) {
-	defer db.Close()
+func prefetchWorker(myID int, cfg ExecuteBlockCfg, batch *olddb.Mutation, txChan chan types.Transaction) {
 	//
+	rodb, err := cfg.db.BeginRo(context.Background()); if err != nil { panic(err) }
+	defer rodb.Rollback()
+	//
+	db  := batch.UsingRoDB(rodb)
 	ctx := prediction.NewCtx(db)
 	//
 	for tx := range txChan {
@@ -308,7 +311,6 @@ func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transactio
 	}
 }
 
-
 type tx_dump struct {
 	Block      uint64
 	Index      int
@@ -337,8 +339,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 		txChan := make(chan types.Transaction)
 		defer close(txChan)
 		//
-		db := batch.UsingRoDB(rodb)
-		go prefetchWorker(0, db, txChan)
+		go prefetchWorker(0, cfg, batch, txChan)
 		//
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
 			block, err := readBlock(blockNum, rodb)
