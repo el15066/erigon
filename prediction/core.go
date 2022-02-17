@@ -177,13 +177,13 @@ func internalPredictTX(
 	state.callvalue.Set(callvalue)
 	state.calldata  = calldata
 	state.gaz       = gaz
-	predictCall(state, address)
+	state.predictCall(address)
 	ctx.sp.FreeState(state)
 }
 
 // var inside = false
 
-func predictCall(state *State, codeAddress common.Address) (byte, bool) {
+func (state *State) predictCall(codeAddress common.Address) (byte, bool) {
 	if common.DEBUG_TX && state.ctx.Debug {
 		fmt.Println("predictCall",
 			codeAddress,

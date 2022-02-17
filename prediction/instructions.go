@@ -742,7 +742,7 @@ func opCallCommon(state *State, t CallOpType) {
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println(" ns.gaz ", ns.gaz) }
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println("---> call start") }
 	//
-	res, known  := predictCall(ns, ca)
+	res, known  := ns.predictCall(ca)
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("<---  call result ", res, known) }
 	//
