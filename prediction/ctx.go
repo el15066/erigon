@@ -84,9 +84,11 @@ func (ctx *Ctx) PredictTX(
 	//
 ) {
 	if common.DEBUG_TX {
-		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && common.TX_INDEX == common.DEBUG_TX_INDEX {
+		txIndex := common.GetTxIndex()
+		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && txIndex == common.DEBUG_TX_INDEX {
 			fmt.Println("PredictTX",
-				common.TX_INDEX,
+				ctx.bvs.BlockNumber,
+				txIndex,
 				origin,
 				gasPrice,
 			)
@@ -114,8 +116,9 @@ func (ctx *Ctx) PredictTX(
 	statePool.FreeState(state)
 
 	if common.TRACE_PREDICTED && tracefile != nil {
+		txIndex := common.GetTxIndex()
 		//
-		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, common.TX_INDEX, address))
+		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, txIndex, address))
 		//
 		if len(ctx.Predicted) > 0 {
 			sort.Slice(ctx.Predicted, func(a, b int) bool {
@@ -131,7 +134,7 @@ func (ctx *Ctx) PredictTX(
 		}
 		//
 		if cap(ctx.Predicted) != PREDICTED_CAP {
-			fmt.Println("Note: transaction", ctx.bvs.BlockNumber, common.TX_INDEX, "ctx.Predicted len is", len(ctx.Predicted))
+			fmt.Println("Note: transaction", ctx.bvs.BlockNumber, txIndex, "ctx.Predicted len is", len(ctx.Predicted))
 			ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
 		}
 		//

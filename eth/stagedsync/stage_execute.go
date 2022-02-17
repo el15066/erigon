@@ -428,7 +428,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 					//
 					if common.PREFETCH_ACCOUNTS {
 						//
-						if common.DEBUG_TX || common.TRACE_PREDICTED { common.TX_INDEX = i }
+						if common.DEBUG_TX || common.TRACE_PREDICTED { common.SetTxIndex(i) }
 						//
 						// TODO: check if blockChan is about to starve, so we skip the following (which blocks)
 						txChan <- tx
