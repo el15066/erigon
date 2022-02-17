@@ -87,8 +87,8 @@ func (ctx *Ctx) PredictTX(
 		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && common.TX_INDEX == common.DEBUG_TX_INDEX {
 			fmt.Println("PredictTX",
 				common.TX_INDEX,
-				ctx.Origin,
-				ctx.GasPrice,
+				origin,
+				gasPrice,
 			)
 			ctx.Debug = true
 		} else {
