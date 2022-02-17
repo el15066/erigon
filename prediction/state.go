@@ -74,19 +74,18 @@ type StatePool struct {
 	available uint64    // make sure num of bits >= len(states)
 }
 
-func (sp *StatePool) Init(ctx *Ctx) {
+func (sp *StatePool) Init() {
 	c := len(sp.states)
 	if c > 64 { panic("Too many states in StatePool") }
 	//
 	for i := 0; i < c; i += 1 {
 		sp.states[i].spIndex = byte(i)
-		sp.states[i].ctx     = ctx
 		sp.states[i].regs[INVALID_REG].Set(&UNKNOWN_U256)
 	}
 	sp.available = (uint64(1) << c) - 1
 }
 
-func (sp *StatePool) NewState() *State {
+func (sp *StatePool) NewState(ctx *Ctx) *State {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
 	//
@@ -97,7 +96,9 @@ func (sp *StatePool) NewState() *State {
 	//
 	sp.available &= ^(uint64(1) << i)
 	//
-	return &sp.states[i]
+	ns := &sp.states[i]
+	ns.ctx = ctx
+	return ns
 }
 
 func (sp *StatePool) FreeState(state *State) {

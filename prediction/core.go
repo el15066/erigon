@@ -119,7 +119,6 @@ func (mem *Mem) set32(i0 uint64, data [32]byte) {        mem.set(i0, 32, data[:]
 // Ctx can't change* during execution of a TX, only between TXs, should not be copied and is unique to each thread
 // *except for returnData/Size and Predicted
 type Ctx struct {
-	sp          StatePool
 	hasher      crypto.KeccakState
 	buf         [32]byte
 	ibs         *stateDB.IntraBlockState
@@ -140,7 +139,6 @@ func NewCtx(db kv.Getter) *Ctx {
 		hasher: crypto.NewKeccakState(),
 		ibs:    stateDB.New(stateDB.NewPlainStateReader(db)),
 	}
-	ctx.sp.Init(ctx)
 	return ctx
 }
 func (ctx *Ctx) BlockEnded() {
@@ -170,7 +168,7 @@ func internalPredictTX(
 	calldata  []byte,
 	gaz       int,
 ) {
-	state := ctx.sp.NewState()
+	state := statePool.NewState(ctx)
 	if state == nil { return }
 	state.address   = address
 	state.caller    = ctx.Origin
@@ -178,7 +176,7 @@ func internalPredictTX(
 	state.calldata  = calldata
 	state.gaz       = gaz
 	state.predictCall(address)
-	ctx.sp.FreeState(state)
+	statePool.FreeState(state)
 }
 
 // var inside = false

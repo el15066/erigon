@@ -20,12 +20,16 @@ import (
 
 const PREDICTED_CAP = 16384 // initial capacity of the ctx.Predicted slice (if TRACE_PREDICTED enabled)
 
+var statePool *StatePool
+
 var ctx       *Ctx
 var tracefile *bufio.Writer
 
 func Init() {
-	var err error
-	err = predictorDB.Init(); if err != nil { panic(err) }
+	err := predictorDB.Init(); if err != nil { panic(err) }
+	//
+	statePool = new(StatePool)
+	statePool.Init()
 	//
 	if common.TRACE_PREDICTED {
 		_f, _err := os.OpenFile("logz/predicted.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
