@@ -698,8 +698,9 @@ func opCallCommon(state *State, t CallOpType) {
 	_ = v0 // ignore gas
 	//
 	ca    := common.Address(v1.Bytes20())
-	state.ctx.ibs.GetCode(ca) // prefetch
-	//
+	if common.PREFETCH_CODE {
+		state.ctx.ibs.GetCode(ca)
+	}
 	i0    := v3.Uint64()
 	iS    := v4.Uint64()
 	idata := state.mem.get(i0, iS)
