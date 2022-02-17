@@ -35,9 +35,9 @@ var UNKNOWN_U256 = uint256.Int{
 	random_u256_part_0,
 }
 
-var JumpTable [256]func(*State)
+var jumpTable [256]func(*State)
 
-func init() { JumpTable = jumpTable } // go doesn't like circle with opCallCommon
+func init() { jumpTable = _jumpTable } // go doesn't like circle with opCallCommon
 
 type Mem struct {
 	data  [65536]byte
@@ -233,7 +233,7 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 		if common.DEBUG_TX && state.ctx.Debug { _, rd = getArg(code, state.i + 1) }
 		if common.DEBUG_TX && state.ctx.Debug { fmt.Print(fmt.Sprintf(  "%5d| %4d = %20s ", state.gaz, rd, jumpTableNames[op])) }
 		//
-		JumpTable[op](state)
+		jumpTable[op](state)
 		//
 		if common.DEBUG_TX && state.ctx.Debug { fmt.Print(fmt.Sprintf("\n%5d| %4d = %20s \n", state.gaz, rd, _enc_reg(state, rd))) }
 		if common.DEBUG_TX && state.ctx.Debug { state.mem.debug() }
