@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"os"
 	"bufio"
-	"io"
 	"fmt"
 	"runtime"
 	"sort"
 	"time"
-	"sync/atomic"
+	// "sync/atomic"
 
 	"golang.org/x/sys/unix"
 
@@ -268,54 +266,13 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 
 	lockThreadAndCPU(4)
 
-	var ENC = hex.EncodeToString
-	var tracefile *bufio.Writer
-	if common.PREFETCH_TRACING {
-		_f, _err := os.OpenFile("logz/prefetches.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
-		if _err == nil {
-			defer _f.Close()
-			tracefile = bufio.NewWriterSize(_f, 128*1024)
-			defer tracefile.Flush()
-		} else {
-			log.Warn("Prefetches not recorded", "error", _err)
-		}
-	}
-	var dumpfile *bufio.Writer
-	if common.TX_DUMPING {
-		_f, _err := os.OpenFile("logz/tx_dump.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
-		if _err == nil {
-			defer _f.Close()
-			dumpfile = bufio.NewWriterSize(_f, 128*1024)
-			defer dumpfile.Flush()
-		} else {
-			log.Warn("Transactions not dumped", "error", _err)
-		}
-	}
-	var storage_prefetch_b = uint64(7500000) // where the file starts
-	var storage_prefetch_i = -1
-	var storage_prefetch_file *bufio.Reader
-	if common.USE_STORAGE_PREFETCH_FILE {
-		_f, _err := os.OpenFile("logz/reads_s.bin", os.O_RDONLY, 0664)
-		if _err == nil {
-			defer _f.Close()
-			storage_prefetch_file = bufio.NewReaderSize(_f, 128*1024)
-			storage_prefetch_i    = 0
-		} else {
-			log.Warn("Storage prefetch file", "error", _err)
-		}
-	}
-	// var err   error
-	// var block *types.Block
-	// var db    kv.Tx
 	rodb, err := cfg.db.BeginRo(context.Background())
 	if err == nil {
 		defer rodb.Rollback()
 		db := batch.UsingRoDB(rodb)
 		//
-		var ctx *prediction.Ctx
-		if common.USE_PREDICTORS {
-			ctx = prediction.NewCtx(db)
-		}
+		ctx := prediction.NewCtx(db)
+		//
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
 			block, err := readBlock(blockNum, rodb)
 			if err != nil {
@@ -327,164 +284,70 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				case <-quitChan:
 					break Loop
 			}
-			if common.USE_PREDICTORS {
-				prediction.SetBlockVars(
-					block.Coinbase(),
-					block.Difficulty(),
-					blockNum,
-					block.Time(),
-					block.GasLimit(),
-				)
-				ctx.BlockEnded()
-				ctx.StartingNewBlock()
-			}
-			if common.PREFETCH_ACCOUNTS {
-				for i, tx := range block.Transactions() {
-					bench.Tick(100)
+			//
+			prediction.SetBlockVars(
+				block.Coinbase(),
+				block.Difficulty(),
+				blockNum,
+				block.Time(),
+				block.GasLimit(),
+			)
+			ctx.BlockEnded()
+			ctx.StartingNewBlock()
+			//
+			for i, tx := range block.Transactions() {
+				bench.Tick(100)
+				//
+				common.SetTxIndex(i)
+				//
+				// prefetch 'from' account
+				//
+				// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
+				// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
+				from_addr, ok := tx.GetSender()
+				if !ok {
+					log.Error("Sender not in tx", "block_number", blockNum, "tx_index", i)
+					break Loop
+				}
+				from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
+				//
+				bench.Tick(101)
+				// prefetch 'to' account (nil if contract creation)
+				to_addr := tx.GetTo()
+				if to_addr != nil && *to_addr != from_addr {
 					//
-					common.SetTxIndex(i)
+					bench.Tick(105)
+					to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
+					bench.Tick(106)
 					//
-					// prefetch 'from' account
-					//
-					// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
-					// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
-					from_addr, ok := tx.GetSender()
-					if !ok {
-						log.Error("Sender not in tx", "block_number", blockNum, "tx_index", i)
-						break Loop
-					}
-					if common.PREFETCH_TRACING && tracefile != nil {
-						tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(from_addr.Bytes())))
-					}
-					from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
-					//
-					bench.Tick(101)
-					// prefetch 'to' account (nil if contract creation)
-					to_addr := tx.GetTo()
-					if to_addr != nil && *to_addr != from_addr {
-						bench.Tick(105)
-						if common.PREFETCH_TRACING && tracefile != nil {
-							tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(to_addr.Bytes())))
-						}
-						to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
+					var to_acc accounts.Account
+					to_acc.DecodeForStorage(to_data)
+					// 
+					if !to_acc.IsEmptyCodeHash() {
 						//
-						bench.Tick(106)
-						// prefetch its code if it's a contract
-						if common.PREFETCH_CODE {
-							var to_acc accounts.Account
-							to_acc.DecodeForStorage(to_data)
-							// 
-							if !to_acc.IsEmptyCodeHash() {
-								//
-								if common.PREFETCH_TRACING && tracefile != nil {
-									tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(to_acc.CodeHash.Bytes())))
-								}
-								bench.Tick(110)
-								rodb.GetOne(kv.Code, to_acc.CodeHash.Bytes()) // if we use its value, remember to change rodb to db
-								bench.Tick(111)
-								//
-								if common.TX_DUMPING && dumpfile != nil {
-									t, _ := json.Marshal(&tx_dump{
-										Block:      blockNum,
-										Index:      i,
-										// Blockhash: not here (array of 256 most recent)
-										Coinbase:   ENC(block.Coinbase().Bytes()),
-										Timestamp:  block.Time(),
-										Difficulty: block.Difficulty().Uint64(),
-										Gaslimit:   block.GasLimit(),
-										// Chainid:    cfg.chainConfig.ChainID.Uint64(),
-										// Selfbalance: is dynamic
-										Address:    ENC(to_addr.Bytes()),
-										// Balance: is dynamic
-										Origin:     ENC(from_addr.Bytes()),
-										// Caller: same as origin for now
-										Callvalue:  tx.GetValue(),
-										Calldata:   ENC(tx.GetData()),
-										// Gasprice: n/a after LONDON // TODO: verify below is correct
-										// Gasprice: ENC(tx.GetPrice().Bytes32()),
-										// Extcode: not here
-										// Returndata: n/a
-									})
-									dumpfile.Write(append(t, byte('\n')))
-								}
-								//
-								if common.USE_PREDICTORS {
-									var from_acc accounts.Account
-									from_acc.DecodeForStorage(from_data)
-									//
-									ctx.PredictTX(
-										from_addr,
-										tx.GetPrice(),
-										//
-										*to_addr,
-										tx.GetValue(),
-										tx.GetData(),
-										tx.GetGas(),
-										//
-									)
-									bench.Tick(112)
-								}
-							}
-							bench.Tick(107)
-						}
-					}
-					bench.Tick(102)
-					//
-					if common.USE_STORAGE_PREFETCH_FILE {
-						// GET storage prefetch locations
-						// read 2 bytes
-						// if 0 -> update tx index
-						// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
-						// fetch all those addresses
-						// loop
-						// why loop? -> 1 tx can call many contracts
-						for i == storage_prefetch_i {
-							_, _err := io.ReadFull(storage_prefetch_file, _buf[0:4])
-							if _err != nil {
-								log.Warn("Read from storage prefetch file", "error", _err)
-								storage_prefetch_i    = -1
-								storage_prefetch_file = nil
-								break
-							}
-							count := int(binary.BigEndian.Uint16(_buf[0:2]))
+						bench.Tick(110)
+						db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
+						bench.Tick(111)
+						//
+						var from_acc accounts.Account
+						from_acc.DecodeForStorage(from_data)
+						//
+						ctx.PredictTX(
+							from_addr,
+							tx.GetPrice(),
 							//
-							// fmt.Println(i, "count", count)
-							if count != 0 {
-								io.ReadFull(storage_prefetch_file, _buf[4:30])
-								for j := 0; j < count; j++ {
-									io.ReadFull(storage_prefetch_file, _buf[30:62])
-									rodb.GetOne(kv.PlainState, _buf[2:62])
-									// fmt.Println(i, ENC(_buf[2:62]))
-								}
-							} else {
-								diff := int(binary.BigEndian.Uint16(_buf[2:4]))
-								// fmt.Println(i, "diff", diff)
-								if diff != 0 { storage_prefetch_i += diff
-								} else       { storage_prefetch_i  = -1   }
-								break
-							}
-						}
-						bench.Tick(103)
+							*to_addr,
+							tx.GetValue(),
+							tx.GetData(),
+							tx.GetGas(),
+							//
+						)
+						bench.Tick(112)
+						bench.Tick(107)
 					}
 				}
-			}
-			if common.USE_STORAGE_PREFETCH_FILE && storage_prefetch_file != nil {
-				if storage_prefetch_i == -1 {
-					if blockNum == storage_prefetch_b {
-						io.ReadFull(storage_prefetch_file,      _buf[0:2])
-						bdiff := uint64(binary.BigEndian.Uint16(_buf[0:2]))
-						// fmt.Println("bdiff", storage_prefetch_b, "+", bdiff)
-						storage_prefetch_b += bdiff
-					}
-					if blockNum + 1 == storage_prefetch_b {
-						storage_prefetch_i = 0
-						// fmt.Println("~~~~~ SWITCH ~~~~~", storage_prefetch_b)
-					}
-				} else {
-					log.Warn("Malformed storage prefetch file", "storage_prefetch_b", storage_prefetch_b, "storage_prefetch_i", storage_prefetch_i)
-					storage_prefetch_i    = -1
-					storage_prefetch_file = nil
-				}
+				bench.Tick(102)
+				//
 			}
 		}
 	}
