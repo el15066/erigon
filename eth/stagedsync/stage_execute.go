@@ -245,6 +245,70 @@ func lockThreadAndCPU(cores ...int) {
 	setCPU(cores...)
 }
 
+func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transaction) {
+	defer db.Close()
+	//
+	ctx := prediction.NewCtx(db)
+	//
+	for tx := range txChan {
+		//
+		if tx == nil {
+			bench.Tick(140)
+			ctx.BlockEnded()
+			ctx.StartingNewBlock()
+			bench.Tick(141)
+			continue
+		}
+		//
+		bench.Tick(100)
+		// prefetch 'from' account
+		//
+		// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
+		// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
+		from_addr, ok := tx.GetSender() ; if !ok { panic("Sender not in tx") }
+		from_data, _  := db.GetOne(kv.PlainState, from_addr.Bytes())
+		//
+		bench.Tick(101)
+		// prefetch 'to' account (nil if contract creation)
+		to_addr := tx.GetTo()
+		if to_addr != nil && *to_addr != from_addr {
+			//
+			bench.Tick(105)
+			to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
+			bench.Tick(106)
+			//
+			var to_acc accounts.Account
+			to_acc.DecodeForStorage(to_data)
+			// 
+			if !to_acc.IsEmptyCodeHash() {
+				//
+				bench.Tick(110)
+				db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
+				bench.Tick(111)
+				//
+				var from_acc accounts.Account
+				from_acc.DecodeForStorage(from_data)
+				//
+				ctx.PredictTX(
+					from_addr,
+					tx.GetPrice(),
+					//
+					*to_addr,
+					tx.GetValue(),
+					tx.GetData(),
+					tx.GetGas(),
+					//
+				)
+				bench.Tick(112)
+			}
+			bench.Tick(107)
+		}
+		bench.Tick(102)
+		//
+	}
+}
+
+
 type tx_dump struct {
 	Block      uint64
 	Index      int
@@ -269,9 +333,12 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 	rodb, err := cfg.db.BeginRo(context.Background())
 	if err == nil {
 		defer rodb.Rollback()
-		db := batch.UsingRoDB(rodb)
 		//
-		ctx := prediction.NewCtx(db)
+		txChan := make(chan types.Transaction)
+		defer close(txChan)
+		//
+		db := batch.UsingRoDB(rodb)
+		go prefetchWorker(0, db, txChan)
 		//
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
 			block, err := readBlock(blockNum, rodb)
@@ -292,63 +359,17 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				block.Time(),
 				block.GasLimit(),
 			)
-			ctx.BlockEnded()
-			ctx.StartingNewBlock()
+			//
+			txChan <- nil
 			//
 			for i, tx := range block.Transactions() {
-				bench.Tick(100)
 				//
 				common.SetTxIndex(i)
 				//
-				// prefetch 'from' account
-				//
-				// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
-				// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
-				from_addr, ok := tx.GetSender()
-				if !ok {
-					log.Error("Sender not in tx", "block_number", blockNum, "tx_index", i)
-					break Loop
-				}
-				from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
-				//
-				bench.Tick(101)
-				// prefetch 'to' account (nil if contract creation)
-				to_addr := tx.GetTo()
-				if to_addr != nil && *to_addr != from_addr {
-					//
-					bench.Tick(105)
-					to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
-					bench.Tick(106)
-					//
-					var to_acc accounts.Account
-					to_acc.DecodeForStorage(to_data)
-					// 
-					if !to_acc.IsEmptyCodeHash() {
-						//
-						bench.Tick(110)
-						db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
-						bench.Tick(111)
-						//
-						var from_acc accounts.Account
-						from_acc.DecodeForStorage(from_data)
-						//
-						ctx.PredictTX(
-							from_addr,
-							tx.GetPrice(),
-							//
-							*to_addr,
-							tx.GetValue(),
-							tx.GetData(),
-							tx.GetGas(),
-							//
-						)
-						bench.Tick(112)
-						bench.Tick(107)
-					}
-				}
-				bench.Tick(102)
-				//
+				txChan <- tx
 			}
+			//
+			txChan <- nil
 		}
 	}
 	log.Info("Prefetch thread exiting", "error", err)
