@@ -52,14 +52,14 @@ func SetTxIndex(i int) {
 	atomic.StoreInt64(&_tx_index, int64(i))
 }
 
-var CALLID         = uint32(0)
-var CALLID_COUNTER = uint32(0)
+var CALLID         = -1 // JUMP_TRACING
+var CALLID_COUNTER =  0 // JUMP_TRACING
 
 // if JUMP_TRACING {
 var JUMP_COUNT         = map[Hash]uint{}
-var JUMP_CALLS         = map[Hash]map[uint32]struct{}{}
+var JUMP_CALLS         = map[Hash]map[int]struct{}{}
 // var JUMP_EDGE_COUNT    = map[Hash]map[uint64]uint{}
-var JUMP_DST_CALLCOUNT = map[Hash]map[uint32]map[uint32]map[uint32]uint{}
-// var JUMP_DST_CALLS     = map[Hash]map[uint32]map[uint32]uint{} // size of the above map
-// var JUMP_DST_COUNT     = map[Hash]map[uint32]map[uint32]uint{} // sum  of the above map's items
+var JUMP_DST_CALLCOUNT = map[Hash]map[uint32]map[uint32]map[int]uint{}
+// var JUMP_DST_CALLS     = map[Hash]map[uint32]map[uint32]uint{} // len of the above map
+// var JUMP_DST_COUNT     = map[Hash]map[uint32]map[uint32]uint{} // sum of the above map's items
 // }
