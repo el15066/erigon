@@ -5,14 +5,10 @@ import (
 	"fmt"
 	"math"
 	"encoding/hex"
-	"encoding/binary"
 
 	uint256 "github.com/holiman/uint256"
 
 	common  "github.com/ledgerwatch/erigon/common"
-	crypto  "github.com/ledgerwatch/erigon/crypto"
-	stateDB "github.com/ledgerwatch/erigon/core/state"
-	kv      "github.com/ledgerwatch/erigon-lib/kv"
 
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 
@@ -48,51 +44,6 @@ func init() { jumpTable = _jumpTable } // go doesn't like circle with opCallComm
 // ibs.PrefetchState(a, k)
 // ibs.SetDirtyState(a, k, v)
 
-// Ctx can't change* during execution of a TX, only between TXs, should not be copied and is unique to each thread
-// *except for returnData/Size and Predicted
-type Ctx struct {
-	hasher      crypto.KeccakState
-	buf         [32]byte
-	ibs         *stateDB.IntraBlockState
-	//
-	returnData  Mem    // needed here to keep alive after FreeState()
-	returnSize  uint64
-	//
-	bvs         BlockVars
-	//
-	Origin      common.Address
-	GasPrice    *uint256.Int
-	//
-	Predicted   []common.Hash
-	Debug       bool
-}
-func NewCtx(db kv.Getter) *Ctx {
-	ctx := &Ctx{
-		hasher: crypto.NewKeccakState(),
-		ibs:    stateDB.New(stateDB.NewPlainStateReader(db)),
-	}
-	return ctx
-}
-func (ctx *Ctx) BlockEnded() {
-	ctx.ibs.Reset()
-}
-func (ctx *Ctx) SHA3(data []byte) []byte {
-	ctx.hasher.Reset()
-	ctx.hasher.Write(data)
-	ctx.hasher.Read(ctx.buf[:])
-	//
-	if common.DEBUG_TX && ctx.Debug {
-		fmt.Print(hex.EncodeToString(data), " ", hex.EncodeToString(ctx.buf[:]))
-	}
-	//
-	return ctx.buf[:]
-}
-func (ctx *Ctx) getHashBytes(i uint64) []byte {
-	copy(                      ctx.buf[ 0:24], "BLOCKHASH_abcdef01234567")
-	binary.BigEndian.PutUint64(ctx.buf[24:32], i)
-	return ctx.SHA3(ctx.buf[:])
-}
-
 func internalPredictTX(
 	ctx       *Ctx,
 	address   common.Address,
@@ -114,6 +65,7 @@ func internalPredictTX(
 // var inside = false
 
 func (state *State) predictCall(codeAddress common.Address) (byte, bool) {
+	//
 	if common.DEBUG_TX && state.ctx.Debug {
 		fmt.Println("predictCall",
 			codeAddress,

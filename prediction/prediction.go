@@ -18,8 +18,6 @@ import (
 	bench "github.com/ledgerwatch/erigon/bench"
 )
 
-const PREDICTED_CAP = 16384 // initial capacity of the ctx.Predicted slice (if TRACE_PREDICTED enabled)
-
 var statePool *StatePool
 
 var ctx       *Ctx
@@ -50,9 +48,6 @@ func Close() {
 
 func InitCtx(db kv.Getter) {
 	ctx = NewCtx(db)
-	if common.TRACE_PREDICTED {
-		ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
-	}
 }
 
 func SetBlockVars(
