@@ -708,8 +708,8 @@ func opCallCommon(state *State, t CallOpType) {
 		return
 	}
 	//
-	ns := state.ctx.sp.NewState() // Careful: we can't return without FreeState() from now on
-	                              //          we won't use defer for now
+	ns := statePool.NewState() // Careful: we can't return without FreeState() from now on
+	                           //          we won't use defer for now
 	// this must be checked on its own
 	if ns == nil {
 		d.Set(&UNKNOWN_U256)
@@ -750,7 +750,7 @@ func opCallCommon(state *State, t CallOpType) {
 	if gazLeft > 0 {
 		state.gaz += gazLeft
 	}
-	state.ctx.sp.FreeState(ns)
+	statePool.FreeState(ns)
 	//
 	if v5.IsUint64() && v6.IsUint64() {
 		o0 := v5.Uint64()

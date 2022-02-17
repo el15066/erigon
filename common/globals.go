@@ -41,6 +41,7 @@ var CONTRACT_CODE_ALIAS = map[Address]Hash{}
 
 var CALLID         = uint32(0)
 var CALLID_COUNTER = uint32(0)
+var TX_INDEX       = -1 // DEBUG_TX || TRACE_PREDICTED
 
 // if JUMP_TRACING {
 var JUMP_COUNT         = map[Hash]uint{}

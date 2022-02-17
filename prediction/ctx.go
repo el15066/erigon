@@ -21,7 +21,6 @@ const PREDICTED_CAP = 16384 // If TRACE_PREDICTED, warn if the capacity of ctx.P
 // Ctx can't change* during execution of a TX, only between TXs, should not be copied and is unique to each thread
 // *except for returnData/Size and Predicted
 type Ctx struct {
-	sp          *StatePool        // readonly
 	hasher      crypto.KeccakState
 	buf         [32]byte
 	ibs         *stateDB.IntraBlockState
@@ -38,9 +37,8 @@ type Ctx struct {
 	Debug       bool
 }
 
-func NewCtx(db kv.Getter, sp *StatePool) *Ctx {
+func NewCtx(db kv.Getter) *Ctx {
 	ctx := &Ctx{
-		sp:     sp,
 		hasher: crypto.NewKeccakState(),
 		ibs:    stateDB.New(stateDB.NewPlainStateReader(db)),
 	}
@@ -76,8 +74,6 @@ func (ctx *Ctx) getHashBytes(i uint64) []byte {
 }
 
 func (ctx *Ctx) PredictTX(
-	txIndex   int,
-	//
 	origin    common.Address,
 	gasPrice  *uint256.Int,
 	//
@@ -88,9 +84,9 @@ func (ctx *Ctx) PredictTX(
 	//
 ) {
 	if common.DEBUG_TX {
-		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && txIndex == common.DEBUG_TX_INDEX {
+		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && common.TX_INDEX == common.DEBUG_TX_INDEX {
 			fmt.Println("PredictTX",
-				txIndex,
+				common.TX_INDEX,
 				ctx.Origin,
 				ctx.GasPrice,
 			)
@@ -103,7 +99,7 @@ func (ctx *Ctx) PredictTX(
 	ctx.Origin   = origin
 	ctx.GasPrice = gasPrice
 
-	state := ctx.sp.NewState()
+	state := statePool.NewState()
 	if state == nil { return }
 
 	state.ctx       = ctx
@@ -115,11 +111,11 @@ func (ctx *Ctx) PredictTX(
 
 	state.predictCall(address)
 
-	ctx.sp.FreeState(state)
+	statePool.FreeState(state)
 
 	if common.TRACE_PREDICTED && tracefile != nil {
 		//
-		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, txIndex, address))
+		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, common.TX_INDEX, address))
 		//
 		if len(ctx.Predicted) > 0 {
 			sort.Slice(ctx.Predicted, func(a, b int) bool {
@@ -135,7 +131,7 @@ func (ctx *Ctx) PredictTX(
 		}
 		//
 		if cap(ctx.Predicted) != PREDICTED_CAP {
-			fmt.Println("Note: transaction", ctx.bvs.BlockNumber, txIndex, "ctx.Predicted len is", len(ctx.Predicted))
+			fmt.Println("Note: transaction", ctx.bvs.BlockNumber, common.TX_INDEX, "ctx.Predicted len is", len(ctx.Predicted))
 			ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
 		}
 		//
