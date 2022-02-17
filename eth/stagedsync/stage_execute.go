@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"sort"
 	"time"
+	"sync/atomic"
 
 	"golang.org/x/sys/unix"
 
@@ -234,6 +235,18 @@ func newStateReaderWriter(
 	return stateReader, stateWriter, nil
 }
 
+func setCPU(cores ...int) {
+	t := unix.CPUSet{}
+	for _, core := range cores {
+		t.Set(core)
+	}
+	unix.SchedSetaffinity(0, &t)
+}
+func lockThreadAndCPU(cores ...int) {
+	runtime.LockOSThread() // Also needed for unique PID/TID, for perf-utils
+	setCPU(cores...)
+}
+
 type tx_dump struct {
 	Block      uint64
 	Index      int
@@ -250,13 +263,6 @@ type tx_dump struct {
 }
 
 var _buf = [64]byte{}
-
-func lockThreadAndCPU(cpu int) {
-	runtime.LockOSThread() // Needed for unique PID, for perf-utils
-	t := unix.CPUSet{}
-	t.Set(cpu)
-	unix.SchedSetaffinity(0, &t)
-}
 
 func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
 
@@ -556,6 +562,8 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		"PREFETCH_CODE",             common.PREFETCH_CODE,
 		"USE_PREDICTORS",            common.USE_PREDICTORS,
 		"USE_STORAGE_PREFETCH_FILE", common.USE_STORAGE_PREFETCH_FILE,
+		//
+		"PREFETCH_WORKERS_COUNT",    common.PREFETCH_WORKERS_COUNT,
 		//
 		"TRACE_PREDICTED",           common.TRACE_PREDICTED,
 		//
