@@ -66,3 +66,25 @@ func (ctx *Ctx) getHashBytes(i uint64) []byte {
 	binary.BigEndian.PutUint64(ctx.buf[24:32], i)
 	return ctx.SHA3(ctx.buf[:])
 }
+
+func (ctx *Ctx) PredictTX(
+	//
+	address   common.Address,
+	callvalue *uint256.Int,
+	calldata  []byte,
+	gaz       int,
+	//
+) {
+	state := statePool.NewState(ctx)
+	if state == nil { return }
+
+	state.address   = address
+	state.caller    = ctx.Origin
+	state.callvalue.Set(callvalue)  // TODO: maybe pointer instead ?
+	state.calldata  = calldata
+	state.gaz       = gaz
+
+	state.predictCall(address)
+
+	statePool.FreeState(state)
+}

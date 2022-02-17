@@ -44,24 +44,6 @@ func init() { jumpTable = _jumpTable } // go doesn't like circle with opCallComm
 // ibs.PrefetchState(a, k)
 // ibs.SetDirtyState(a, k, v)
 
-func internalPredictTX(
-	ctx       *Ctx,
-	address   common.Address,
-	callvalue *uint256.Int,
-	calldata  []byte,
-	gaz       int,
-) {
-	state := statePool.NewState(ctx)
-	if state == nil { return }
-	state.address   = address
-	state.caller    = ctx.Origin
-	state.callvalue.Set(callvalue)
-	state.calldata  = calldata
-	state.gaz       = gaz
-	state.predictCall(address)
-	statePool.FreeState(state)
-}
-
 // var inside = false
 
 func (state *State) predictCall(codeAddress common.Address) (byte, bool) {

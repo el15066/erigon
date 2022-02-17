@@ -101,7 +101,7 @@ func PredictTX(
 	gaz := int(gas * common.PREDICTOR_GAS_TO_GAZ_RATE / 1024)
 
 	bench.Tick(150)
-	internalPredictTX(ctx, to_addr, callvalue, calldata, gaz)
+	ctx.PredictTX(to_addr, callvalue, calldata, gaz)
 	bench.Tick(151)
 
 	if common.TRACE_PREDICTED && tracefile != nil {
