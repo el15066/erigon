@@ -1,5 +1,5 @@
 
-package prediction_internal
+package prediction
 
 import (
 	"fmt"
@@ -168,7 +168,7 @@ func (ctx *Ctx) getHashBytes(i uint64) []byte {
 	return ctx.SHA3(ctx.buf[:])
 }
 
-func PredictTX(
+func internalPredictTX(
 	ctx       *Ctx,
 	address   common.Address,
 	callvalue *uint256.Int,

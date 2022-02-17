@@ -1,7 +1,7 @@
 
 // REMEMBER to keep this in sync with jumpTable.go
 
-package prediction_internal
+package prediction
 
 //
 //

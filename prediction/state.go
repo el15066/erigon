@@ -1,5 +1,5 @@
 
-package prediction_internal
+package prediction
 
 import (
 	"fmt"
