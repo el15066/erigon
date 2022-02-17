@@ -378,6 +378,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 		//
 		if common.USE_PREDICTORS {
 			prediction.Init()
+			defer prediction.Close()
 		}
 		//
 		var txChan chan types.Transaction
@@ -628,11 +629,6 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	logTx, lastLogTx := uint64(0), uint64(0)
 	logTime := time.Now()
 	var gas uint64
-
-	if common.USE_PREDICTORS {
-		prediction.Init()
-		defer prediction.Close()
-	}
 
 	blockChan := make(chan *types.Block, common.BLOCK_READAHEAD - 1)
 	errChan   := make(chan error)
