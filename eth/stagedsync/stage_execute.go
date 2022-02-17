@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"sort"
 	"time"
+	"sync/atomic"
 
 	"golang.org/x/sys/unix"
 
@@ -234,6 +235,90 @@ func newStateReaderWriter(
 	return stateReader, stateWriter, nil
 }
 
+func lockThreadAndCPU(cpu int) {
+	runtime.LockOSThread() // Needed for unique PID, for perf-utils
+	t := unix.CPUSet{}
+	t.Set(cpu)
+	unix.SchedSetaffinity(0, &t)
+}
+
+var workerNewBlockFlags uint64
+
+func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transaction) {
+	if myID >= 64 {
+		panic("Up to 64 prefetch workers are supported, see PREFETCH_WORKERS_COUNT")
+	}
+	myMask := uint64(1) << myID
+	//
+	var ctx *prediction.Ctx
+	if common.USE_PREDICTORS { ctx = prediction.NewCtx(db) }
+	//
+	for tx := range txChan {
+		bench.Tick(100)
+		//
+		if common.USE_PREDICTORS {
+			// isNewBlock := atomic.CompareAndSwapUint32(&workerNewBlockFlags[myID], 1, 0)
+			flags := atomic.LoadUint64(&workerNewBlockFlags)
+			if flags & myMask == 0 {
+				atomic.AddUint64(&workerNewBlockFlags, myMask)
+				ctx.BlockEnded()
+				ctx.StartingNewBlock()
+			}
+		}
+		// prefetch 'from' account
+		// The tx was provided by readBlock() (in fetchBlocks())
+		// which calls ReadBlockWithSenders() and so saves the sender to the transaction,
+		// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer).
+		from_addr, _ := tx.GetSender()
+		from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
+		//
+		bench.Tick(101)
+		//
+		// prefetch 'to' account (nil if contract creation)
+		to_addr := tx.GetTo()
+		if to_addr != nil && *to_addr != from_addr {
+			//
+			bench.Tick(105)
+			to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
+			bench.Tick(106)
+			//
+			// if it's a contract prefetch its code or/and run its predictor
+			if common.PREFETCH_CODE || common.USE_PREDICTORS {
+				var to_acc accounts.Account
+				to_acc.DecodeForStorage(to_data)
+				// 
+				if !to_acc.IsEmptyCodeHash() {
+					//
+					if common.PREFETCH_CODE {
+						bench.Tick(110)
+						db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
+					}
+					bench.Tick(111)
+					//
+					if common.USE_PREDICTORS {
+						var from_acc accounts.Account
+						from_acc.DecodeForStorage(from_data)
+						//
+						ctx.PredictTX(
+							from_addr,
+							tx.GetPrice(),
+							//
+							*to_addr,
+							tx.GetValue(),
+							tx.GetData(),
+							tx.GetGas(),
+							//
+						)
+						bench.Tick(112)
+					}
+				}
+				bench.Tick(107)
+			}
+		}
+		bench.Tick(102)
+	}
+}
+
 type tx_dump struct {
 	Block      uint64
 	Index      int
@@ -251,29 +336,10 @@ type tx_dump struct {
 
 var _buf = [64]byte{}
 
-func lockThreadAndCPU(cpu int) {
-	runtime.LockOSThread() // Needed for unique PID, for perf-utils
-	t := unix.CPUSet{}
-	t.Set(cpu)
-	unix.SchedSetaffinity(0, &t)
-}
-
 func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
 
 	lockThreadAndCPU(4)
 
-	var ENC = hex.EncodeToString
-	var tracefile *bufio.Writer
-	if common.PREFETCH_TRACING {
-		_f, _err := os.OpenFile("logz/prefetches.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
-		if _err == nil {
-			defer _f.Close()
-			tracefile = bufio.NewWriterSize(_f, 128*1024)
-			defer tracefile.Flush()
-		} else {
-			log.Warn("Prefetches not recorded", "error", _err)
-		}
-	}
 	var dumpfile *bufio.Writer
 	if common.TX_DUMPING {
 		_f, _err := os.OpenFile("logz/tx_dump.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
@@ -298,27 +364,34 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 			log.Warn("Storage prefetch file", "error", _err)
 		}
 	}
-	// var err   error
-	// var block *types.Block
-	// var db    kv.Tx
 	rodb, err := cfg.db.BeginRo(context.Background())
 	if err == nil {
 		defer rodb.Rollback()
-		db := batch.UsingRoDB(rodb)
 		//
 		if common.USE_PREDICTORS {
-			prediction.InitCtx(db)
+			prediction.Init()
 		}
+		//
+		txChan := make(chan types.Transaction)
+		//
+		if common.PREFETCH_ACCOUNTS {
+			// Start prefetch goroutines
+			for j := 0; j < common.PREFETCH_WORKERS_COUNT; j += 1 {
+				//
+				// Each worker needs its own mdbx transaction
+				_rodb, err := cfg.db.BeginRo(context.Background()); if err == nil { panic(err) }
+				_db        := batch.UsingRoDB(_rodb)
+				//
+				go prefetchWorker(j, _db, txChan)
+			}
+		}
+		//
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
+			//
 			block, err := readBlock(blockNum, rodb)
 			if err != nil {
 				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
 				break Loop
-			}
-			select {
-				case blockChan <- block:
-				case <-quitChan:
-					break Loop
 			}
 			if common.USE_PREDICTORS {
 				prediction.SetBlockVars(
@@ -328,97 +401,54 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 					block.Time(),
 					block.GasLimit(),
 				)
+				atomic.StoreUint64(&workerNewBlockFlags, uint64(0))
 			}
-			if common.PREFETCH_ACCOUNTS {
+			if common.PREFETCH_ACCOUNTS || common.TX_DUMPING || common.USE_STORAGE_PREFETCH_FILE {
 				for i, tx := range block.Transactions() {
-					bench.Tick(100)
-					// prefetch 'from' account
 					//
-					// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
-					// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
-					from_addr, ok := tx.GetSender()
-					if !ok {
-						log.Error("Sender not in tx", "block_number", blockNum, "tx_index", i)
-						break Loop
-					}
-					if common.PREFETCH_TRACING && tracefile != nil {
-						tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(from_addr.Bytes())))
-					}
-					from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
-					//
-					bench.Tick(101)
-					// prefetch 'to' account (nil if contract creation)
-					to_addr := tx.GetTo()
-					if to_addr != nil && *to_addr != from_addr {
-						bench.Tick(105)
-						if common.PREFETCH_TRACING && tracefile != nil {
-							tracefile.WriteString(fmt.Sprintf("A %8d %3d %s\n", blockNum, i, ENC(to_addr.Bytes())))
-						}
-						to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
+					if common.PREFETCH_ACCOUNTS {
 						//
-						bench.Tick(106)
-						// prefetch its code if it's a contract
-						if common.PREFETCH_CODE {
-							var to_acc accounts.Account
-							to_acc.DecodeForStorage(to_data)
-							// 
-							if !to_acc.IsEmptyCodeHash() {
-								//
-								if common.PREFETCH_TRACING && tracefile != nil {
-									tracefile.WriteString(fmt.Sprintf("C %8d %3d %s\n", blockNum, i, ENC(to_acc.CodeHash.Bytes())))
-								}
-								bench.Tick(110)
-								rodb.GetOne(kv.Code, to_acc.CodeHash.Bytes()) // if we use its value, remember to change rodb to db
-								bench.Tick(111)
-								//
-								if common.TX_DUMPING && dumpfile != nil {
-									t, _ := json.Marshal(&tx_dump{
-										Block:      blockNum,
-										Index:      i,
-										// Blockhash: not here (array of 256 most recent)
-										Coinbase:   ENC(block.Coinbase().Bytes()),
-										Timestamp:  block.Time(),
-										Difficulty: block.Difficulty().Uint64(),
-										Gaslimit:   block.GasLimit(),
-										// Chainid:    cfg.chainConfig.ChainID.Uint64(),
-										// Selfbalance: is dynamic
-										Address:    ENC(to_addr.Bytes()),
-										// Balance: is dynamic
-										Origin:     ENC(from_addr.Bytes()),
-										// Caller: same as origin for now
-										Callvalue:  tx.GetValue(),
-										Calldata:   ENC(tx.GetData()),
-										// Gasprice: n/a after LONDON // TODO: verify below is correct
-										// Gasprice: ENC(tx.GetPrice().Bytes32()),
-										// Extcode: not here
-										// Returndata: n/a
-									})
-									dumpfile.Write(append(t, byte('\n')))
-								}
-								//
-								if common.USE_PREDICTORS {
-									var from_acc accounts.Account
-									from_acc.DecodeForStorage(from_data)
-									//
-									prediction.PredictTX(
-										i,
-										*to_addr,
-										//
-										from_addr,
-										tx.GetPrice(),
-										//
-										tx.GetValue(),
-										tx.GetData(),
-										//
-										tx.GetGas(),
-									)
-									bench.Tick(112)
-								}
-							}
-							bench.Tick(107)
+						if common.DEBUG_TX || common.TRACE_PREDICTED { common.TX_INDEX = i }
+						//
+						select {
+						case blockChan <- block:
+							// TODO: check if starving to break
+							continue
+						case txChan <- tx:
+							// sent to first that becomes idle
+							continue
+						case <-quitChan:
+							break Loop
 						}
 					}
-					bench.Tick(102)
+					//
+					if common.TX_DUMPING && dumpfile != nil {
+						var ENC       = hex.EncodeToString
+						from_addr, _ := tx.GetSender()
+						to_addr      := tx.GetTo()
+						t, _ := json.Marshal(&tx_dump{
+							Block:      blockNum,
+							Index:      i,
+							// Blockhash: not here (array of 256 most recent)
+							Coinbase:   ENC(block.Coinbase().Bytes()),
+							Timestamp:  block.Time(),
+							Difficulty: block.Difficulty().Uint64(),
+							Gaslimit:   block.GasLimit(),
+							// Chainid:    cfg.chainConfig.ChainID.Uint64(),
+							// Selfbalance: is dynamic
+							Address:    ENC(to_addr.Bytes()),
+							// Balance: is dynamic
+							Origin:     ENC(from_addr.Bytes()),
+							// Caller: same as origin for now
+							Callvalue:  tx.GetValue(),
+							Calldata:   ENC(tx.GetData()),
+							// Gasprice: n/a after LONDON // TODO: verify below is correct
+							// Gasprice: ENC(tx.GetPrice().Bytes32()),
+							// Extcode: not here
+							// Returndata: n/a
+						})
+						dumpfile.Write(append(t, byte('\n')))
+					}
 					//
 					if common.USE_STORAGE_PREFETCH_FILE {
 						// GET storage prefetch locations
@@ -457,9 +487,6 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 						bench.Tick(103)
 					}
 				}
-			}
-			if common.USE_PREDICTORS {
-				prediction.BlockEnded()
 			}
 			if common.USE_STORAGE_PREFETCH_FILE && storage_prefetch_file != nil {
 				if storage_prefetch_i == -1 {
