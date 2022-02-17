@@ -1,7 +1,7 @@
 
 // REMEMBER to keep this in sync with jumpTableNames.go
 
-package prediction_internal
+package prediction
 
 const OP_CONSTANT_OFFSET = 1
 var _op = opStop

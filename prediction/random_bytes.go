@@ -1,5 +1,5 @@
 
-package prediction_internal
+package prediction
 
 // From python 3:
 //   import random

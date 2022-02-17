@@ -13,7 +13,6 @@ import (
 	common  "github.com/ledgerwatch/erigon/common"
 	kv      "github.com/ledgerwatch/erigon-lib/kv"
 
-	internal    "github.com/ledgerwatch/erigon/prediction/prediction_internal"
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 
 	bench "github.com/ledgerwatch/erigon/bench"
@@ -21,7 +20,7 @@ import (
 
 const PREDICTED_CAP = 16384 // initial capacity of the ctx.Predicted slice (if TRACE_PREDICTED enabled)
 
-var ctx       *internal.Ctx
+var ctx       *Ctx
 var tracefile *bufio.Writer
 
 func Init() {
@@ -46,7 +45,7 @@ func Close() {
 }
 
 func InitCtx(db kv.Getter) {
-	ctx = internal.NewCtx(db)
+	ctx = NewCtx(db)
 	if common.TRACE_PREDICTED {
 		ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
 	}
