@@ -716,6 +716,7 @@ func opCallCommon(state *State, t CallOpType) {
 		d.Set(&UNKNOWN_U256)
 		return
 	}
+	ns.ctx      = state.ctx
 	ns.calldata = idata
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" calldata ", hex.EncodeToString(ns.calldata)) }
