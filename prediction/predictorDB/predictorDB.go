@@ -19,39 +19,45 @@ var log logging.Logger
 var pdb predictorCache
 
 type predictorCache struct {
-	Mu    sync.Mutex
+	Mu    common.RWSpinlock
+	MuDB  sync.RWMutex
 	Cache *simplelru.LRU
-	DB    PredictorDB
 }
 
 func Init() error {
 	log = logging.New("package", "predictorDB")
 	//
-	var err error
-	pdb.DB, err  = openPredictorDB()
+	err := openPredictorDB()
 	if err != nil { return err }
+	//
 	pdb.Cache, _ = simplelru.NewLRU(common.PREDICTOR_CACHE_SIZE, nil)
 	return nil
 }
+
 func Close() {
-	pdb.Mu.Lock()
-	defer pdb.Mu.Unlock()
-	//
+	pdb.MuDB.Lock()
+	DB.Close()
+	pdb.MuDB.Unlock()
+	// pdb.Mu.Lock()
 	// pdb.Cache.Purge()
-	pdb.DB.CloseDB()
+	// pdb.Mu.Unlock()
 }
 
 func GetPredictor(h common.Hash) types.Predictor {
-	pdb.Mu.Lock()
-	defer pdb.Mu.Unlock()
-	//
 	var p types.Predictor
 	//
+	pdb.Mu.RLock()
 	_p, ok := pdb.Cache.Get(h)
+	pdb.Mu.RUnlock()
+	//
 	if ok {
 		p = _p.(types.Predictor)
 	} else {
-		b, c := pdb.DB.Get(h.Bytes())
+		//
+		pdb.MuDB.Lock()
+		b, c := DB.Get(h.Bytes())
+		pdb.MuDB.Unlock()
+		//
 		if b != nil {
 			p = decodePredictor(b, c)
 			if p.Code == nil {
@@ -61,7 +67,10 @@ func GetPredictor(h common.Hash) types.Predictor {
 				// log.Info("Good predictor", "codehash", h)
 			}
 		}
+		//
+		pdb.Mu.Lock()
 		pdb.Cache.Add(h, p)
+		pdb.Mu.Unlock()
 	}
 	return p
 }
