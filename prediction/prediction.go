@@ -14,6 +14,7 @@ import (
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 )
 
+var blockVars BlockVars
 var statePool *StatePool
 
 var ctx       *Ctx
@@ -53,19 +54,18 @@ func SetBlockVars(
 	timestamp   uint64,
 	gasLimit    uint64,
 ) {
-	ctx.bvs = BlockVars{
-		Coinbase:    coinbase,
-		Difficulty:  difficulty,
-		BlockNumber: blockNumber,
-		Timestamp:   timestamp,
-		GasLimit:    gasLimit,
-	}
+	blockVars.Coinbase    = coinbase
+	blockVars.Difficulty  = difficulty
+	blockVars.BlockNumber = blockNumber
+	blockVars.Timestamp   = timestamp
+	blockVars.GasLimit    = gasLimit
 	//
 	if common.DEBUG_TX && blockNumber == common.DEBUG_TX_BLOCK {
-		fmt.Println("SetBlockVars", ctx.bvs)
+		fmt.Println("SetBlockVars", blockVars)
 	}
 }
 func BlockEnded() { ctx.BlockEnded() }
+func StartingNewBlock() { ctx.StartingNewBlock() }
 
 func PredictTX(
 	txIndex   int,

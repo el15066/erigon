@@ -328,6 +328,8 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 					block.Time(),
 					block.GasLimit(),
 				)
+				prediction.BlockEnded()
+				prediction.StartingNewBlock()
 			}
 			if common.PREFETCH_ACCOUNTS {
 				for i, tx := range block.Transactions() {

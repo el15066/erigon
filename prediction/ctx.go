@@ -48,6 +48,10 @@ func NewCtx(db kv.Getter) *Ctx {
 	return ctx
 }
 
+func (ctx *Ctx) StartingNewBlock() {
+	ctx.bvs = blockVars
+}
+
 func (ctx *Ctx) BlockEnded() {
 	ctx.ibs.Reset()
 }
