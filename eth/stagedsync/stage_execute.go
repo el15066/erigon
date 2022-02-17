@@ -306,8 +306,9 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 		defer rodb.Rollback()
 		db := batch.UsingRoDB(rodb)
 		//
+		var ctx *prediction.Ctx
 		if common.USE_PREDICTORS {
-			prediction.InitCtx(db)
+			ctx = prediction.NewCtx(db)
 		}
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
 			block, err := readBlock(blockNum, rodb)
@@ -328,8 +329,8 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 					block.Time(),
 					block.GasLimit(),
 				)
-				prediction.BlockEnded()
-				prediction.StartingNewBlock()
+				ctx.BlockEnded()
+				ctx.StartingNewBlock()
 			}
 			if common.PREFETCH_ACCOUNTS {
 				for i, tx := range block.Transactions() {
@@ -402,17 +403,17 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 									var from_acc accounts.Account
 									from_acc.DecodeForStorage(from_data)
 									//
-									prediction.PredictTX(
+									ctx.PredictTX(
 										i,
-										*to_addr,
 										//
 										from_addr,
 										tx.GetPrice(),
 										//
+										*to_addr,
 										tx.GetValue(),
 										tx.GetData(),
-										//
 										tx.GetGas(),
+										//
 									)
 									bench.Tick(112)
 								}
@@ -459,9 +460,6 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 						bench.Tick(103)
 					}
 				}
-			}
-			if common.USE_PREDICTORS {
-				prediction.BlockEnded()
 			}
 			if common.USE_STORAGE_PREFETCH_FILE && storage_prefetch_file != nil {
 				if storage_prefetch_i == -1 {

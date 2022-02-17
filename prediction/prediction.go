@@ -7,9 +7,7 @@ import (
 	"bufio"
 	"math/big"
 
-	uint256 "github.com/holiman/uint256"
-	common  "github.com/ledgerwatch/erigon/common"
-	kv      "github.com/ledgerwatch/erigon-lib/kv"
+	common "github.com/ledgerwatch/erigon/common"
 
 	predictorDB "github.com/ledgerwatch/erigon/prediction/predictorDB"
 )
@@ -17,7 +15,6 @@ import (
 var blockVars BlockVars
 var statePool *StatePool
 
-var ctx       *Ctx
 var tracefile *bufio.Writer
 
 func Init() {
@@ -43,10 +40,6 @@ func Close() {
 	}
 }
 
-func InitCtx(db kv.Getter) {
-	ctx = NewCtx(db)
-}
-
 func SetBlockVars(
 	coinbase    common.Address,
 	difficulty  *big.Int,
@@ -63,21 +56,4 @@ func SetBlockVars(
 	if common.DEBUG_TX && blockNumber == common.DEBUG_TX_BLOCK {
 		fmt.Println("SetBlockVars", blockVars)
 	}
-}
-func BlockEnded() { ctx.BlockEnded() }
-func StartingNewBlock() { ctx.StartingNewBlock() }
-
-func PredictTX(
-	txIndex   int,
-	to_addr   common.Address,
-	//
-	origin    common.Address,
-	gasPrice  *uint256.Int,
-	//
-	callvalue *uint256.Int,
-	calldata  []byte,
-	//
-	gas       uint64,
-) {
-	ctx.PredictTX(txIndex, origin, gasPrice, to_addr, callvalue, calldata, gas)
 }
