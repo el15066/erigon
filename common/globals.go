@@ -18,6 +18,8 @@ const PREFETCH_CODE             = false
 const USE_PREDICTORS            = false
 const USE_STORAGE_PREFETCH_FILE = false
 
+const PREFETCH_WORKERS_COUNT = 1
+
 const TRACE_PREDICTED = false
 
 const DEBUG_TX       = false

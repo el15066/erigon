@@ -170,22 +170,22 @@ func opGasprice(state *State) {
 }
 func opCoinbase(state *State) {
 	d := zerOpArgVs(state)
-	d.SetBytes(state.ctx.Coinbase.Bytes())
+	d.SetBytes(state.ctx.bvs.Coinbase.Bytes())
 	return
 }
 func opTimestamp(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.ctx.Timestamp)
+	d.SetUint64(state.ctx.bvs.Timestamp)
 	return
 }
 func opNumber(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.ctx.BlockNumber)
+	d.SetUint64(state.ctx.bvs.BlockNumber)
 	return
 }
 func opDifficulty(state *State) {
 	d := zerOpArgVs(state)
-	d.SetFromBig(state.ctx.Difficulty)
+	d.SetFromBig(state.ctx.bvs.Difficulty)
 	return
 }
 func opMsize(state *State) {
@@ -195,12 +195,12 @@ func opMsize(state *State) {
 }
 func opGas(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.ctx.GasLimit) // we don't track gas usage, so return max
+	d.SetUint64(state.ctx.bvs.GasLimit) // we don't track gas usage, so return max
 	return
 }
 func opGasLimit(state *State) {
 	d := zerOpArgVs(state)
-	d.SetUint64(state.ctx.GasLimit)
+	d.SetUint64(state.ctx.bvs.GasLimit)
 	return
 }
 func opSelfBalance(state *State) {
@@ -314,7 +314,7 @@ func opBlockhash(state *State) {
 		return
 	}
 	i     := v0.Uint64()
-	delta := state.ctx.BlockNumber - i - 1
+	delta := state.ctx.bvs.BlockNumber - i - 1
 	if delta < 256 { d.SetBytes(state.ctx.getHashBytes(i))
 	} else         { d.Clear() }
 	return
@@ -742,7 +742,7 @@ func opCallCommon(state *State, t CallOpType) {
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println(" ns.gaz ", ns.gaz) }
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Println("---> call start") }
 	//
-	res, known  := predictCall(ns, ca)
+	res, known  := ns.predictCall(ca)
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print("<---  call result ", res, known) }
 	//

@@ -3,7 +3,6 @@ package prediction
 
 import (
 	"fmt"
-	"sync"
 	"math/bits"
 
 	uint256 "github.com/holiman/uint256"
@@ -15,7 +14,7 @@ import (
 
 type Regs [65536]uint256.Int
 
-// State changes during the execution of a TX, and is 'copied' during calls
+// State changes during the execution of a TX and is allocated at the start of calls
 type State struct {
 	spIndex   byte              // readonly
 	ctx       *Ctx
@@ -34,6 +33,7 @@ type State struct {
 	philen    int
 	i         int
 }
+
 func (state *State) bidToIndex(bid64 uint64) int {
 	if bid64 <= 0xFFFF {
 		bid := uint16(bid64)
@@ -43,6 +43,7 @@ func (state *State) bidToIndex(bid64 uint64) int {
 	}
 	return INVALID_TARGET
 }
+
 func (state *State) changeBlock(bid uint16) {
 	b, ok := state.blockTbl[bid]
 	if ok {
@@ -64,24 +65,26 @@ func (state *State) changeBlock(bid uint16) {
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Printf(" ~%x", bid) }
 }
 
+
 // To avoid actual state copying (can be 100x more expensive than actual call)
 // we keep all the states pre-allocated and reuse them without zeroing.
 type StatePool struct {
-	mu        sync.Mutex
-	states    [32]State // Can be dynamic in the future (up to threads * maximum call depth, =1024 yellowpaper p.36 CALL, but will abort at reasonable limit)
+	mu        common.Spinlock
+	states    [32]State // No need to be dynamic as it is now shared (this limits maximum call depth at reasonable limit, instead of 1024, yellowpaper p.36 CALL)
 	available uint64    // make sure num of bits >= len(states)
 }
-func (sp *StatePool) Init(ctx *Ctx) {
+
+func (sp *StatePool) Init() {
 	c := len(sp.states)
 	if c > 64 { panic("Too many states in StatePool") }
 	//
 	for i := 0; i < c; i += 1 {
 		sp.states[i].spIndex = byte(i)
-		sp.states[i].ctx     = ctx
 		sp.states[i].regs[INVALID_REG].Set(&UNKNOWN_U256)
 	}
 	sp.available = (uint64(1) << c) - 1
 }
+
 func (sp *StatePool) NewState() *State {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
@@ -95,6 +98,7 @@ func (sp *StatePool) NewState() *State {
 	//
 	return &sp.states[i]
 }
+
 func (sp *StatePool) FreeState(state *State) {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()

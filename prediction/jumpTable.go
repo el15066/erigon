@@ -6,7 +6,7 @@ package prediction
 const OP_CONSTANT_OFFSET = 1
 var _op = opStop
 
-var jumpTable = [256]func(state *State){
+var _jumpTable = [256]func(state *State){
 	  0:    opStop,
 	  1:    opConstant, // == OP_CONSTANT_OFFSET
 	  2:    opConstant,

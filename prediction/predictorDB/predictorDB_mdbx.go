@@ -17,19 +17,21 @@ type PredictorDB struct {
 	t kv.Tx
 }
 
-func (db PredictorDB) CloseDB() {
-	db.t.Rollback()
-	db.u.Close()
+var DB PredictorDB
+
+var _mdbx_getChan chan []byte
+var _mdbx_resChan chan []byte
+
+func openPredictorDB() error {
+	errChan := make(chan error)
+	go _mdbx_helperThread(errChan)
+	return <- errChan
 }
-func (db PredictorDB) get(k []byte) []byte {
-	// tx,   err := db.u.BeginRo(context.Background()); if err != nil { return nil }
-	// defer tx.Rollback()
-	// data, err := tx.GetOne("p", k);                  if err != nil { return nil }
-	data, err := db.t.GetOne("p", k);                   if err != nil { return nil }
-	return data
-}
+
 func (db PredictorDB) Get(k []byte) ([]byte, []byte) {
-	data   := db.get(k);                                if len(data) < 10 { return nil, nil }
+	//
+	_mdbx_getChan <- k
+	data   := <- _mdbx_resChan;               if len(data) < 10 { return nil, nil }
 	//
 	s := uint(data[0]) | (uint(data[1]) << 8)
 	blocks := data[  2:s+2]
@@ -38,18 +40,58 @@ func (db PredictorDB) Get(k []byte) ([]byte, []byte) {
 	return blocks, code
 }
 
-func openPredictorDB() (PredictorDB, error) {
-	db, err := openMDBX(common.PREDICTOR_DB_PATH)
+func (db PredictorDB) Close() {
+	close(_mdbx_getChan)
+	<- _mdbx_resChan
+}
+
+
+//// Below are internal stuff
+
+
+func (db PredictorDB) _close() {
+	db.t.Rollback()
+	db.u.Close()
+}
+
+func (db PredictorDB) _get(k []byte) []byte {
+	data, err := db.t.GetOne("p", k);             if err != nil { return nil }
+	return data
+}
+
+func _mdbx_helperThread(errChan chan error) {
+	// MDBX requires all requests to come from the same thread
+	// locking to thread is done in NewMDBX().Open()
+	defer close(_mdbx_resChan)
+	{
+		err := _mdbx_openPredictorDB()
+		errChan <- err
+		if err != nil { return }
+	}
+	_mdbx_printDBinfo()
+	//
+	for k := range _mdbx_getChan {
+		_mdbx_resChan <- DB._get(k)
+	}
+	DB._close()
+}
+
+func _mdbx_openPredictorDB() error {
+	db, err := _mdbx_open(common.PREDICTOR_DB_PATH)
 	if err != nil {
-		return PredictorDB{}, nil
+		return err
 	}
 	tx, err := db.BeginRo(context.Background())
 	if err != nil {
 		db.Close()
-		return PredictorDB{}, nil
+		return err
 	}
-	res   := PredictorDB{ u: db, t: tx }
-	_info := res.get(([]byte)("info"))
+	DB = PredictorDB{ u: db, t: tx }
+	return nil
+}
+
+func _mdbx_printDBinfo() {
+	_info := DB._get(([]byte)("info"))
 	var info string
 	if _info == nil {
 		info = "nil"
@@ -62,24 +104,24 @@ func openPredictorDB() (PredictorDB, error) {
 		}, string(_info))
 	}
 	log.Info("Opened database", "info", string(info))
-	return res, nil
 }
 
 // https://github.com/ledgerwatch/erigon-lib/blob/main/kv/tables.go#L460
 // https://github.com/ledgerwatch/erigon-lib/blob/main/kv/mdbx/kv_mdbx.go#L42
 // https://github.com/ledgerwatch/erigon-lib/blob/main/kv/mdbx/kv_mdbx.go#L232
-var tablesCfg = kv.TableCfg{
-	"p": {},
+func _mdbx_myTables(_ignore kv.TableCfg) kv.TableCfg {
+	return kv.TableCfg{
+		"p": {},
+	}
 }
-func myTables(_ignore kv.TableCfg) kv.TableCfg { return tablesCfg }
 
 // node/node.go:521
 // https://github.com/ledgerwatch/erigon-lib/blob/main/kv/mdbx/util.go
 // https://github.com/ledgerwatch/erigon-lib/blob/main/kv/mdbx/kv_mdbx.go
-func openMDBX(fileName string) (kv.RwDB, error) {
+func _mdbx_open(fileName string) (kv.RwDB, error) {
 	db, err := mdbx.
 		NewMDBX(log).
-		WithTablessCfg(myTables).
+		WithTablessCfg(_mdbx_myTables).
 		Path(fileName).
 		Label(kv.Label(77)).
 		DBVerbosity(kv.DBVerbosityLvl(2)). // for c code, 2 is warning, >2 gives info
