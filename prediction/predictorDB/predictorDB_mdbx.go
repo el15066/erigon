@@ -23,6 +23,8 @@ var _mdbx_getChan chan []byte
 var _mdbx_resChan chan []byte
 
 func openPredictorDB() error {
+	_mdbx_getChan = make(chan []byte)
+	_mdbx_resChan = make(chan []byte)
 	errChan := make(chan error)
 	go _mdbx_helperThread(errChan)
 	return <- errChan
