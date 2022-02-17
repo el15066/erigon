@@ -6,7 +6,7 @@ import (
 )
 
 // const MAX_BLOCK = 7_500_000 - 1 + 4546
-const MAX_BLOCK = 10_500_000 - 1 + 5_000
+const MAX_BLOCK = 10_500_000 - 1 + 1
 // const MAX_BLOCK = 10_500_000 - 1 + 10_000
 
 const  STORAGE_TRACING = false
@@ -15,20 +15,20 @@ const       TX_DUMPING = false
 const     CODE_DUMPING = false
 const     JUMP_TRACING = false
 
-const PREFETCH_BLOCKS           = false
+const PREFETCH_BLOCKS           = true
 const BLOCK_READAHEAD           = 1 + 1
-const PREFETCH_ACCOUNTS         = false
-const PREFETCH_CODE             = false
-const USE_PREDICTORS            = false
+const PREFETCH_ACCOUNTS         = true
+const PREFETCH_CODE             = true
+const USE_PREDICTORS            = true
 const USE_STORAGE_PREFETCH_FILE = false
 
-const PREFETCH_WORKERS_COUNT = 1
+const PREFETCH_WORKERS_COUNT = 1 // up to 64
 
 const TRACE_PREDICTED = false
 
-const DEBUG_TX       = false
-const DEBUG_TX_BLOCK = 10_500_005
-const DEBUG_TX_INDEX = 81
+const DEBUG_TX       = true
+const DEBUG_TX_BLOCK = 10_500_000
+const DEBUG_TX_INDEX = 1
 
 const PREDICTOR_CACHE_SIZE      = 1024
 // const PREDICTOR_INITIAL_GAZ     = 10000

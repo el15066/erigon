@@ -4,10 +4,8 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
-	"encoding/json"
 	"os"
 	"bufio"
-	"io"
 	"fmt"
 	"runtime"
 	"sort"
@@ -249,30 +247,33 @@ func lockThreadAndCPU(cores ...int) {
 
 var workerNewBlockFlags uint64
 
-func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transaction) {
+func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transaction, okChan chan int) {
+	//
+	lockThreadAndCPU(4)
 	//
 	defer db.Close()
 	//
-	if myID >= 64 {
-		panic("Up to 64 prefetch workers are supported, see PREFETCH_WORKERS_COUNT")
-	}
 	myMask := uint64(1) << myID
 	//
-	var ctx *prediction.Ctx
-	if common.USE_PREDICTORS { ctx = prediction.NewCtx(db) }
+	ctx := prediction.NewCtx(db)
 	//
 	for tx := range txChan {
+		flags := atomic.LoadUint64(&workerNewBlockFlags)
+		if flags & myMask == 0 {
+			bench.Tick(140)
+			atomic.AddUint64(&workerNewBlockFlags, myMask)
+			ctx.BlockEnded()
+			ctx.StartingNewBlock()
+			bench.Tick(141)
+		}
+		if tx == nil {
+			bench.Tick(143)
+			okChan <- 1
+			bench.Tick(144)
+			continue
+		}
 		bench.Tick(100)
 		//
-		if common.USE_PREDICTORS {
-			// isNewBlock := atomic.CompareAndSwapUint32(&workerNewBlockFlags[myID], 1, 0)
-			flags := atomic.LoadUint64(&workerNewBlockFlags)
-			if flags & myMask == 0 {
-				atomic.AddUint64(&workerNewBlockFlags, myMask)
-				ctx.BlockEnded()
-				ctx.StartingNewBlock()
-			}
-		}
 		// prefetch 'from' account
 		// The tx was provided by readBlock() (in fetchBlocks())
 		// which calls ReadBlockWithSenders() and so saves the sender to the transaction,
@@ -290,38 +291,31 @@ func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transactio
 			to_data, _ := db.GetOne(kv.PlainState, to_addr.Bytes())
 			bench.Tick(106)
 			//
-			// if it's a contract prefetch its code or/and run its predictor
-			if common.PREFETCH_CODE || common.USE_PREDICTORS {
-				var to_acc accounts.Account
-				to_acc.DecodeForStorage(to_data)
-				// 
-				if !to_acc.IsEmptyCodeHash() {
+			var to_acc accounts.Account
+			to_acc.DecodeForStorage(to_data)
+			// 
+			if !to_acc.IsEmptyCodeHash() {
+				//
+				bench.Tick(110)
+				db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
+				bench.Tick(111)
+				//
+				var from_acc accounts.Account
+				from_acc.DecodeForStorage(from_data)
+				//
+				ctx.PredictTX(
+					from_addr,
+					tx.GetPrice(),
 					//
-					if common.PREFETCH_CODE {
-						bench.Tick(110)
-						db.GetOne(kv.Code, to_acc.CodeHash.Bytes())
-					}
-					bench.Tick(111)
+					*to_addr,
+					tx.GetValue(),
+					tx.GetData(),
+					tx.GetGas(),
 					//
-					if common.USE_PREDICTORS {
-						var from_acc accounts.Account
-						from_acc.DecodeForStorage(from_data)
-						//
-						ctx.PredictTX(
-							from_addr,
-							tx.GetPrice(),
-							//
-							*to_addr,
-							tx.GetValue(),
-							tx.GetData(),
-							tx.GetGas(),
-							//
-						)
-						bench.Tick(112)
-					}
-				}
-				bench.Tick(107)
+				)
+				bench.Tick(112)
 			}
+			bench.Tick(107)
 		}
 		bench.Tick(102)
 	}
@@ -346,32 +340,10 @@ var _buf = [64]byte{}
 
 func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
 	//
+	lockThreadAndCPU(4)
 	// setCPU(4, 5, 16, 17) // can't be sure without lock
 	//
-	var dumpfile *bufio.Writer
-	if common.TX_DUMPING {
-		_f, _err := os.OpenFile("logz/tx_dump.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
-		if _err == nil {
-			defer _f.Close()
-			dumpfile = bufio.NewWriterSize(_f, 128*1024)
-			defer dumpfile.Flush()
-		} else {
-			log.Warn("Transactions not dumped", "error", _err)
-		}
-	}
-	var storage_prefetch_b = uint64(7500000) // where the file starts
-	var storage_prefetch_i = -1
-	var storage_prefetch_file *bufio.Reader
-	if common.USE_STORAGE_PREFETCH_FILE {
-		_f, _err := os.OpenFile("logz/reads_s.bin", os.O_RDONLY, 0664)
-		if _err == nil {
-			defer _f.Close()
-			storage_prefetch_file = bufio.NewReaderSize(_f, 128*1024)
-			storage_prefetch_i    = 0
-		} else {
-			log.Warn("Storage prefetch file", "error", _err)
-		}
-	}
+	okChan := make(chan int)
 	rodb, err := cfg.db.BeginRo(context.Background())
 	if err == nil {
 		defer rodb.Rollback()
@@ -381,22 +353,17 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 			defer prediction.Close()
 		}
 		//
-		var txChan chan types.Transaction
+		txChan := make(chan types.Transaction)
+		defer close(txChan)
 		//
-		if common.PREFETCH_ACCOUNTS {
+		// Start prefetch goroutines
+		for j := 0; j < common.PREFETCH_WORKERS_COUNT; j += 1 {
 			//
-			txChan = make(chan types.Transaction)
-			defer close(txChan)
+			// Each worker needs its own mdbx transaction
+			_rodb, err := cfg.db.BeginRo(context.Background()); if err != nil { panic(err) }
+			_db        := batch.UsingRoDB(_rodb)
 			//
-			// Start prefetch goroutines
-			for j := 0; j < common.PREFETCH_WORKERS_COUNT; j += 1 {
-				//
-				// Each worker needs its own mdbx transaction
-				_rodb, err := cfg.db.BeginRo(context.Background()); if err != nil { panic(err) }
-				_db        := batch.UsingRoDB(_rodb)
-				//
-				go prefetchWorker(j, _db, txChan)
-			}
+			go prefetchWorker(j, _db, txChan, okChan)
 		}
 		//
 		Loop: for blockNum := from; blockNum <= to; blockNum++ {
@@ -407,126 +374,36 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				break Loop
 			}
 			//
-			blockGiven := false
 			select {
-				case blockChan <- block: blockGiven = true
-				default:              // blockGiven = false
+				case blockChan <- block:
+				case <-quitChan:
+					break Loop
 			}
 			//
-			if common.USE_PREDICTORS {
-				prediction.SetBlockVars(
-					block.Coinbase(),
-					block.Difficulty(),
-					blockNum,
-					block.Time(),
-					block.GasLimit(),
-				)
-				atomic.StoreUint64(&workerNewBlockFlags, uint64(0))
-			}
-			if common.PREFETCH_ACCOUNTS || common.TX_DUMPING || common.USE_STORAGE_PREFETCH_FILE {
-				for i, tx := range block.Transactions() {
-					//
-					if common.PREFETCH_ACCOUNTS {
-						//
-						if common.DEBUG_TX || common.TRACE_PREDICTED { common.SetTxIndex(i) }
-						//
-						// TODO: check if blockChan is about to starve, so we skip the following (which blocks)
-						txChan <- tx
-					}
-					//
-					if common.TX_DUMPING && dumpfile != nil {
-						var ENC       = hex.EncodeToString
-						from_addr, _ := tx.GetSender()
-						to_addr      := tx.GetTo()
-						t, _ := json.Marshal(&tx_dump{
-							Block:      blockNum,
-							Index:      i,
-							// Blockhash: not here (array of 256 most recent)
-							Coinbase:   ENC(block.Coinbase().Bytes()),
-							Timestamp:  block.Time(),
-							Difficulty: block.Difficulty().Uint64(),
-							Gaslimit:   block.GasLimit(),
-							// Chainid:    cfg.chainConfig.ChainID.Uint64(),
-							// Selfbalance: is dynamic
-							Address:    ENC(to_addr.Bytes()),
-							// Balance: is dynamic
-							Origin:     ENC(from_addr.Bytes()),
-							// Caller: same as origin for now
-							Callvalue:  tx.GetValue(),
-							Calldata:   ENC(tx.GetData()),
-							// Gasprice: n/a after LONDON // TODO: verify below is correct
-							// Gasprice: ENC(tx.GetPrice().Bytes32()),
-							// Extcode: not here
-							// Returndata: n/a
-						})
-						dumpfile.Write(append(t, byte('\n')))
-					}
-					//
-					if common.USE_STORAGE_PREFETCH_FILE {
-						// GET storage prefetch locations
-						// read 2 bytes
-						// if 0 -> update tx index
-						// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
-						// fetch all those addresses
-						// loop
-						// why loop? -> 1 tx can call many contracts
-						for i == storage_prefetch_i {
-							_, _err := io.ReadFull(storage_prefetch_file, _buf[0:4])
-							if _err != nil {
-								log.Warn("Read from storage prefetch file", "error", _err)
-								storage_prefetch_i    = -1
-								storage_prefetch_file = nil
-								break
-							}
-							count := int(binary.BigEndian.Uint16(_buf[0:2]))
-							//
-							// fmt.Println(i, "count", count)
-							if count != 0 {
-								io.ReadFull(storage_prefetch_file, _buf[4:30])
-								for j := 0; j < count; j++ {
-									io.ReadFull(storage_prefetch_file, _buf[30:62])
-									rodb.GetOne(kv.PlainState, _buf[2:62])
-									// fmt.Println(i, ENC(_buf[2:62]))
-								}
-							} else {
-								diff := int(binary.BigEndian.Uint16(_buf[2:4]))
-								// fmt.Println(i, "diff", diff)
-								if diff != 0 { storage_prefetch_i += diff
-								} else       { storage_prefetch_i  = -1   }
-								break
-							}
-						}
-						bench.Tick(103)
-					}
-				}
-			}
-			if common.USE_STORAGE_PREFETCH_FILE && storage_prefetch_file != nil {
-				if storage_prefetch_i == -1 {
-					if blockNum == storage_prefetch_b {
-						io.ReadFull(storage_prefetch_file,      _buf[0:2])
-						bdiff := uint64(binary.BigEndian.Uint16(_buf[0:2]))
-						// fmt.Println("bdiff", storage_prefetch_b, "+", bdiff)
-						storage_prefetch_b += bdiff
-					}
-					if blockNum + 1 == storage_prefetch_b {
-						storage_prefetch_i = 0
-						// fmt.Println("~~~~~ SWITCH ~~~~~", storage_prefetch_b)
-					}
-				} else {
-					log.Warn("Malformed storage prefetch file", "storage_prefetch_b", storage_prefetch_b, "storage_prefetch_i", storage_prefetch_i)
-					storage_prefetch_i    = -1
-					storage_prefetch_file = nil
-				}
-			}
+			prediction.SetBlockVars(
+				block.Coinbase(),
+				block.Difficulty(),
+				blockNum,
+				block.Time(),
+				block.GasLimit(),
+			)
+			atomic.StoreUint64(&workerNewBlockFlags, uint64(0))
 			//
-			if !blockGiven {
-				select {
-					case blockChan <- block:
-					case <-quitChan:
-						break Loop
-				}
+			for i, tx := range block.Transactions() {
+				//
+				common.SetTxIndex(i)
+				//
+				txChan <- tx
+			}
+			txChan <- nil
+			select {
+				case <-okChan:
+				case <-quitChan:
+					break Loop
 			}
 		}
+		txChan <- nil
+		<-okChan
 	}
 	log.Info("Prefetch thread exiting", "error", err)
 	close(blockChan)
