@@ -235,16 +235,24 @@ func newStateReaderWriter(
 	return stateReader, stateWriter, nil
 }
 
-func lockThreadAndCPU(cpu int) {
-	runtime.LockOSThread() // Needed for unique PID, for perf-utils
+func setCPU(cores ...int) {
 	t := unix.CPUSet{}
-	t.Set(cpu)
+	for _, core := range cores {
+		t.Set(core)
+	}
 	unix.SchedSetaffinity(0, &t)
+}
+func lockThreadAndCPU(cores ...int) {
+	runtime.LockOSThread() // Also needed for unique PID/TID, for perf-utils
+	setCPU(cores...)
 }
 
 var workerNewBlockFlags uint64
 
 func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transaction) {
+	//
+	defer db.Close()
+	//
 	if myID >= 64 {
 		panic("Up to 64 prefetch workers are supported, see PREFETCH_WORKERS_COUNT")
 	}
@@ -337,9 +345,9 @@ type tx_dump struct {
 var _buf = [64]byte{}
 
 func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
-
-	lockThreadAndCPU(4)
-
+	//
+	// setCPU(4, 5, 16, 17) // can't be sure without lock
+	//
 	var dumpfile *bufio.Writer
 	if common.TX_DUMPING {
 		_f, _err := os.OpenFile("logz/tx_dump.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
@@ -372,14 +380,18 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 			prediction.Init()
 		}
 		//
-		txChan := make(chan types.Transaction)
+		var txChan chan types.Transaction
 		//
 		if common.PREFETCH_ACCOUNTS {
+			//
+			txChan = make(chan types.Transaction)
+			defer close(txChan)
+			//
 			// Start prefetch goroutines
 			for j := 0; j < common.PREFETCH_WORKERS_COUNT; j += 1 {
 				//
 				// Each worker needs its own mdbx transaction
-				_rodb, err := cfg.db.BeginRo(context.Background()); if err == nil { panic(err) }
+				_rodb, err := cfg.db.BeginRo(context.Background()); if err != nil { panic(err) }
 				_db        := batch.UsingRoDB(_rodb)
 				//
 				go prefetchWorker(j, _db, txChan)
@@ -393,6 +405,13 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				log.Error("Bad block", "(block==nil)", block == nil, "error", err)
 				break Loop
 			}
+			//
+			blockGiven := false
+			select {
+				case blockChan <- block: blockGiven = true
+				default:              // blockGiven = false
+			}
+			//
 			if common.USE_PREDICTORS {
 				prediction.SetBlockVars(
 					block.Coinbase(),
@@ -410,16 +429,8 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 						//
 						if common.DEBUG_TX || common.TRACE_PREDICTED { common.TX_INDEX = i }
 						//
-						select {
-						case blockChan <- block:
-							// TODO: check if starving to break
-							continue
-						case txChan <- tx:
-							// sent to first that becomes idle
-							continue
-						case <-quitChan:
-							break Loop
-						}
+						// TODO: check if blockChan is about to starve, so we skip the following (which blocks)
+						txChan <- tx
 					}
 					//
 					if common.TX_DUMPING && dumpfile != nil {
@@ -506,6 +517,14 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 					storage_prefetch_file = nil
 				}
 			}
+			//
+			if !blockGiven {
+				select {
+					case blockChan <- block:
+					case <-quitChan:
+						break Loop
+				}
+			}
 		}
 	}
 	log.Info("Prefetch thread exiting", "error", err)
@@ -582,6 +601,8 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		"PREFETCH_CODE",             common.PREFETCH_CODE,
 		"USE_PREDICTORS",            common.USE_PREDICTORS,
 		"USE_STORAGE_PREFETCH_FILE", common.USE_STORAGE_PREFETCH_FILE,
+		//
+		"PREFETCH_WORKERS_COUNT",    common.PREFETCH_WORKERS_COUNT,
 		//
 		"TRACE_PREDICTED",           common.TRACE_PREDICTED,
 		//

@@ -387,6 +387,9 @@ func (m *Mutation) UsingRoDB(rodb kv.Tx) *RoMutation {
 	return &RoMutation{ m, rodb }
 }
 
+func (rom *RoMutation) Close() {
+	rom.rodb.Rollback()
+}
 func (rom *RoMutation) GetOne(table string, key []byte) ([]byte, error) {
 	if value, ok := rom.m.getMem(table, key); ok {
 		return value, nil
