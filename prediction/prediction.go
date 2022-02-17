@@ -24,6 +24,9 @@ func Init() {
 	statePool.Init()
 	//
 	if common.TRACE_PREDICTED {
+		if common.PREFETCH_WORKERS_COUNT > 1 {
+			panic("TRACE_PREDICTED specified with more than 1 worker (PREFETCH_WORKERS_COUNT > 1)")
+		}
 		_f, _err := os.OpenFile("logz/predicted.txt", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
 		if  _err == nil {
 			tracefile = bufio.NewWriterSize(_f, 1024*1024)

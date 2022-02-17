@@ -23,6 +23,8 @@ const USE_PREDICTORS            = false
 const USE_STORAGE_PREFETCH_FILE = false
 
 const TRACE_PREDICTED = false
+const PREFETCH_WORKERS_COUNT = 1
+
 
 const DEBUG_TX       = false
 const DEBUG_TX_BLOCK = 10_500_005
