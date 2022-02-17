@@ -4,7 +4,6 @@ package prediction
 import (
 	"fmt"
 	"math"
-	"math/big"
 	"encoding/hex"
 	"encoding/binary"
 
@@ -128,11 +127,7 @@ type Ctx struct {
 	returnData  Mem    // needed here to keep alive after FreeState()
 	returnSize  uint64
 	//
-	Coinbase    common.Address
-	Difficulty  *big.Int
-	BlockNumber uint64
-	Timestamp   uint64
-	GasLimit    uint64
+	bvs         BlockVars
 	//
 	Origin      common.Address
 	GasPrice    *uint256.Int
@@ -253,16 +248,4 @@ func predictCall(state *State, codeAddress common.Address) (byte, bool) {
 	}
 	// bench.Tick(216)
 	return 1, true
-}
-// Not exact, only for prediction
-func isPrecompile(codeAddress common.Address) bool {
-	last := codeAddress[common.AddressLength-1]
-	if 1 <= last && last < 10 {
-		ok := true
-		for i := 0; i < common.AddressLength-1; i += 1 {
-			ok = ok && codeAddress[i] == 0
-		}
-		return ok
-	}
-	return false
 }

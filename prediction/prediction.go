@@ -58,20 +58,16 @@ func SetBlockVars(
 	timestamp   uint64,
 	gasLimit    uint64,
 ) {
-	ctx.Coinbase    = coinbase
-	ctx.Difficulty  = difficulty
-	ctx.BlockNumber = blockNumber
-	ctx.Timestamp   = timestamp
-	ctx.GasLimit    = gasLimit
+	ctx.bvs = BlockVars{
+		Coinbase:    coinbase,
+		Difficulty:  difficulty,
+		BlockNumber: blockNumber,
+		Timestamp:   timestamp,
+		GasLimit:    gasLimit,
+	}
 	//
 	if common.DEBUG_TX && blockNumber == common.DEBUG_TX_BLOCK {
-		fmt.Println("SetBlockVars",
-			ctx.Coinbase,
-			ctx.Difficulty,
-			ctx.BlockNumber,
-			ctx.Timestamp,
-			ctx.GasLimit,
-		)
+		fmt.Println("SetBlockVars", ctx.bvs)
 	}
 }
 func BlockEnded() { ctx.BlockEnded() }
@@ -91,7 +87,7 @@ func PredictTX(
 	ctx.Origin   = origin
 	ctx.GasPrice = gasPrice
 	if common.DEBUG_TX {
-		if ctx.BlockNumber == common.DEBUG_TX_BLOCK && txIndex == common.DEBUG_TX_INDEX {
+		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && txIndex == common.DEBUG_TX_INDEX {
 			fmt.Println("PredictTX",
 				txIndex,
 				ctx.Origin,
@@ -111,7 +107,7 @@ func PredictTX(
 
 	if common.TRACE_PREDICTED && tracefile != nil {
 		//
-		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.BlockNumber, txIndex, to_addr))
+		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, txIndex, to_addr))
 		//
 		if len(ctx.Predicted) > 0 {
 			sort.Slice(ctx.Predicted, func(a, b int) bool {
@@ -128,7 +124,7 @@ func PredictTX(
 		ctx.Predicted = ctx.Predicted[:0]
 		//
 		if cap(ctx.Predicted) != PREDICTED_CAP {
-			fmt.Println("Note", ctx.BlockNumber, txIndex, "ctx.Predicted len cap", len(ctx.Predicted), cap(ctx.Predicted))
+			fmt.Println("Note", ctx.bvs.BlockNumber, txIndex, "ctx.Predicted len cap", len(ctx.Predicted), cap(ctx.Predicted))
 			ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
 		}
 		bench.Tick(152)
