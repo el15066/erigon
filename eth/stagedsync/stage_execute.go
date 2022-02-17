@@ -335,6 +335,9 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 			if common.PREFETCH_ACCOUNTS {
 				for i, tx := range block.Transactions() {
 					bench.Tick(100)
+					//
+					common.SetTxIndex(i)
+					//
 					// prefetch 'from' account
 					//
 					// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
@@ -404,8 +407,6 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 									from_acc.DecodeForStorage(from_data)
 									//
 									ctx.PredictTX(
-										i,
-										//
 										from_addr,
 										tx.GetPrice(),
 										//

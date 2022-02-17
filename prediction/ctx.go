@@ -74,8 +74,6 @@ func (ctx *Ctx) getHashBytes(i uint64) []byte {
 }
 
 func (ctx *Ctx) PredictTX(
-	txIndex   int,
-	//
 	origin    common.Address,
 	gasPrice  *uint256.Int,
 	//
@@ -86,6 +84,7 @@ func (ctx *Ctx) PredictTX(
 	//
 ) {
 	if common.DEBUG_TX {
+		txIndex := common.GetTxIndex()
 		if ctx.bvs.BlockNumber == common.DEBUG_TX_BLOCK && txIndex == common.DEBUG_TX_INDEX {
 			fmt.Println("PredictTX",
 				ctx.bvs.BlockNumber,
@@ -117,6 +116,7 @@ func (ctx *Ctx) PredictTX(
 	statePool.FreeState(state)
 
 	if common.TRACE_PREDICTED && tracefile != nil {
+		txIndex := common.GetTxIndex()
 		//
 		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, txIndex, address))
 		//

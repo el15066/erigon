@@ -1,6 +1,10 @@
 
 package common
 
+import (
+	"sync/atomic"
+)
+
 // const MAX_BLOCK = 7_500_000 - 1 + 4546
 const MAX_BLOCK = 10_500_000 - 1 + 5_000
 // const MAX_BLOCK = 10_500_000 - 1 + 10_000
@@ -36,6 +40,15 @@ var CONTRACT_CODE       = map[Hash][]byte{}
 var CONTRACT_CODE_COUNT = map[Hash]uint{}
 var CONTRACT_CODE_ALIAS = map[Address]Hash{}
 // }
+
+var _tx_index = int64(-1) // DEBUG_TX || TRACE_PREDICTED
+
+func GetTxIndex() int {
+	return int(atomic.LoadInt64(&_tx_index))
+}
+func SetTxIndex(i int) {
+	atomic.StoreInt64(&_tx_index, int64(i))
+}
 
 var CALLID         = uint32(0)
 var CALLID_COUNTER = uint32(0)
