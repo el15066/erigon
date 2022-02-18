@@ -245,7 +245,12 @@ func lockThreadAndCPU(cores ...int) {
 	setCPU(cores...)
 }
 
-func prefetchWorker(myID int, cfg ExecuteBlockCfg, batch *olddb.Mutation, txChan chan types.Transaction) {
+type txData struct {
+	fullIndex uint64
+	tx        types.Transaction
+}
+
+func prefetchWorker(myID int, cfg ExecuteBlockCfg, batch *olddb.Mutation, txChan chan txData) {
 	//
 	rodb, err := cfg.db.BeginRo(context.Background()); if err != nil { panic(err) }
 	defer rodb.Rollback()
@@ -253,14 +258,16 @@ func prefetchWorker(myID int, cfg ExecuteBlockCfg, batch *olddb.Mutation, txChan
 	db  := batch.UsingRoDB(rodb)
 	ctx := prediction.NewCtx(db)
 	//
-	for tx := range txChan {
+	nextBlockFullIndex := uint64(0)
+	//
+	for txData := range txChan {
 		//
-		if tx == nil {
+		if txData.fullIndex > nextBlockFullIndex {
+			nextBlockFullIndex = txData.fullIndex | 0xFFFF
 			bench.Tick(140)
 			ctx.BlockEnded()
 			ctx.StartingNewBlock()
 			bench.Tick(141)
-			continue
 		}
 		//
 		bench.Tick(100)
@@ -268,12 +275,12 @@ func prefetchWorker(myID int, cfg ExecuteBlockCfg, batch *olddb.Mutation, txChan
 		//
 		// readBlock() above calls ReadBlockWithSenders() which saves the senders to the transactions,
 		// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer)
-		from_addr, ok := tx.GetSender() ; if !ok { panic("Sender not in tx") }
+		from_addr, ok := txData.tx.GetSender() ; if !ok { panic("Sender not in tx") }
 		from_data, _  := db.GetOne(kv.PlainState, from_addr.Bytes())
 		//
 		bench.Tick(101)
 		// prefetch 'to' account (nil if contract creation)
-		to_addr := tx.GetTo()
+		to_addr := txData.tx.GetTo()
 		if to_addr != nil && *to_addr != from_addr {
 			//
 			bench.Tick(105)
@@ -293,13 +300,15 @@ func prefetchWorker(myID int, cfg ExecuteBlockCfg, batch *olddb.Mutation, txChan
 				from_acc.DecodeForStorage(from_data)
 				//
 				ctx.PredictTX(
+					txData.fullIndex & 0xFFFF,
+					//
 					from_addr,
-					tx.GetPrice(),
+					txData.tx.GetPrice(),
 					//
 					*to_addr,
-					tx.GetValue(),
-					tx.GetData(),
-					tx.GetGas(),
+					txData.tx.GetValue(),
+					txData.tx.GetData(),
+					txData.tx.GetGas(),
 					//
 				)
 				bench.Tick(112)
@@ -336,7 +345,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 	if err == nil {
 		defer rodb.Rollback()
 		//
-		txChan := make(chan types.Transaction)
+		txChan := make(chan txData)
 		defer close(txChan)
 		//
 		go prefetchWorker(0, cfg, batch, txChan)
@@ -361,16 +370,13 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				block.GasLimit(),
 			)
 			//
-			txChan <- nil
-			//
 			for i, tx := range block.Transactions() {
 				//
-				common.SetTxIndex(i)
-				//
-				txChan <- tx
+				txChan <- txData{
+					fullIndex: uint64(i) | (blockNum << 16),
+					tx:        tx,
+				}
 			}
-			//
-			txChan <- nil
 		}
 	}
 	log.Info("Prefetch thread exiting", "error", err)
