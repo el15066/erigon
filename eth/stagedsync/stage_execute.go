@@ -593,7 +593,6 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	log.Info("Globals",
 		//
 		"STORAGE_TRACING",           common.STORAGE_TRACING,
-		"PREFETCH_TRACING",          common.PREFETCH_TRACING,
 		"TX_DUMPING",                common.TX_DUMPING,
 		"CODE_DUMPING",              common.CODE_DUMPING,
 		"JUMP_TRACING",              common.JUMP_TRACING,

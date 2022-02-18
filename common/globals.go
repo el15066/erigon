@@ -6,7 +6,6 @@ const MAX_BLOCK = 10_500_000 - 1 + 5_000
 // const MAX_BLOCK = 10_500_000 - 1 + 10_000
 
 const  STORAGE_TRACING = false
-const PREFETCH_TRACING = false
 const       TX_DUMPING = false
 const     CODE_DUMPING = false
 const     JUMP_TRACING = false
