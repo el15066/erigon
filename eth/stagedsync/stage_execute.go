@@ -348,6 +348,7 @@ var _buf = [64]byte{}
 func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *types.Block, errChan chan error, quitChan chan int, from uint64, to uint64) {
 	//
 	// setCPU(4, 5, 16, 17) // can't be sure without lock
+	lockThreadAndCPU(4)
 	//
 	var dumpfile *bufio.Writer
 	if common.TX_DUMPING {
