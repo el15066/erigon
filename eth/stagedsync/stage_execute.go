@@ -12,7 +12,6 @@ import (
 	"runtime"
 	"sort"
 	"time"
-	"sync/atomic"
 
 	"golang.org/x/sys/unix"
 
@@ -247,43 +246,43 @@ func lockThreadAndCPU(cores ...int) {
 	setCPU(cores...)
 }
 
-var workerNewBlockFlags uint64
+type txData struct {
+	fullIndex uint64
+	tx        types.Transaction
+}
 
-func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transaction) {
+func prefetchWorker(db *olddb.RoMutation, txChan chan txData) {
 	//
 	defer db.Close()
-	//
-	if myID >= 64 {
-		panic("Up to 64 prefetch workers are supported, see PREFETCH_WORKERS_COUNT")
-	}
-	myMask := uint64(1) << myID
 	//
 	var ctx *prediction.Ctx
 	if common.USE_PREDICTORS { ctx = prediction.NewCtx(db) }
 	//
-	for tx := range txChan {
+	nextBlockFullIndex := uint64(0)
+	//
+	for txData := range txChan {
 		bench.Tick(100)
 		//
 		if common.USE_PREDICTORS {
-			// isNewBlock := atomic.CompareAndSwapUint32(&workerNewBlockFlags[myID], 1, 0)
-			flags := atomic.LoadUint64(&workerNewBlockFlags)
-			if flags & myMask == 0 {
-				atomic.AddUint64(&workerNewBlockFlags, myMask)
+			if txData.fullIndex > nextBlockFullIndex {
+				nextBlockFullIndex = txData.fullIndex | 0xFFFF
+				bench.Tick(140)
 				ctx.BlockEnded()
 				ctx.StartingNewBlock()
+				bench.Tick(141)
 			}
 		}
 		// prefetch 'from' account
 		// The tx was provided by readBlock() (in fetchBlocks())
 		// which calls ReadBlockWithSenders() and so saves the sender to the transaction,
 		// meaning we can use .GetSender() directly and we don't need to derive it by .Sender(Signer).
-		from_addr, _ := tx.GetSender()
+		from_addr, _ := txData.tx.GetSender()
 		from_data, _ := db.GetOne(kv.PlainState, from_addr.Bytes())
 		//
 		bench.Tick(101)
 		//
 		// prefetch 'to' account (nil if contract creation)
-		to_addr := tx.GetTo()
+		to_addr := txData.tx.GetTo()
 		if to_addr != nil && *to_addr != from_addr {
 			//
 			bench.Tick(105)
@@ -294,7 +293,7 @@ func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transactio
 			if common.PREFETCH_CODE || common.USE_PREDICTORS {
 				var to_acc accounts.Account
 				to_acc.DecodeForStorage(to_data)
-				// 
+				//
 				if !to_acc.IsEmptyCodeHash() {
 					//
 					if common.PREFETCH_CODE {
@@ -308,13 +307,15 @@ func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan types.Transactio
 						from_acc.DecodeForStorage(from_data)
 						//
 						ctx.PredictTX(
+							txData.fullIndex & 0xFFFF,
+							//
 							from_addr,
-							tx.GetPrice(),
+							txData.tx.GetPrice(),
 							//
 							*to_addr,
-							tx.GetValue(),
-							tx.GetData(),
-							tx.GetGas(),
+							txData.tx.GetValue(),
+							txData.tx.GetData(),
+							txData.tx.GetGas(),
 							//
 						)
 						bench.Tick(112)
@@ -381,11 +382,11 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 			defer prediction.Close()
 		}
 		//
-		var txChan chan types.Transaction
+		var txChan chan txData
 		//
 		if common.PREFETCH_ACCOUNTS {
 			//
-			txChan = make(chan types.Transaction)
+			txChan = make(chan txData)
 			defer close(txChan)
 			//
 			// Start prefetch goroutines
@@ -395,7 +396,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				_rodb, err := cfg.db.BeginRo(context.Background()); if err != nil { panic(err) }
 				_db        := batch.UsingRoDB(_rodb)
 				//
-				go prefetchWorker(j, _db, txChan)
+				go prefetchWorker(_db, txChan)
 			}
 		}
 		//
@@ -421,17 +422,17 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 					block.Time(),
 					block.GasLimit(),
 				)
-				atomic.StoreUint64(&workerNewBlockFlags, uint64(0))
 			}
 			if common.PREFETCH_ACCOUNTS || common.TX_DUMPING || common.USE_STORAGE_PREFETCH_FILE {
 				for i, tx := range block.Transactions() {
 					//
 					if common.PREFETCH_ACCOUNTS {
 						//
-						if common.DEBUG_TX || common.TRACE_PREDICTED { common.SetTxIndex(i) }
-						//
 						// TODO: check if blockChan is about to starve, so we skip the following (which blocks)
-						txChan <- tx
+						txChan <- txData{
+							fullIndex: uint64(i) | (blockNum << 16),
+							tx:        tx,
+						}
 					}
 					//
 					if common.TX_DUMPING && dumpfile != nil {
