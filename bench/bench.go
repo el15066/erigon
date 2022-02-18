@@ -31,18 +31,18 @@ func Reset() {
 	}
 }
 
-func Tick(index int) {
-	// all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
-	atomic.AddInt64(&all_counts[index], 1)
-	// t := time.Now().UnixNano()
-	// t := int64(mclock.Now())
-	// t := Nanotime()
-	// _  = all_ticks[ index] // cache it // unfortunately this kills inlining (and is optimized out)
-	t := int64(tsc.BenchStart())
-	atomic.AddInt64(&all_ticks[ index], t)
-}
+// func Tick(index int) {
+// 	// all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
+// 	atomic.AddInt64(&all_counts[index], 1)
+// 	// t := time.Now().UnixNano()
+// 	// t := int64(mclock.Now())
+// 	// t := Nanotime()
+// 	// _  = all_ticks[ index] // cache it // unfortunately this kills inlining (and is optimized out)
+// 	t := int64(tsc.BenchStart())
+// 	atomic.AddInt64(&all_ticks[ index], t)
+// }
 
-// func TiCk(index int) { Tick(index) }
+func Tick(index int) { TiCk(index) }
 
 func TiCk(index int) {
 	// t := time.Now().UnixNano()
