@@ -1,56 +1,26 @@
 
---- Contract 7a250d5630b4cf539739df2c5dacb4c659f2488d
-  Coverage:    83.4 %  missed:     28639
-  Overhead:      18 %  added:      30357
-  Count:       172486  txs:        15153
-
 --- Contract dac17f958d2ee523a2206206994597c13d831ec7
   Coverage:   100.0 %  missed:         0
-  Overhead:       0 %  added:        624
-  Count:       642636  txs:        92275
-
---- Contract 762ed657b76372f8c08c6f7e0aa4170658c4ca35
-  Coverage:    37.2 %  missed:     24884
-  Overhead:      88 %  added:      34843
-  Count:        39604  txs:        18692
+  Overhead:       0 %  added:        294
+  Count:       322106  txs:        46223
 
 --- Contract 5acc84a3e955bdd76467d3348077d003f00ffb97
-  Coverage:    91.3 %  missed:     22089
-  Overhead:      10 %  added:      25424
-  Count:       252528  txs:        12636
-
---- Contract 000000000000deab340f067535869a0e5226e58a
-  Coverage:    82.3 %  missed:       859
-  Overhead:     884 %  added:      42901
-  Count:         4852  txs:         2846
-
---- Contract 860bd2dba9cd475a61e6d1b45e16c365f6d78f66
-  Coverage:    68.2 %  missed:      8114
-  Overhead:     130 %  added:      33156
-  Count:        25522  txs:         6065
-
---- Contract 11111254369792b2ca5d084ab5eea397ca8fa48b
-  Coverage:    31.2 %  missed:     36825
-  Overhead:      17 %  added:       8867
-  Count:        53540  txs:          970
-
---- Contract 9aab3f75489902f3a48495025729a0af77d4b11e
-  Coverage:    26.0 %  missed:     38564
-  Overhead:      10 %  added:       5226
-  Count:        52098  txs:          731
+  Coverage:    91.3 %  missed:     11218
+  Overhead:      10 %  added:      12392
+  Count:       128892  txs:         6432
 
 --- Contract f6fb09a41fa6c18cebc1e7c6f75a8664d69e4d48
-  Coverage:    73.7 %  missed:      2112
-  Overhead:     549 %  added:      44045
-  Count:         8021  txs:         2674
+  Coverage:    75.5 %  missed:      1050
+  Overhead:     866 %  added:      37098
+  Count:         4282  txs:         1435
 
 --- Contract 2f9ec37d6ccfff1cab21733bdadede11c823ccb0
-  Coverage:    97.4 %  missed:       470
-  Overhead:    3074 %  added:     563360
-  Count:        18327  txs:          669
+  Coverage:    97.3 %  missed:       244
+  Overhead:    2968 %  added:     270460
+  Count:         9112  txs:          336
 
 --- Totals ---
-  Coverage:    78.4 %  missed:    594914
-  Overhead:      39 %  added:    1079556
-  Count:      2752693  txs:       310304
+  Coverage:    78.5 %  missed:    294741
+  Overhead:      40 %  added:     554164
+  Count:      1371522  txs:       154224
 
