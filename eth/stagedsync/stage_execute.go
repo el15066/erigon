@@ -251,12 +251,12 @@ type txData struct {
 	tx        types.Transaction
 }
 
-func prefetchWorker(db *olddb.RoMutation, txChan chan txData) {
+func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan txData) {
 	//
 	defer db.Close()
 	//
 	var ctx *prediction.Ctx
-	if common.USE_PREDICTORS { ctx = prediction.NewCtx(db) }
+	if common.USE_PREDICTORS { ctx = prediction.NewCtx(myID, db) }
 	//
 	nextBlockFullIndex := uint64(0)
 	//
@@ -397,7 +397,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				_rodb, err := cfg.db.BeginRo(context.Background()); if err != nil { panic(err) }
 				_db        := batch.UsingRoDB(_rodb)
 				//
-				go prefetchWorker(_db, txChan)
+				go prefetchWorker(j, _db, txChan)
 			}
 		}
 		//

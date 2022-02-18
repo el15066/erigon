@@ -3,6 +3,8 @@ package prediction
 
 import (
 	"fmt"
+	"os"
+	"bufio"
 	"sort"
 	"bytes"
 	"encoding/hex"
@@ -33,19 +35,34 @@ type Ctx struct {
 	Origin      common.Address
 	GasPrice    *uint256.Int
 	//
+	tracefile   *bufio.Writer
 	Predicted   []common.Hash
 	Debug       bool
 }
 
-func NewCtx(db kv.Getter) *Ctx {
+func NewCtx(myID int, db kv.Getter) *Ctx {
 	ctx := &Ctx{
 		hasher: crypto.NewKeccakState(),
 		ibs:    stateDB.New(stateDB.NewPlainStateReader(db)),
 	}
 	if common.TRACE_PREDICTED {
+		fname    := fmt.Sprintf("logz/predicted_%02d.txt", myID)
+		_f, _err := os.OpenFile(fname, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0664)
+		if  _err == nil {
+			ctx.tracefile = bufio.NewWriterSize(_f, 1024*1024)
+		} else {
+			Close() // prediction.go
+			panic(_err)
+		}
 		ctx.Predicted = make([]common.Hash, 0, PREDICTED_CAP)
 	}
 	return ctx
+}
+
+func (ctx *Ctx) Close() {
+	if common.TRACE_PREDICTED && ctx.tracefile != nil {
+		ctx.tracefile.Flush()
+	}
 }
 
 func (ctx *Ctx) StartingNewBlock() {
@@ -115,9 +132,9 @@ func (ctx *Ctx) PredictTX(
 
 	statePool.FreeState(state)
 
-	if common.TRACE_PREDICTED && tracefile != nil {
+	if common.TRACE_PREDICTED && ctx.tracefile != nil {
 		//
-		tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, txIndex, address))
+		ctx.tracefile.WriteString(fmt.Sprintf("Tx %8d %3d %x\n", ctx.bvs.BlockNumber, txIndex, address))
 		//
 		if len(ctx.Predicted) > 0 {
 			sort.Slice(ctx.Predicted, func(a, b int) bool {
@@ -128,7 +145,7 @@ func (ctx *Ctx) PredictTX(
 				p :=       ctx.Predicted[i][:]
 				if bytes.Equal(p, prev) { continue }
 				prev = p
-				tracefile.WriteString(fmt.Sprintf("%x\n", ctx.Predicted[i])) // can't use p which is a slice
+				ctx.tracefile.WriteString(fmt.Sprintf("%x\n", ctx.Predicted[i])) // can't use p which is a slice
 			}
 		}
 		//
