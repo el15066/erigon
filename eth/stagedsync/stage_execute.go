@@ -274,7 +274,7 @@ func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan txData) {
 				bench.Tick(140)
 				ctx.BlockEnded()
 				ctx.StartingNewBlock()
-				bench.Tick(141)
+				bench.TiCk(141)
 			}
 		}
 		// prefetch 'from' account
@@ -326,10 +326,10 @@ func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan txData) {
 						bench.Tick(112)
 					}
 				}
-				bench.Tick(107)
+				// bench.Tick(107)
 			}
 		}
-		bench.Tick(102)
+		// bench.Tick(102)
 	}
 }
 
@@ -734,7 +734,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 
 		// bench.Tick(6)
 
-		bench.Tick(9)
+		// bench.Tick(9)
 		bench.Tick(10)
 		bench.Tick(12)
 		bench.TiCk(11)
