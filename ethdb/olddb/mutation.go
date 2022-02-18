@@ -16,7 +16,7 @@ import (
 	"github.com/ledgerwatch/erigon/ethdb"
 	// "github.com/ledgerwatch/log/v3"
 
-	"github.com/ledgerwatch/erigon/bench"
+	// "github.com/ledgerwatch/erigon/bench"
 )
 
 var BucketsMap  = map[string]int{}
@@ -202,9 +202,9 @@ func (m *Mutation) Has(table string, key []byte) (bool, error) {
 }
 
 func (m *Mutation) Put(table string, key []byte, value []byte) error {
-	bench.Tick(220) // expensive !
+	// bench.Tick(220) // expensive !
 	m.mu.Lock()
-	bench.TiCk(221)
+	// bench.TiCk(221)
 
 	newMi := mtree.MutationItem{ key, value }
 	i := m.trees[tableNameToID(table)].ReplaceOrInsert(newMi)
