@@ -253,6 +253,8 @@ type txData struct {
 
 func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan txData) {
 	//
+	lockThreadAndCPU(4, 5, 16, 17)
+	//
 	defer db.Close()
 	//
 	var ctx *prediction.Ctx
