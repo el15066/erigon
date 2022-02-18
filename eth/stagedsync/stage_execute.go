@@ -732,12 +732,14 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			bench.PrintAll()
 		}
 
-		// bench.Tick(6)
-
-		// bench.Tick(9)
+		bench.Tick(8)
+		bench.Tick(9)
 		bench.Tick(10)
-		bench.Tick(12)
-		bench.TiCk(11)
+		bench.Tick(11)
+		// // compiler adds a NOP here (don't know why)
+		// bench.TiCk(12)
+		// bench.TiCk(13)
+		// bench.TiCk(14)
 	}
 
 	if common.PREFETCH_BLOCKS {
