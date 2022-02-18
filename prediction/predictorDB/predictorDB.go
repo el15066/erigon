@@ -5,7 +5,7 @@ import (
 	// "fmt"
 	"sync"
 
-	// lru       "github.com/hashicorp/golang-lru/simplelru" //  thread-safe
+	// simplelru "github.com/hashicorp/golang-lru" //  thread-safe
 	simplelru "github.com/hashicorp/golang-lru/simplelru" // not thread-safe
 
 	logging   "github.com/ledgerwatch/log/v3"
@@ -19,7 +19,7 @@ var log logging.Logger
 var pdb predictorCache
 
 type predictorCache struct {
-	Mu    common.RWSpinlock
+	Mu    common.Spinlock // not RW because simplelru is not ok with concurrent reads
 	MuDB  sync.RWMutex
 	Cache *simplelru.LRU
 }
@@ -46,9 +46,9 @@ func Close() {
 func GetPredictor(h common.Hash) types.Predictor {
 	var p types.Predictor
 	//
-	pdb.Mu.RLock()
+	pdb.Mu.Lock()
 	_p, ok := pdb.Cache.Get(h)
-	pdb.Mu.RUnlock()
+	pdb.Mu.Unlock()
 	//
 	if ok {
 		p = _p.(types.Predictor)
