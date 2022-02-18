@@ -86,13 +86,10 @@ func (m *Mutation) getMem(table string, key []byte) ([]byte, bool) {
 	// bench.Tick(500) // expensive !
 	m.mu.RLock()
 	// bench.TiCk(501)
-	defer m.mu.RUnlock()
 	t := mtree.MutationItem{ key, nil }
 	i := m.trees[tableNameToID(table)].Get(t)
-	if i.Key == nil {
-		return nil, false
-	}
-	return i.Value, true
+	m.mu.RUnlock()
+	return i.Value, i.Key != nil
 }
 
 func (m *Mutation) IncrementSequence(bucket string, amount uint64) (res uint64, err error) {
