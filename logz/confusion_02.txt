@@ -1,26 +1,16 @@
 
 --- Contract dac17f958d2ee523a2206206994597c13d831ec7
   Coverage:   100.0 %  missed:         0
-  Overhead:       0 %  added:        349
-  Count:       330077  txs:        47405
-
---- Contract 5acc84a3e955bdd76467d3348077d003f00ffb97
-  Coverage:    91.2 %  missed:     11507
-  Overhead:      10 %  added:      12722
-  Count:       130253  txs:         6518
-
---- Contract f6fb09a41fa6c18cebc1e7c6f75a8664d69e4d48
-  Coverage:    79.8 %  missed:       784
-  Overhead:     978 %  added:      37855
-  Count:         3872  txs:         1343
+  Overhead:       0 %  added:        180
+  Count:       162378  txs:        23316
 
 --- Contract 2f9ec37d6ccfff1cab21733bdadede11c823ccb0
-  Coverage:    97.5 %  missed:       204
-  Overhead:    2925 %  added:     238068
-  Count:         8140  txs:          295
+  Coverage:    97.8 %  missed:       106
+  Overhead:    3198 %  added:     153754
+  Count:         4808  txs:          178
 
 --- Totals ---
-  Coverage:    78.3 %  missed:    302288
-  Overhead:      37 %  added:     521254
-  Count:      1392240  txs:       157541
+  Coverage:    79.1 %  missed:    142433
+  Overhead:      45 %  added:     309315
+  Count:       681969  txs:        78146
 
