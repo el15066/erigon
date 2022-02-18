@@ -42,7 +42,13 @@ func Reset() {
 // 	atomic.AddInt64(&all_ticks[ index], t)
 // }
 
-func Tick(index int) { TiCk(index) }
+// func Tick(index int) { TiCk(index) } // doesn't inline :(
+
+func Tick(index int) {
+	t := int64(tsc.BenchEnd())
+	atomic.AddInt64(&all_ticks[ index], t)
+	atomic.AddInt64(&all_counts[index], 1)
+}
 
 func TiCk(index int) {
 	// t := time.Now().UnixNano()
