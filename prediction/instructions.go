@@ -709,14 +709,13 @@ func opCallCommon(state *State, t CallOpType) {
 		return
 	}
 	//
-	ns := statePool.NewState() // Careful: we can't return without FreeState() from now on
-	                           //          we won't use defer for now
+	ns := statePool.NewState(state.ctx) // Careful: we can't return without FreeState() from now on
+	                                    //          we won't use defer for now
 	// this must be checked on its own
 	if ns == nil {
 		d.Set(&UNKNOWN_U256)
 		return
 	}
-	ns.ctx      = state.ctx
 	ns.calldata = idata
 	//
 	if common.DEBUG_TX && state.ctx.Debug { fmt.Print(" calldata ", hex.EncodeToString(ns.calldata)) }

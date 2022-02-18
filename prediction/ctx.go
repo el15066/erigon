@@ -101,10 +101,9 @@ func (ctx *Ctx) PredictTX(
 	ctx.Origin   = origin
 	ctx.GasPrice = gasPrice
 
-	state := statePool.NewState()
+	state := statePool.NewState(ctx)
 	if state == nil { return }
 
-	state.ctx       = ctx
 	state.address   = address
 	state.caller    = ctx.Origin
 	state.callvalue.Set(callvalue)  // TODO: maybe pointer instead ?

@@ -85,7 +85,7 @@ func (sp *StatePool) Init() {
 	sp.available = (uint64(1) << c) - 1
 }
 
-func (sp *StatePool) NewState() *State {
+func (sp *StatePool) NewState(ctx *Ctx) *State {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
 	//
@@ -96,7 +96,9 @@ func (sp *StatePool) NewState() *State {
 	//
 	sp.available &= ^(uint64(1) << i)
 	//
-	return &sp.states[i]
+	ns := &sp.states[i]
+	ns.ctx = ctx
+	return ns
 }
 
 func (sp *StatePool) FreeState(state *State) {
