@@ -430,81 +430,87 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				)
 			}
 			if common.PREFETCH_ACCOUNTS || common.TX_DUMPING || common.USE_STORAGE_PREFETCH_FILE {
-				for i, tx := range block.Transactions() {
-					//
-					if common.PREFETCH_ACCOUNTS {
+				txs := block.Transactions()
+				if txs.Len() > 0 {
+					bench.Tick(130)
+					for i, tx := range txs {
 						//
-						// TODO: check if blockChan is about to starve, so we skip the following (which blocks)
-						txChan <- txData{
-							fullIndex: uint64(i) | (blockNum << 16),
-							tx:        tx,
-						}
-					}
-					//
-					if common.TX_DUMPING && dumpfile != nil {
-						var ENC       = hex.EncodeToString
-						from_addr, _ := tx.GetSender()
-						to_addr      := tx.GetTo()
-						t, _ := json.Marshal(&tx_dump{
-							Block:      blockNum,
-							Index:      i,
-							// Blockhash: not here (array of 256 most recent)
-							Coinbase:   ENC(block.Coinbase().Bytes()),
-							Timestamp:  block.Time(),
-							Difficulty: block.Difficulty().Uint64(),
-							Gaslimit:   block.GasLimit(),
-							// Chainid:    cfg.chainConfig.ChainID.Uint64(),
-							// Selfbalance: is dynamic
-							Address:    ENC(to_addr.Bytes()),
-							// Balance: is dynamic
-							Origin:     ENC(from_addr.Bytes()),
-							// Caller: same as origin for now
-							Callvalue:  tx.GetValue(),
-							Calldata:   ENC(tx.GetData()),
-							// Gasprice: n/a after LONDON // TODO: verify below is correct
-							// Gasprice: ENC(tx.GetPrice().Bytes32()),
-							// Extcode: not here
-							// Returndata: n/a
-						})
-						dumpfile.Write(append(t, byte('\n')))
-					}
-					//
-					if common.USE_STORAGE_PREFETCH_FILE {
-						// GET storage prefetch locations
-						// read 2 bytes
-						// if 0 -> update tx index
-						// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
-						// fetch all those addresses
-						// loop
-						// why loop? -> 1 tx can call many contracts
-						for i == storage_prefetch_i {
-							_, _err := io.ReadFull(storage_prefetch_file, _buf[0:4])
-							if _err != nil {
-								log.Warn("Read from storage prefetch file", "error", _err)
-								storage_prefetch_i    = -1
-								storage_prefetch_file = nil
-								break
-							}
-							count := int(binary.BigEndian.Uint16(_buf[0:2]))
+						if common.PREFETCH_ACCOUNTS {
 							//
-							// fmt.Println(i, "count", count)
-							if count != 0 {
-								io.ReadFull(storage_prefetch_file, _buf[4:30])
-								for j := 0; j < count; j++ {
-									io.ReadFull(storage_prefetch_file, _buf[30:62])
-									rodb.GetOne(kv.PlainState, _buf[2:62])
-									// fmt.Println(i, ENC(_buf[2:62]))
+							// TODO: check if blockChan is about to starve, so we skip the following (which blocks)
+							bench.Tick(120)
+							txChan <- txData{
+								fullIndex: uint64(i) | (blockNum << 16),
+								tx:        tx,
+							}
+							bench.TiCk(121)
+						}
+						//
+						if common.TX_DUMPING && dumpfile != nil {
+							var ENC       = hex.EncodeToString
+							from_addr, _ := tx.GetSender()
+							to_addr      := tx.GetTo()
+							t, _ := json.Marshal(&tx_dump{
+								Block:      blockNum,
+								Index:      i,
+								// Blockhash: not here (array of 256 most recent)
+								Coinbase:   ENC(block.Coinbase().Bytes()),
+								Timestamp:  block.Time(),
+								Difficulty: block.Difficulty().Uint64(),
+								Gaslimit:   block.GasLimit(),
+								// Chainid:    cfg.chainConfig.ChainID.Uint64(),
+								// Selfbalance: is dynamic
+								Address:    ENC(to_addr.Bytes()),
+								// Balance: is dynamic
+								Origin:     ENC(from_addr.Bytes()),
+								// Caller: same as origin for now
+								Callvalue:  tx.GetValue(),
+								Calldata:   ENC(tx.GetData()),
+								// Gasprice: n/a after LONDON // TODO: verify below is correct
+								// Gasprice: ENC(tx.GetPrice().Bytes32()),
+								// Extcode: not here
+								// Returndata: n/a
+							})
+							dumpfile.Write(append(t, byte('\n')))
+						}
+						//
+						if common.USE_STORAGE_PREFETCH_FILE {
+							// GET storage prefetch locations
+							// read 2 bytes
+							// if 0 -> update tx index
+							// else that is # of addrs, read 20B contract address + 8B incarnation + #*32B storage addresses
+							// fetch all those addresses
+							// loop
+							// why loop? -> 1 tx can call many contracts
+							for i == storage_prefetch_i {
+								_, _err := io.ReadFull(storage_prefetch_file, _buf[0:4])
+								if _err != nil {
+									log.Warn("Read from storage prefetch file", "error", _err)
+									storage_prefetch_i    = -1
+									storage_prefetch_file = nil
+									break
 								}
-							} else {
-								diff := int(binary.BigEndian.Uint16(_buf[2:4]))
-								// fmt.Println(i, "diff", diff)
-								if diff != 0 { storage_prefetch_i += diff
-								} else       { storage_prefetch_i  = -1   }
-								break
+								count := int(binary.BigEndian.Uint16(_buf[0:2]))
+								//
+								// fmt.Println(i, "count", count)
+								if count != 0 {
+									io.ReadFull(storage_prefetch_file, _buf[4:30])
+									for j := 0; j < count; j++ {
+										io.ReadFull(storage_prefetch_file, _buf[30:62])
+										rodb.GetOne(kv.PlainState, _buf[2:62])
+										// fmt.Println(i, ENC(_buf[2:62]))
+									}
+								} else {
+									diff := int(binary.BigEndian.Uint16(_buf[2:4]))
+									// fmt.Println(i, "diff", diff)
+									if diff != 0 { storage_prefetch_i += diff
+									} else       { storage_prefetch_i  = -1   }
+									break
+								}
 							}
 						}
-						bench.Tick(103)
 					}
+					bench.Tick(131)
 				}
 			}
 			if common.USE_STORAGE_PREFETCH_FILE && storage_prefetch_file != nil {
