@@ -72,7 +72,7 @@ libmdbx/build/*
 
 *.bin
 logz/reads.txt
-logz/predicted.txt
+logz/predicted*.txt
 logz/prefetches.txt
 logz/code_alias.txt
 logz/jump_edges.json
