@@ -256,7 +256,10 @@ func prefetchWorker(myID int, db *olddb.RoMutation, txChan chan txData) {
 	defer db.Close()
 	//
 	var ctx *prediction.Ctx
-	if common.USE_PREDICTORS { ctx = prediction.NewCtx(myID, db) }
+	if common.USE_PREDICTORS {
+		ctx = prediction.NewCtx(myID, db)
+		defer ctx.Close()
+	}
 	//
 	nextBlockFullIndex := uint64(0)
 	//
