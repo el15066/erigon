@@ -438,12 +438,12 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 						if common.PREFETCH_ACCOUNTS {
 							//
 							// TODO: check if blockChan is about to starve, so we skip the following (which blocks)
-							bench.Tick(120)
+							bench.Tick(98)
 							txChan <- txData{
 								fullIndex: uint64(i) | (blockNum << 16),
 								tx:        tx,
 							}
-							bench.TiCk(121)
+							bench.TiCk(99)
 						}
 						//
 						if common.TX_DUMPING && dumpfile != nil {
