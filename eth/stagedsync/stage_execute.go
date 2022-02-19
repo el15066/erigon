@@ -651,9 +651,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	logTime := time.Now()
 	var gas uint64
 
-	var blockChan chan *types.Block
-	if common.BLOCK_READAHEAD > 0 { blockChan = make(chan *types.Block, common.BLOCK_READAHEAD - 1)
-	} else                        { blockChan = make(chan *types.Block) }
+	blockChan := make(chan *types.Block, max(common.BLOCK_READAHEAD - 1, 0))
 	errChan   := make(chan error)
 	quitChan  := make(chan int)
 
@@ -1107,6 +1105,12 @@ func recoverCodeHashPlain(acc *accounts.Account, db kv.Tx, key []byte) {
 
 func min(a, b uint64) uint64 {
 	if a <= b {
+		return a
+	}
+	return b
+}
+func max(a, b int64) int64 {
+	if a >= b {
 		return a
 	}
 	return b
