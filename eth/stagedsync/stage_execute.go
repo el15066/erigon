@@ -652,8 +652,8 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	var gas uint64
 
 	var blockChan chan *types.Block
-	if common.BLOCK_READAHEAD > 0 { blockChan := make(chan *types.Block, common.BLOCK_READAHEAD - 1)
-	} else                        { blockChan := make(chan *types.Block) }
+	if common.BLOCK_READAHEAD > 0 { blockChan = make(chan *types.Block, common.BLOCK_READAHEAD - 1)
+	} else                        { blockChan = make(chan *types.Block) }
 	errChan   := make(chan error)
 	quitChan  := make(chan int)
 
