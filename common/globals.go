@@ -1,6 +1,8 @@
 
 package common
 
+THIS_SHOULDNT_BE_HERE
+
 // const MAX_BLOCK = 7_500_000 - 1 + 4546
 const MAX_BLOCK = 10_500_000 - 1 + 5_000
 // const MAX_BLOCK = 10_500_000 - 1 + 10_000
