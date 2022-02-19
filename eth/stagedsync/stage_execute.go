@@ -415,9 +415,18 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 			}
 			//
 			blockGiven := false
-			select {
-				case blockChan <- block: blockGiven = true
-				default:              // blockGiven = false
+			if common.BLOCK_READAHEAD > 0 {
+				select {
+					case blockChan <- block: blockGiven = true
+					default:              // blockGiven = false
+				}
+			} else {
+				blockGiven = true
+				select {
+					case blockChan <- block:
+					case <-quitChan:
+						break Loop
+				}
 			}
 			//
 			if common.USE_PREDICTORS {
@@ -532,7 +541,7 @@ func fetchBlocks(cfg ExecuteBlockCfg, batch *olddb.Mutation, blockChan chan *typ
 				}
 			}
 			//
-			if !blockGiven {
+			if common.BLOCK_READAHEAD > 0 && !blockGiven {
 				select {
 					case blockChan <- block:
 					case <-quitChan:
@@ -642,7 +651,9 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	logTime := time.Now()
 	var gas uint64
 
-	blockChan := make(chan *types.Block, common.BLOCK_READAHEAD - 1)
+	var blockChan chan *types.Block
+	if common.BLOCK_READAHEAD > 0 { blockChan := make(chan *types.Block, common.BLOCK_READAHEAD - 1)
+	} else                        { blockChan := make(chan *types.Block) }
 	errChan   := make(chan error)
 	quitChan  := make(chan int)
 
