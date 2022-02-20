@@ -16,7 +16,7 @@ import (
 	"github.com/ledgerwatch/erigon/ethdb"
 	// "github.com/ledgerwatch/log/v3"
 
-	// "github.com/ledgerwatch/erigon/bench"
+	"github.com/ledgerwatch/erigon/bench"
 )
 
 var BucketsMap  = map[string]int{}
@@ -140,14 +140,14 @@ func (m *Mutation) GetOne(table string, key []byte) ([]byte, error) {
 	}
 	if m.db != nil {
 		// TODO: simplify when tx can no longer be parent of Mutation
-		// bench.Tick(70)
+		bench.Tick(70)
 		value, err := m.db.GetOne(table, key)
 		if err != nil {
-			// bench.TiCk(71)
+			bench.TiCk(71)
 			return nil, err
 		}
 
-		// bench.TiCk(71)
+		bench.TiCk(71)
 		return value, nil
 	}
 	return nil, nil
@@ -394,7 +394,10 @@ func (rom *RoMutation) GetOne(table string, key []byte) ([]byte, error) {
 	if value, ok := rom.m.getMem(table, key); ok {
 		return value, nil
 	}
-	return rom.rodb.GetOne(table, key)
+	bench.Tick(75)
+	res, err := rom.rodb.GetOne(table, key)
+	bench.TiCk(76)
+	return res, err
 }
 func (rom *RoMutation) Has(table string, key []byte) (bool, error) {
 	if rom.m.hasMem(table, key) {
