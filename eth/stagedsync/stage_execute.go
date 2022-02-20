@@ -738,7 +738,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 			gas = 0
 			tx.CollectMetrics()
 			syncMetrics[stages.Execution].Set(blockNum)
-			bench.PrintAll()
+			bench.PrintFromTo(0, 11)
 		}
 
 		bench.Tick(8)

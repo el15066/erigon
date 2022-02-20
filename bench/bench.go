@@ -45,7 +45,7 @@ func Reset() {
 // func Tick(index int) { TiCk(index) } // doesn't inline :(
 
 func Tick(index int) {
-	t := int64(tsc.BenchEnd())
+	t := int64(tsc.BenchStart())
 	atomic.AddInt64(&all_ticks[ index], t)
 	atomic.AddInt64(&all_counts[index], 1)
 }
@@ -54,7 +54,7 @@ func TiCk(index int) {
 	// t := time.Now().UnixNano()
 	// t := int64(mclock.Now())
 	// t := Nanotime()
-	t := int64(tsc.BenchEnd())
+	t := int64(tsc.BenchStart())
 	// all_ticks_prev[index] = all_ticks[index] // TODO: atomic copy
 	atomic.AddInt64(&all_ticks[ index], t)
 	atomic.AddInt64(&all_counts[index], 1)
@@ -127,10 +127,12 @@ func DiffStrAuto(indexA int, indexB int) string {
 // 	}
 // }
 
-func PrintAll() {
+func PrintFromTo(first, last int) {
 	fmt.Println("__TO-FROM ___AVERAGE_ns_ _______COUNT__ _____TOTAL_us_")
-	pairs := len(all_counts) - 1
-	for i := 0; i < pairs; i += 1 {
+	// pairs := len(all_counts) - 1
+	// if last > pairs { last = pairs }
+	// range is inclusive, but we also use i+1 inside
+	for i := first; i < last; i += 1 {
 		// we don't want to lock, because Tick() should be fast
 		// so we approximate by reading until no change
 		// it can still produce N/A but it's rare
@@ -153,4 +155,7 @@ func PrintAll() {
 			fmt.Println(fmt.Sprintf("%4d-%4d %s", i+1, i, DiffStrThese(t1, c1, t0, c0)))
 		}
 	}
+}
+func PrintAll() {
+	PrintFromTo(0, len(all_counts) - 1)
 }
