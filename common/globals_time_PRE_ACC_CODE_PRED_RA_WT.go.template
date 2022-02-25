@@ -1,23 +1,23 @@
 
 package common
 
-const MAX_BLOCK = 10_500_000 - 1 + 10_000
+const MAX_BLOCK = 10_500_000 - 1 + 30_000
 
 const  STORAGE_TRACING = false
 const       TX_DUMPING = false
 const     CODE_DUMPING = false
 const     JUMP_TRACING = false
 
-const PREFETCH_BLOCKS           = true
-const BLOCK_READAHEAD           = %RA
-const PREFETCH_ACCOUNTS         = true
-const PREFETCH_CODE             = true
-const USE_PREDICTORS            = true
+const PREFETCH_BLOCKS           = %PRE%
+const BLOCK_READAHEAD           = %RA%
+const PREFETCH_ACCOUNTS         = %ACC%
+const PREFETCH_CODE             = %CODE%
+const USE_PREDICTORS            = %PRED%
 const USE_STORAGE_PREFETCH_FILE = false
 
-const PREFETCH_WORKERS_COUNT = %WT
+const PREFETCH_WORKERS_COUNT = %WT%
 
-const TRACE_PREDICTED = true
+const TRACE_PREDICTED = false
 
 const DEBUG_TX       = false
 const DEBUG_TX_BLOCK = 0
