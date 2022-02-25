@@ -605,9 +605,6 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 		<-quit
 		return common.ErrStopped
 	}
-	if to > s.BlockNumber+16 {
-		log.Info(fmt.Sprintf("[%s] Blocks execution", logPrefix), "from", s.BlockNumber, "to", to)
-	}
 
 	// <-quit
 
@@ -653,6 +650,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	var gas uint64
 
 	to = min(to, stageProgress + common.BLOCKS)
+	log.Info(fmt.Sprintf("[%s] Blocks execution", logPrefix), "from", s.BlockNumber, "to", to)
 
 	blockChan := make(chan *types.Block, max(common.BLOCK_READAHEAD - 1, 0))
 	errChan   := make(chan error)
