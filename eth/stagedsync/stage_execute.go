@@ -27,6 +27,7 @@ import (
 	"github.com/ledgerwatch/erigon/ethdb/prune"
 	"github.com/ledgerwatch/erigon/params"
 	"github.com/ledgerwatch/erigon/turbo/shards"
+	"github.com/ledgerwatch/erigon/cmd/utils"
 	"github.com/ledgerwatch/log/v3"
 )
 
@@ -247,6 +248,7 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	if toBlock > 0 {
 		to = min(prevStageProgress, toBlock)
 	}
+	to = min(to, common.MAX_BLOCK)
 	if to <= s.BlockNumber {
 		return nil
 	}
@@ -351,7 +353,10 @@ Loop:
 	}
 
 	log.Info(fmt.Sprintf("[%s] Completed on", logPrefix), "block", stageProgress)
-	return stoppedErr
+
+	utils.NotifySIGINT()
+	<-quit
+	return common.ErrStopped
 }
 
 func pruneChangeSets(tx kv.RwTx, logPrefix string, table string, pruneTo uint64, logEvery *time.Ticker, ctx context.Context) error {
