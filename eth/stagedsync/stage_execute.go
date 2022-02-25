@@ -27,7 +27,10 @@ import (
 	"github.com/ledgerwatch/erigon/ethdb/prune"
 	"github.com/ledgerwatch/erigon/params"
 	"github.com/ledgerwatch/erigon/turbo/shards"
+	"github.com/ledgerwatch/erigon/cmd/utils"
 	"github.com/ledgerwatch/log/v3"
+
+	"github.com/ledgerwatch/erigon/bench"
 )
 
 const (
@@ -247,6 +250,8 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	if toBlock > 0 {
 		to = min(prevStageProgress, toBlock)
 	}
+	to = min(to, common.MAX_BLOCK)
+
 	if to <= s.BlockNumber {
 		return nil
 	}
@@ -272,6 +277,9 @@ Loop:
 		if stoppedErr = common.Stopped(quit); stoppedErr != nil {
 			break
 		}
+
+		bench.Tick(0)
+
 		var err error
 		var block *types.Block
 		if block, err = readBlock(blockNum, tx); err != nil {
@@ -282,6 +290,8 @@ Loop:
 			break
 		}
 
+		bench.Tick(1)
+
 		lastLogTx += uint64(block.Transactions().Len())
 
 		var contractHasTEVM func(contractHash common.Hash) (bool, error)
@@ -290,6 +300,7 @@ Loop:
 			contractHasTEVM = ethdb.GetHasTEVM(tx)
 		}
 
+		bench.Tick(3)
 		// Incremental move of next stages depend on fully written ChangeSets, Receipts, CallTraceSet
 		writeChangeSets := nextStagesExpectData || blockNum > cfg.prune.History.PruneTo(to)
 		writeReceipts := nextStagesExpectData || blockNum > cfg.prune.Receipts.PruneTo(to)
@@ -301,7 +312,10 @@ Loop:
 		}
 		stageProgress = blockNum
 
-		updateProgress := batch.BatchSize() >= int(cfg.batchSize)
+		bench.Tick(4)
+
+		updateProgress := false
+		// updateProgress := batch.BatchSize() >= int(cfg.batchSize)
 		if updateProgress {
 			if err = batch.Commit(); err != nil {
 				return err
@@ -334,8 +348,21 @@ Loop:
 			gas = 0
 			tx.CollectMetrics()
 			syncMetrics[stages.Execution].Set(blockNum)
+			bench.PrintFromTo(0, 11)
 		}
+
+		bench.Tick(8)
+		bench.Tick(9)
+		bench.Tick(10)
+		bench.Tick(11)
 	}
+
+	// HERE
+	bench.PrintAll()
+
+	utils.NotifySIGINT()
+	<-quit
+	return common.ErrStopped
 
 	if err = s.Update(batch, stageProgress); err != nil {
 		return err
