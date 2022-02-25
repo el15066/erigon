@@ -250,7 +250,9 @@ func SpawnExecuteBlocksStage(s *StageState, u Unwinder, tx kv.RwTx, toBlock uint
 	}
 	to = min(to, common.MAX_BLOCK)
 	if to <= s.BlockNumber {
-		return nil
+		utils.NotifySIGINT()
+		<-quit
+		return common.ErrStopped
 	}
 	if to > s.BlockNumber+16 {
 		log.Info(fmt.Sprintf("[%s] Blocks execution", logPrefix), "from", s.BlockNumber, "to", to)
