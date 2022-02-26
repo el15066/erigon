@@ -79,6 +79,7 @@ logz/jump_edges.json
 logz/tx_dump.txt
 logz/reads_addresses_by_tx.txt
 logz/jump_counts.txt
+logz/code_counts.txt
 logz/code/
 logz/disasm/
 symbolic/sandbox/rat_exec/log.txt
