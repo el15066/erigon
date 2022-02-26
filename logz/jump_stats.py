@@ -242,8 +242,8 @@ with open('jump_edges.json', 'w') as fo:
     fo.write(
         '{\n' + 
         ',\n'.join(
-            fo.write('"h_' + h.hex() + '":' + line)
+            '"h_' + h.hex() + '":' + line
             for h, line in sorted(list(res.items()))
         ) +
-        '\n}\n'
+        ',\n"_":"_"}\n'
     )
